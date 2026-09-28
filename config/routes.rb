@@ -381,6 +381,24 @@ Rails.application.routes.draw do
   get "highlighting/styles(/:version_tag)" => "highlighting#styles",
       as: "highlighting_css_styles"
 
+  # The items of a hierarchical custom field, from each admin area that manages custom fields.
+  concern :hierarchy_items do |options|
+    resources :items, controller: options.fetch(:controller) do
+      member do
+        get :change_parent, action: :change_parent_dialog
+        post :change_parent, action: :change_parent
+        get :delete, action: :deletion_dialog
+        get :item_actions
+        post :move
+        get :new_child, action: :new
+        post :new_child, action: :create
+        post :set_default
+        post :clear_default
+        post :reorder_alphabetical
+      end
+    end
+  end
+
   resources :custom_fields, except: :show do
     member do
       get :attribute_help_text
@@ -391,20 +409,7 @@ Rails.application.routes.draw do
       scope module: :custom_fields do
         resources :projects, controller: "/admin/custom_fields/custom_field_projects", only: %i[index new create]
         resource :project, controller: "/admin/custom_fields/custom_field_projects", only: :destroy
-        resources :items, controller: "/admin/custom_fields/hierarchy/items" do
-          member do
-            get :change_parent, action: :change_parent_dialog
-            post :change_parent, action: :change_parent
-            get :delete, action: :deletion_dialog
-            get :item_actions
-            post :move
-            get :new_child, action: :new
-            post :new_child, action: :create
-            post :set_default
-            post :clear_default
-            post :reorder_alphabetical
-          end
-        end
+        concerns :hierarchy_items, controller: "/admin/custom_fields/hierarchy/items"
       end
     end
   end
@@ -902,20 +907,7 @@ Rails.application.routes.draw do
           put :update_attribute_help_text
         end
 
-        resources :items, controller: "/admin/settings/project_custom_fields/hierarchy/items" do
-          member do
-            get :change_parent, action: :change_parent_dialog
-            post :change_parent, action: :change_parent
-            get :delete, action: :deletion_dialog
-            get :item_actions
-            post :move
-            get :new_child, action: :new
-            post :new_child, action: :create
-            post :set_default
-            post :clear_default
-            post :reorder_alphabetical
-          end
-        end
+        concerns :hierarchy_items, controller: "/admin/settings/project_custom_fields/hierarchy/items"
       end
 
       resources :project_custom_field_sections, controller: "/admin/settings/project_custom_field_sections",
@@ -942,20 +934,7 @@ Rails.application.routes.draw do
           put :update_attribute_help_text
         end
 
-        resources :items, controller: "/admin/settings/user_custom_fields/hierarchy/items" do
-          member do
-            get :change_parent, action: :change_parent_dialog
-            post :change_parent, action: :change_parent
-            get :delete, action: :deletion_dialog
-            get :item_actions
-            post :move
-            get :new_child, action: :new
-            post :new_child, action: :create
-            post :set_default
-            post :clear_default
-            post :reorder_alphabetical
-          end
-        end
+        concerns :hierarchy_items, controller: "/admin/settings/user_custom_fields/hierarchy/items"
       end
 
       resources :user_custom_field_sections, controller: "/admin/settings/user_custom_field_sections",
