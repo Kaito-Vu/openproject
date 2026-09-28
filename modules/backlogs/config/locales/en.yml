@@ -301,7 +301,6 @@ en:
             blankslate:
               empty:
                 description: "All work packages in this sprint are completed."
-                heading: "Wow, all done!"
               no_dates:
                 description: "Sprint start and finish dates are necessary to show unfinished work packages."
               not_started:

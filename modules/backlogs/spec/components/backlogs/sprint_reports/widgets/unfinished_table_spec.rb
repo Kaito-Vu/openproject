@@ -74,8 +74,7 @@ RSpec.describe Backlogs::SprintReports::Widgets::UnfinishedTable,
 
     include_examples "renders a blankslate",
                      description: "All work packages in this sprint are completed.",
-                     icon: :trophy,
-                     heading: "Wow, all done!"
+                     icon: :trophy
   end
 
   context "when the sprint is running" do
