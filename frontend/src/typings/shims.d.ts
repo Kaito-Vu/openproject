@@ -63,7 +63,7 @@ declare global {
     ng2Injector:Injector;
     OpenProject:OpenProject;
     ErrorReporter:ErrorReporterBase;
-    onboardingTourInstance:any;
+    onboardingTourInstance:import('core-app/core/setup/globals/onboarding/onboarding_tour').EnjoyHintInstance;
     screenfull:Screenfull;
     MiniProfiler?:{ pageTransition:() => void };
   }
