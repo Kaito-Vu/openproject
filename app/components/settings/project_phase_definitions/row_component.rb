@@ -54,7 +54,10 @@ module Settings
           label: I18n.t(:button_move),
           select_variant: :none,
           form_arguments: {},
-          data: { sortable_lists__item_target: "moveMenu" }
+          data: {
+            projects__settings__border_box_filter_target: "hideWhenFiltering",
+            sortable_lists__item_target: "moveMenu"
+          }
         ) do |submenu|
           submenu.with_leading_visual_icon(icon: :"op-arrow-in")
 

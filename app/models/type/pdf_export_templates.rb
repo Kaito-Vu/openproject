@@ -89,7 +89,7 @@ class Type::PdfExportTemplates
 
     ordered_ids = list.map(&:id)
     return false if ordered_ids.exclude?(template_id)
-    return false if prev_id.present? && (prev_id == template_id || ordered_ids.exclude?(prev_id))
+    return false if !prev_id.nil? && prev_id != "" && (prev_id == template_id || ordered_ids.exclude?(prev_id))
 
     ordered_ids.delete(template_id)
     index = prev_id.present? ? ordered_ids.index(prev_id) + 1 : 0

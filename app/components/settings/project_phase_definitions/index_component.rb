@@ -46,7 +46,7 @@ module Settings
 
       def wrapper_data_attributes
         {
-          controller: "projects--settings--border-box-filter sortable-lists",
+          controller: "projects--settings--border-box-filter#{' sortable-lists' if allowed_to_customize_life_cycle?}",
           sortable_lists_move_url_template_value: move_url_template,
           sortable_lists_sortable_lists__list_outlet: "##{wrapper_key} [data-controller~='sortable-lists--list']",
           sortable_lists_sortable_lists__item_outlet: "##{wrapper_key} [data-controller~='sortable-lists--item']"
