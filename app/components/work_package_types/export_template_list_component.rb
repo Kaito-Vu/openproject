@@ -59,7 +59,7 @@ module WorkPackageTypes
     # installations keep working; {id} is expanded client-side.
     def move_url_template
       id_placeholder = "__id__"
-      helpers.move_variant_pdf_export_template_path(helpers.variant_scope_project, @variant, id_placeholder)
+      move_variant_pdf_export_template_path(helpers.variant_scope_project, @variant, id_placeholder)
              .sub(id_placeholder, "{id}")
     end
 
@@ -86,7 +86,7 @@ module WorkPackageTypes
     end
 
     def sortable_list_type
-      "pdf_export_templates"
+      ::Type::PdfExportTemplates::SORTABLE_LIST_TYPE
     end
   end
 end

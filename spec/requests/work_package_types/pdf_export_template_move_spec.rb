@@ -81,11 +81,13 @@ RSpec.describe "PDF export template move", :skip_csrf, type: :rails_request do
   it "renders the invalid-anchor error message on failure" do
     move("attributes", { list_type:, list_id: "", prev_id: "bogus" })
     expect(response.body).to include(I18n.t(:error_invalid_list_move_anchor))
+    expect(response).to have_http_status(:unprocessable_entity)
   end
 
   it "does not move an unknown template id" do
     move("bogus", { list_type:, list_id: "", prev_id: "" })
     expect(ordered_ids).to eq(%w[attributes contract artefact])
+    expect(response).to have_http_status(:not_found)
   end
 
   context "when not an admin" do
@@ -93,8 +95,8 @@ RSpec.describe "PDF export template move", :skip_csrf, type: :rails_request do
 
     it "is forbidden" do
       move("attributes", { list_type:, list_id: "", prev_id: "artefact" })
-      expect(response).to have_http_status(:forbidden)
       expect(ordered_ids).to eq(%w[attributes contract artefact])
+      expect(response).to have_http_status(:forbidden)
     end
   end
 

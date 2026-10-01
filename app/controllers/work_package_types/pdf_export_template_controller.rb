@@ -154,7 +154,8 @@ module WorkPackageTypes
 
     def update_template_list_via_turbo_stream
       replace_via_turbo_stream(
-        component: ::WorkPackageTypes::ExportTemplateListComponent.new(variant: @variant)
+        component: ::WorkPackageTypes::ExportTemplateListComponent.new(variant: @variant),
+        method: "morph"
       )
     end
 
@@ -183,11 +184,12 @@ module WorkPackageTypes
     end
 
     def sortable_list_type
-      "pdf_export_templates"
+      ::Type::PdfExportTemplates::SORTABLE_LIST_TYPE
     end
 
     def render_404_turbo_stream
       render_error_flash_message_via_turbo_stream(message: t(:notice_file_not_found))
+      respond_with_turbo_streams(status: :not_found)
     end
 
     def render_readonly_error

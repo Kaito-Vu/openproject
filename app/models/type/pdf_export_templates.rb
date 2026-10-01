@@ -31,6 +31,8 @@
 class Type::PdfExportTemplates
   include WorkPackage::PDFExport::Templates
 
+  SORTABLE_LIST_TYPE = "pdf_export_templates"
+
   Template = Data.define(:id, :label, :caption, :enabled, :settings_component)
 
   class ReadonlyError < StandardError; end
