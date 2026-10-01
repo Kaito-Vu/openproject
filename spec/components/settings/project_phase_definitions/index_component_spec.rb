@@ -78,4 +78,12 @@ RSpec.describe Settings::ProjectPhaseDefinitions::IndexComponent, type: :compone
     it_behaves_like "rendering an empty Border Box List",
                     heading: I18n.t("settings.project_phase_definitions.non_defined")
   end
+
+  context "without enterprise token" do
+    let!(:sortable_records) { create_list(:project_phase_definition, 2) }
+
+    it "renders no sortable-lists wiring" do
+      expect(rendered_component).to have_no_css("[data-controller*='sortable-lists']")
+    end
+  end
 end

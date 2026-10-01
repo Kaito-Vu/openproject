@@ -44,7 +44,7 @@ module Pages
 
         def expect_listed(names)
           page.document.synchronize do
-            found = page.all("[data-test-selector=project-phase-definition-name]").collect(&:text)
+            found = page.all(:test_id, "project-phase-definition-name").collect(&:text)
 
             raise Capybara::ExpectationNotMet, "Expected #{names}, got #{found}" unless found == names
           end
@@ -73,7 +73,7 @@ module Pages
         end
 
         def expect_gates_mentioned_for(definition, gates_string)
-          within page.find(test_selector("project-phase-definition"), text: definition) do
+          within find_test_selector("project-phase-definition", text: definition) do
             expect(page).to have_text(gates_string)
           end
         end
@@ -91,7 +91,7 @@ module Pages
         end
 
         def click_definition(name)
-          page.find("[data-test-selector=project-phase-definition-name]", text: name).click_link_or_button
+          find_test_selector("project-phase-definition-name", text: name).click_link_or_button
         end
 
         def click_definition_action(name, action:)
@@ -123,9 +123,8 @@ module Pages
         private
 
         def definition_row(name)
-          page
-            .find("[data-test-selector=project-phase-definition-name]", text: name)
-            .ancestor("[data-test-selector=project-phase-definition]")
+          find_test_selector("project-phase-definition-name", text: name)
+            .ancestor(test_selector("project-phase-definition"))
         end
 
         def action_menu_for(name)

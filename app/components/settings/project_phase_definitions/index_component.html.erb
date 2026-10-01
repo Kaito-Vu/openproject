@@ -54,7 +54,7 @@ See COPYRIGHT and LICENSE files for more details.
               show_clear_button: true,
               data: {
                 action: "input->projects--settings--border-box-filter#filterLists",
-                "projects--settings--border-box-filter-target": "filter"
+                projects__settings__border_box_filter_target: "filter"
               }
             )
 
@@ -86,10 +86,7 @@ See COPYRIGHT and LICENSE files for more details.
           definitions.each do |definition|
             list.with_item(
               test_selector: "project-phase-definition",
-              data: {
-                "projects--settings--border-box-filter-target": "searchItem",
-                **item_data(definition)
-              }
+              data: item_data(definition)
             ) do
               render(
                 Settings::ProjectPhaseDefinitions::RowComponent.new(definition)

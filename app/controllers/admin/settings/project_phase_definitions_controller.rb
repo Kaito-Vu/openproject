@@ -94,7 +94,7 @@ module Admin::Settings
           message: I18n.t(:"settings.project_phase_definitions.order_changed")
         )
       else
-        render_error_flash_message_via_turbo_stream(message: join_flash_messages(I18n.t(:error_invalid_list_move_anchor)))
+        render_error_flash_message_via_turbo_stream(message: I18n.t(:error_invalid_list_move_anchor))
       end
 
       respond_with_turbo_streams(status: moved ? :ok : :unprocessable_entity)
@@ -124,28 +124,29 @@ module Admin::Settings
                                                  finish_gate])
     end
 
-    def drop_params
-      @drop_params ||= params.permit(:list_type, :list_id, :prev_id)
+    def move_params
+      @move_params ||= params.permit(:list_type, :list_id, :prev_id)
     end
 
     def update_definitions_via_turbo_stream
       update_via_turbo_stream(
         component: Settings::ProjectPhaseDefinitions::IndexComponent.new(
           definitions: find_definitions
-        )
+        ),
+        method: "morph"
       )
     end
 
     def move_after_anchor
       return false unless valid_drop_request?
 
-      @definition.move_after_anchor(drop_params[:prev_id], scope: Project::PhaseDefinition.all)
+      @definition.move_after_anchor(move_params[:prev_id], scope: Project::PhaseDefinition.all)
     end
 
     def valid_drop_request?
-      drop_params[:list_type] == sortable_list_type &&
+      move_params[:list_type] == sortable_list_type &&
         unscoped_list_id? &&
-        drop_params.key?(:prev_id)
+        move_params.key?(:prev_id)
     end
 
     # The raw param is checked because permit cannot tell an absent

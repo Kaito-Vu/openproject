@@ -49,20 +49,7 @@ module Settings
       end
 
       def move_phase_definition(menu)
-        menu.with_item(
-          component_klass: Primer::Alpha::ActionMenu::SubMenuItem,
-          label: I18n.t(:button_move),
-          select_variant: :none,
-          form_arguments: {},
-          data: {
-            projects__settings__border_box_filter_target: "hideWhenFiltering",
-            sortable_lists__item_target: "moveMenu"
-          }
-        ) do |submenu|
-          submenu.with_leading_visual_icon(icon: :"op-arrow-in")
-
-          with_move_items(submenu)
-        end
+        with_move_submenu(menu, data: { projects__settings__border_box_filter_target: "hideWhenFiltering" })
       end
 
       def destroy_phase_definition(menu)

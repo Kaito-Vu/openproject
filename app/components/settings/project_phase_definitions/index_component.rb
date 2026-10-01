@@ -61,6 +61,8 @@ module Settings
       end
 
       def list_data
+        return {} unless allowed_to_customize_life_cycle?
+
         {
           controller: "sortable-lists--list",
           sortable_lists__list_type_value: sortable_list_type,
@@ -70,7 +72,10 @@ module Settings
       end
 
       def item_data(definition)
+        return { projects__settings__border_box_filter_target: "searchItem" } unless allowed_to_customize_life_cycle?
+
         {
+          projects__settings__border_box_filter_target: "searchItem",
           controller: "sortable-lists--item",
           sortable_lists__item_id_value: definition.id,
           sortable_lists__item_type_value: sortable_list_type,
