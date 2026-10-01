@@ -54,6 +54,7 @@ import {
   itemAcceptsDestination,
   reorderRows,
   resolveDirectionalPreviousItemId,
+  resolveItemElement,
   resolveItemId,
   resolveItemLabel,
   resolveItemPosition,
@@ -650,6 +651,39 @@ export default class SortableListsController extends Controller<HTMLElement> imp
     return sourceRow ? [sourceRow] : null;
   }
 
+  private confirmMove({
+    rows,
+    items,
+    listData,
+    previousItemId,
+  }:{
+    rows:HTMLElement[];
+    items:SelectionItem[]|null;
+    listData:SortableListData;
+    previousItemId:string|null;
+  }):boolean {
+    const event = this.dispatch('before-move', {
+      cancelable: true,
+      detail: {
+        items: items ?? this.itemsOfRows(rows),
+        listType: listData.type,
+        listId: listData.listId,
+        previousItemId,
+      },
+    });
+
+    return !event.defaultPrevented;
+  }
+
+  private itemsOfRows(rows:HTMLElement[]):{ type:string|null; id:string }[] {
+    return rows.flatMap((row) => {
+      const item = row.parentElement ? resolveItemElement(row, row.parentElement) : null;
+      const id = item ? resolveItemId(item) : null;
+
+      return item && id ? [{ type: resolveItemType(item), id }] : [];
+    });
+  }
+
   // Shared by drag drops, single or batch, and by the menu moves that pass
   // no items.
   private async performMove({
@@ -667,6 +701,11 @@ export default class SortableListsController extends Controller<HTMLElement> imp
     previousItemId:string|null;
     moveUrl:string;
   }):Promise<void> {
+    if (!this.confirmMove({ rows, items, listData, previousItemId })) {
+      debugLog('sortable-lists: move cancelled by a before-move listener');
+      return;
+    }
+
     // Captured before the reorder: afterwards the row already belongs to the
     // target list, so source-relative facts would be lost.
     const announcementContext:MoveAnnouncementContext = {
