@@ -7149,7 +7149,7 @@ en:
         project_attributes: "Project attributes"
         projects: "Projects"
         start: "Start"
-        workflows: "Workflows"
+        workflows: "Workflow"
       success: "Created successfully."
     edit:
       breadcrumb_variant: "Variant: %{name}"
@@ -7382,7 +7382,7 @@ en:
           description: "These variants are only available within the projects in which they were created."
           title: "Project-specific variants"
       workflow:
-        tab: "Workflows"
+        tab: "Workflow"
     index:
       add_variant: "Add a variant to %{name}"
       add_variant_action: "Add variant"
