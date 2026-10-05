@@ -9,6 +9,7 @@
         width: 100%
     &--timeline-icon
         background-color: var(--bgColor-muted)
+        border: var(--borderWidth-thin, 1px) solid var(--borderColor-default)
         border-radius: 50%
         width: 28px
         height: 28px
@@ -40,6 +41,14 @@
         i
             font-style: normal
             color: var(--fgColor-muted, var(--color-fg-subtle))
+        b, strong
+            font-weight: var(--base-text-weight-semibold, 600)
+            color: var(--fgColor-default)
+    &--journal-detail-container
+        border-radius: var(--borderRadius-medium)
+        padding: var(--base-size-2) var(--base-size-4)
+        &:hover
+            background-color: var(--bgColor-muted)
     &--notification-dot-icon
         color: var(--bgColor-accent-emphasis)
     &--journal-detail-description-container

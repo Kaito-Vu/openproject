@@ -18,7 +18,7 @@
             )
           ) do |border_box_component|
             border_box_component.with_header(
-              px: 2, py: 1,
+              px: 3, py: 2,
               data: { test_selector: "op-journal-notes-header" },
               classes: comment_header_classes
             ) do
@@ -28,7 +28,7 @@
                   classes: "work-packages-activities-tab-journals-item-component--header-start-container ellipsis"
                 ) do |header_start_container|
                   header_start_container.with_column(mr: 2) do
-                    render Users::AvatarComponent.new(user: journal.user, show_name: false, size: :mini)
+                    render Users::AvatarComponent.new(user: journal.user, show_name: false, size: :medium)
                   end
                   header_start_container.with_column(
                     mr: 1, flex_layout: true,
