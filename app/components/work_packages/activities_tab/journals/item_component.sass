@@ -11,6 +11,7 @@
         color: var(--bgColor-accent-emphasis)
     &--header-start-container
         flex-grow: 1
+        gap: var(--base-size-4)
     &--container__internal-comment
         border-color: var(--display-brown-borderColor-emphasis)
     &--header__internal-comment
@@ -18,6 +19,27 @@
         background-color: var(--display-brown-bgColor-muted)
     &--journal-notes-body__internal-comment
         border-color: var(--display-brown-borderColor-emphasis)
+
+    // Softer comment cards: no grey header band, rounded corners and a light elevation
+    & .Box
+        border-radius: var(--borderRadius-large)
+        box-shadow: var(--shadow-resting-small)
+        overflow: hidden
+        margin-bottom: var(--base-size-8)
+        transition: box-shadow 0.15s ease-in-out
+        &:hover, &:focus-within
+            box-shadow: var(--shadow-resting-medium)
+
+        .Box-header
+            background-color: transparent
+            border-bottom: none
+            padding-bottom: 0 !important
+
+        .Box-body
+            padding: var(--base-size-4) var(--base-size-16) var(--base-size-12)
+
+        .Box-header.work-packages-activities-tab-journals-item-component--header__internal-comment
+            background-color: var(--display-brown-bgColor-muted)
 
     & .--anchor-highlighted
         border: 2px solid var(--borderColor-accent-emphasis)
