@@ -4,6 +4,17 @@ ARG DEBIAN_BASE="trixie"
 # Add SBOM scan context for intermediate steps
 ARG BUILDKIT_SBOM_SCAN_CONTEXT=true
 ARG BUILDKIT_SBOM_SCAN_STAGE=true
+
+# Compile a patched json gem to replace the outdated default gem that ships with Ruby.
+# CVE-2026-33210 is fixed in 2.19.2, CVE-2026-54696 in 2.19.9.
+FROM ruby:${RUBY_VERSION}-slim-${DEBIAN_BASE} AS json-gem
+ENV GEM_HOME=/usr/local/lib/ruby/gems/4.0.0
+ENV GEM_PATH=/usr/local/lib/ruby/gems/4.0.0
+RUN apt-get update \
+ && apt-get install -yq --no-install-recommends build-essential \
+ && gem install json -v 2.21.2 --no-document \
+ && rm -rf /var/lib/apt/lists/*
+
 FROM ruby:${RUBY_VERSION}-slim-${DEBIAN_BASE} AS runtime-base
 LABEL maintainer="operations@openproject.com"
 
@@ -58,9 +69,25 @@ WORKDIR $APP_PATH
 # upgrade bundler
 RUN gem install bundler --no-document
 
+# Replace the vulnerable json default gem shipped with the Ruby base image.
+# CVE-2026-33210 is fixed in 2.19.2, CVE-2026-54696 in 2.19.9.
+COPY --from=json-gem /usr/local/lib/ruby/gems/4.0.0/gems/json-2.21.2 /usr/local/lib/ruby/gems/4.0.0/gems/json-2.21.2
+COPY --from=json-gem /usr/local/lib/ruby/gems/4.0.0/specifications/json-2.21.2.gemspec /usr/local/lib/ruby/gems/4.0.0/specifications/json-2.21.2.gemspec
+COPY --from=json-gem /usr/local/lib/ruby/gems/4.0.0/extensions /usr/local/lib/ruby/gems/4.0.0/extensions
+RUN rm -f /usr/local/lib/ruby/gems/4.0.0/specifications/default/json-*.gemspec \
+ && rm -rf /usr/local/lib/ruby/gems/4.0.0/gems/json-2.18.0 \
+ && rm -rf /usr/local/lib/ruby/gems/4.0.0/extensions/*/json-2.18.0 \
+ && rm -f /usr/local/lib/ruby/4.0.0/json.rb \
+ && rm -rf /usr/local/lib/ruby/4.0.0/json \
+ && rm -rf /usr/local/lib/ruby/4.0.0/*-linux/json
+
 # runtime dependencies
 COPY ./docker/prod/setup/preinstall-common.sh ./docker/prod/setup/preinstall-common.sh
 RUN ./docker/prod/setup/preinstall-common.sh
+
+# npm vendors vulnerable dependencies (CVE-2026-69192, CVE-2026-14257, CVE-2026-102276, CVE-2026-102278).
+COPY ./docker/prod/setup/patch-npm-bundled-deps.sh ./docker/prod/setup/patch-npm-bundled-deps.sh
+RUN ./docker/prod/setup/patch-npm-bundled-deps.sh
 
 FROM runtime-base AS build-base
 ARG NODE_VERSION="24.19.0"
@@ -69,6 +96,10 @@ ARG NPM_VERSION="11.19.0"
 # build-only dependencies
 COPY ./docker/prod/setup/preinstall-build.sh ./docker/prod/setup/preinstall-build.sh
 RUN ./docker/prod/setup/preinstall-build.sh
+
+# npm vendors vulnerable dependencies (CVE-2026-69192, CVE-2026-14257, CVE-2026-102276, CVE-2026-102278).
+COPY ./docker/prod/setup/patch-npm-bundled-deps.sh ./docker/prod/setup/patch-npm-bundled-deps.sh
+RUN ./docker/prod/setup/patch-npm-bundled-deps.sh
 
 # Node dependencies only depend on the package manifests, so they stay cached
 # across source changes. node_modules are copied into app-build below.

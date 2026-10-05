@@ -78,8 +78,13 @@ module Screens
 
       def clone_name(screen)
         base = I18n.t("screens.copy_of", name: screen.name)
-        candidates = [base] + (2..).lazy.map { |n| "#{base} #{n}" }
-        candidates.find { |name| !Screen.exists?(name:) }
+        name = base
+        suffix = 1
+        while Screen.exists?(name:)
+          suffix += 1
+          name = "#{base} #{suffix}"
+        end
+        name
       end
 
       def save(screen, params)

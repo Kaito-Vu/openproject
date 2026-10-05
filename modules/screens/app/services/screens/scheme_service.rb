@@ -84,8 +84,13 @@ module Screens
 
       def clone_name(scheme)
         base = "#{scheme.name} - Custom"
-        candidates = [base] + (2..).lazy.map { |n| "#{base} #{n}" }
-        candidates.find { |name| !ScreenScheme.exists?(name:) }
+        name = base
+        suffix = 1
+        while ScreenScheme.exists?(name:)
+          suffix += 1
+          name = "#{base} #{suffix}"
+        end
+        name
       end
 
       def save(scheme, params)

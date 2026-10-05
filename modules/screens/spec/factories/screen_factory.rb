@@ -80,6 +80,6 @@ FactoryBot.define do
 
   factory :project_screen_scheme do
     project
-    scheme
+    scheme { association(:screen_scheme) }
   end
 end

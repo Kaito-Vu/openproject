@@ -54,6 +54,17 @@ USER $USER
 
 RUN gem install bundler --no-document
 
+# Replace the vulnerable json default gem shipped with the Ruby base image.
+# CVE-2026-33210 is fixed in 2.19.2, CVE-2026-54696 in 2.19.9.
+RUN GEM_HOME=/usr/local/lib/ruby/gems/4.0.0 GEM_PATH=/usr/local/lib/ruby/gems/4.0.0 \
+      gem install json -v 2.21.2 --no-document \
+ && rm -f /usr/local/lib/ruby/gems/*/specifications/default/json-*.gemspec \
+ && rm -rf /usr/local/lib/ruby/gems/*/gems/json-2.18.0 \
+ && rm -rf /usr/local/lib/ruby/gems/*/extensions/*/json-2.18.0 \
+ && rm -f /usr/local/lib/ruby/4.0.0/json.rb \
+ && rm -rf /usr/local/lib/ruby/4.0.0/json \
+ && rm -rf /usr/local/lib/ruby/4.0.0/*-linux/json
+
 ####### Testing image below #########
 
 FROM develop AS test

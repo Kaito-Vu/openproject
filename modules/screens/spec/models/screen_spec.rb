@@ -51,12 +51,12 @@ RSpec.describe Screen, type: :model do
     screen = build(:screen)
     screen.screen_type = "foo"
     expect(screen).not_to be_valid
-    expect(screen.errors.details[:screen_type]).to include(error: :inclusion)
+    expect(screen.errors.details[:screen_type]).to include(hash_including(error: :inclusion))
   end
 
   it "does not change screen_type after creation" do
     screen = create(:screen, screen_type: "create")
-    screen.update(screen_type: "edit")
+    expect { screen.update(screen_type: "edit") }.to raise_error(ActiveRecord::ReadonlyAttributeError)
     expect(screen.reload.screen_type).to eq("create")
   end
 
