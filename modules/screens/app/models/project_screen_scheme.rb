@@ -36,6 +36,8 @@ class ProjectScreenScheme < ApplicationRecord
   validates :project_id, uniqueness: true
   validate { errors.add(:scheme, :inactive) unless scheme&.active }
 
-  after_save { ::Screens::Resolver.reset_cache }
-  after_destroy { ::Screens::Resolver.reset_cache }
+  # after_commit so a concurrent request cannot cache pre-commit data; rollback drops what was
+  # cached from inside the aborted transaction.
+  after_commit { ::Screens::Resolver.reset_cache }
+  after_rollback { ::Screens::Resolver.reset_cache }
 end

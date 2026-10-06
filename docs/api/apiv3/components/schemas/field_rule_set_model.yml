@@ -45,6 +45,10 @@ properties:
             - "null"
         position:
           type: integer
+        unavailableInProjects:
+          type: integer
+          readOnly: true
+          description: Number of projects where the custom field is not enabled, so the rule is ignored there.
   createdAt:
     type: string
     format: date-time

@@ -252,7 +252,9 @@ RSpec.describe "Field rule invariants" do # rubocop:disable RSpec/DescribeClass
 
   describe "concurrent edits" do
     it "answers a conflict instead of raising when a rule set insert loses a unique race" do
-      allow_any_instance_of(FieldRuleSet).to receive(:save).and_raise(ActiveRecord::RecordNotUnique) # rubocop:disable RSpec/AnyInstance
+      allow(FieldRuleSet).to receive(:new).and_wrap_original do |original, *args, &block|
+        original.call(*args, &block).tap { |record| allow(record).to receive(:save).and_raise(ActiveRecord::RecordNotUnique) }
+      end
 
       result = FieldRules::RuleSetService.create(name: "Racy", rules: [{ field_key: "description", required: true }])
 
@@ -261,7 +263,10 @@ RSpec.describe "Field rule invariants" do # rubocop:disable RSpec/DescribeClass
     end
 
     it "answers a conflict instead of raising when a scheme insert loses a unique race" do
-      allow_any_instance_of(FieldRuleScheme).to receive(:save).and_raise(ActiveRecord::RecordNotUnique) # rubocop:disable RSpec/AnyInstance
+      rule_set # create before stubbing .new
+      allow(FieldRuleScheme).to receive(:new).and_wrap_original do |original, *args, &block|
+        original.call(*args, &block).tap { |record| allow(record).to receive(:save).and_raise(ActiveRecord::RecordNotUnique) }
+      end
 
       result = FieldRules::SchemeService.create(name: "Racy", items: [{ type_id: bug.id, rule_set_id: rule_set.id }])
 

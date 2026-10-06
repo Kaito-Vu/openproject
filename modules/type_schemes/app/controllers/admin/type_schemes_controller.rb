@@ -81,6 +81,11 @@ module Admin
       end
     end
 
+    def update_settings
+      Setting.type_scheme_auto_assign_default = params[:auto_assign_default] == "1"
+      redirect_to admin_type_schemes_path, notice: t(:notice_successful_update), status: :see_other
+    end
+
     def clone
       respond(::TypeSchemes::SchemeService.clone(@scheme), t(:notice_successful_create))
     end

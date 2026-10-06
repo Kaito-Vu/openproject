@@ -54,6 +54,46 @@ RSpec.describe ::Screens::SchemeService do
       expect(ProjectScreenScheme.find_by(project_id: project.id)).to be_nil
     end
 
+    context "when the scheme has a create screen for a type enabled in the project" do
+      let(:type) { create(:type) }
+      let(:project) { create(:project, types: [type]) }
+      let(:screen) { create(:create_screen) }
+      let(:scheme) do
+        create(:screen_scheme).tap { |s| create(:screen_scheme_item, scheme: s, type:, create_screen: screen) }
+      end
+
+      it "rejects the assignment with required_not_placed when required fields are missing (Q-C)" do
+        result = described_class.assign(project, scheme)
+        expect(result).to be_failure
+        expect(result.errors.details[:base]).to include(a_hash_including(error: :required_not_placed))
+        expect(ProjectScreenScheme.find_by(project_id: project.id)).to be_nil
+      end
+
+      it "accepts the assignment once the required fields are placed" do
+        create(:screen_item, screen:, section: create(:screen_section, screen:), field_key: "subject")
+        expect(described_class.assign(project, scheme.reload)).to be_success
+      end
+
+      it "rejects the assignment with hidden_and_required" do
+        allow(::Screens::CoverageValidation).to receive(:scheme_item)
+          .and_return(::Screens::CoverageValidation::Result.new(
+                        errors: [{ code: :hidden_and_required, field: "status", type_id: type.id, project_id: project.id }],
+                        warnings: []
+                      ))
+        result = described_class.assign(project, scheme)
+        expect(result.errors.details[:base]).to include(a_hash_including(error: :hidden_and_required))
+      end
+
+      it "rejects a scheme update that puts an unsuitable create screen on a row used by a project" do
+        used = create(:screen_scheme, name: "Used")
+        create(:project_screen_scheme, project: create(:project, types: [type]), scheme: used)
+        result = described_class.update(used, items: [{ type_id: type.id, create_screen_id: screen.id }])
+        expect(result).to be_failure
+        expect(result.errors.details[:base]).to include(a_hash_including(error: :required_not_placed))
+        expect(used.reload.items).to be_empty
+      end
+    end
+
     it "fails for an inactive scheme" do
       scheme = create(:screen_scheme, active: false)
       expect(described_class.assign(project, scheme)).to be_failure

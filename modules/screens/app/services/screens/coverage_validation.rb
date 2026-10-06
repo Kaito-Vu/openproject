@@ -51,28 +51,61 @@ module Screens
       end
 
       # Tier 1.2: placing a create screen on a scheme row requires the type's required fields to be
-      # placed. It only covers the row's own type and is capped; above the cap it degrades to a
-      # warning instead of blocking.
-      def scheme_item(item)
-        return Result.new(errors: [], warnings: []) if item.create_screen.nil?
+      # placed, and none of them to be hidden by F02 (hidden_and_required). It only covers the row's
+      # own type and is capped; above the cap it degrades to a warning instead of blocking. Pass
+      # project_ids to check a project that is about to be assigned the scheme.
+      def scheme_item(item, project_ids: nil)
+        return Result.new(errors: [], warnings: []) if item.create_screen.nil? || item.marked_for_destruction?
 
-        required = RequiredSet.for_scheme_type(item.scheme, item.type)
+        required = RequiredSet.for_scheme_type(item.scheme, item.type, project_ids:)
         return Result.new(errors: [], warnings: [:skipped_due_to_scale]) if required == :skipped
 
+        hidden = RequiredSet.hidden_for_scheme_type(required.keys, item.type)
         errors = required.flat_map do |project_id, keys|
           keys.filter_map do |key|
-            next if placed_visible?(item.create_screen, key)
-
-            { field: key, type_id: item.type_id, project_id: }
+            code = if hidden[project_id]&.include?(key)
+                     :hidden_and_required
+                   elsif !placed_visible?(item.create_screen, key)
+                     :required_not_placed
+                   end
+            { code:, field: key, type_id: item.type_id, project_id: } if code
           end
         end
         Result.new(errors: errors.first(10), warnings: errors.size > 10 ? [:more_required_not_placed] : [])
+      end
+
+      # Non-blocking warnings for editor saves, e.g. [{ code: "hidden_but_placed", fields: ["status"] }].
+      def warnings_for(screen)
+        warnings = screen(screen).warnings.map { |code| { code: code.to_s } }
+        hidden = hidden_but_placed(screen)
+        warnings << { code: "hidden_but_placed", fields: hidden } if hidden.any?
+        warnings
       end
 
       private
 
       def placed_visible?(screen, key)
         screen.items.any? { |item| item.field_key == key && item.visible }
+      end
+
+      # Placed fields that F02 hides for a (project, type) using this screen. Skipped above the
+      # project cap, like the other checks that fan out over projects.
+      def hidden_but_placed(screen)
+        return [] unless RequiredSet.field_rules?
+
+        Resolver.fail_open("hidden_but_placed check", [], screen_id: screen.id) do
+          rows = screen.scheme_items.pluck(:scheme_id, :type_id)
+          next [] if rows.empty?
+
+          projects = ProjectScreenScheme.where(scheme_id: rows.map(&:first).uniq).pluck(:scheme_id, :project_id)
+          project_ids = projects.map(&:last).uniq
+          next [] if project_ids.empty? || project_ids.size > RequiredSet::MAX_PROJECTS
+
+          type_ids = rows.map(&:last).uniq
+          placed = screen.items.select(&:visible).map(&:field_key)
+          config = ::FieldRules::Resolver.for_many(project_ids, type_ids)
+          config.values.flat_map { |rules| rules.select(&:hidden).map(&:key) }.uniq & placed
+        end
       end
     end
   end

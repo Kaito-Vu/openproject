@@ -39,6 +39,12 @@ module FieldRules
           source: :rule_set)
     end
 
+    # Layer 0: what the native form configuration of the type variant already imposes.
+    def self.native(key)
+      new(key:, hidden: false, required: false, read_only: false, default_value: nil, enforce_on_update: false,
+          source: :native)
+    end
+
     def restricts_writes? = hidden || read_only
   end
 
@@ -56,6 +62,29 @@ module FieldRules
     def initialize(fields = {})
       @fields = fields.freeze
       freeze
+    end
+
+    # Merges Layer 0 for display (API, admin UI). Enforcement keeps reading the rules only, as core enforces Layer 0.
+    # Required is OR-ed; a rule default wins over the native description template (spec 0.2.2).
+    def with_native(required_custom_field_ids: [], default_description: nil)
+      merged = fields.dup
+      required_custom_field_ids.each do |id|
+        key = "custom_field_#{id}"
+        existing = merged[key]
+        merged[key] = (existing || EffectiveField.native(key)).with(required: true, source: existing ? :both : :native)
+      end
+      if default_description.present?
+        existing = merged["description"]
+        merged["description"] =
+          if existing.nil?
+            EffectiveField.native("description").with(default_value: default_description)
+          elsif existing.default_value.blank?
+            existing.with(default_value: default_description, source: :both)
+          else
+            existing
+          end
+      end
+      self.class.new(merged)
     end
 
     def [](key) = fields[key.to_s]

@@ -8,6 +8,10 @@ get:
   description: |-
     Returns the rules that apply when creating or editing work packages of the type in the project. Fields without a rule are omitted and behave natively.
 
+    The native layer of the type's form configuration is merged in: required custom fields and the default work package description are listed too. `source` tells where a field's state comes from: `rule_set`, `native` or `both`.
+
+    Rules never apply to system updates, and copying a whole project bypasses them on purpose.
+
     **Required permission:** view work packages
   parameters:
     - name: id
@@ -56,7 +60,13 @@ get:
                         - "null"
                     source:
                       type: string
+                      enum:
+                        - rule_set
+                        - native
+                        - both
+    '401':
+      description: Returned if the client is not authenticated.
     '403':
       description: Returned if the user may not view work packages in the project.
     '404':
-      description: Returned if the project is not visible or the type does not exist.
+      description: Returned if the project is not visible or the type is not enabled in the project.

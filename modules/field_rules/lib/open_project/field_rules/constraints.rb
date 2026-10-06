@@ -38,26 +38,40 @@ module OpenProject::FieldRules
     def install
       [*::FieldRules::Fields::NATIVE.keys, DATE_KEY].each do |key|
         existing = ::TypeVariant.attribute_constraints[key.to_sym]
+        next if wrapped?(existing)
+
         ::TypeVariant.add_constraint(key, wrap(key, existing))
       end
+    end
+
+    # Logs attributes whose constraint is not ours (another engine overwrote the wrapper after install).
+    def verify!
+      [*::FieldRules::Fields::NATIVE.keys, DATE_KEY].each do |key|
+        next if wrapped?(::TypeVariant.attribute_constraints[key.to_sym])
+
+        Rails.logger.error("[field_rules] hidden constraint missing for #{key}: overwritten by another module")
+      end
+    end
+
+    def wrapped?(callable)
+      callable.respond_to?(:field_rules_wrapper?) && callable.field_rules_wrapper?
     end
 
     def wrap(key, existing)
       lambda do |variant, project: nil|
         (existing.nil? || existing.call(variant, project:)) && !hidden?(key, variant, project)
-      end
+      end.tap { |wrapper| wrapper.define_singleton_method(:field_rules_wrapper?) { true } }
     end
 
     def hidden?(key, variant, project)
       return false if project.nil? || variant.nil?
 
-      configuration = ::FieldRules::Resolver.for(project, variant.type_id)
-      return DATE_FIELDS.all? { |field| configuration.hidden?(field) } if key == DATE_KEY
+      OpenProject::FieldRules.fail_open("hidden check", false, field: key, type_id: variant.type_id) do
+        configuration = ::FieldRules::Resolver.for(project, variant.type_id)
+        next DATE_FIELDS.all? { |field| configuration.hidden?(field) } if key == DATE_KEY
 
-      configuration.hidden?(key)
-    rescue StandardError => e
-      Rails.logger.error("[field_rules] hidden check failed, showing field: #{e.class}: #{e.message}")
-      false
+        configuration.hidden?(key)
+      end
     end
   end
 end

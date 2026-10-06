@@ -1,5 +1,7 @@
 # Feature 01 — Issue Type Scheme
 
+> **Ghi chú (2026-10-06):** tên bảng `jira_*` (mục Data model bên dưới) là ý tưởng ban đầu; bảng thật là `type_schemes`, `type_scheme_items`, `project_type_schemes` (xem `docs/superpowers/specs/2026-10-02-type-scheme-design.md`). Nội dung gốc giữ nguyên để truy vết.
+
 ## 1. Mục tiêu
 
 OpenProject đã có:

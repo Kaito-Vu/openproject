@@ -413,10 +413,26 @@ paths:
     "$ref": "./paths/screen.yml"
   "/api/v3/screens/{id}/layout":
     "$ref": "./paths/screen_layout.yml"
+  "/api/v3/screens/{id}/sections":
+    "$ref": "./paths/screen_sections.yml"
+  "/api/v3/screens/{id}/sections/{sid}":
+    "$ref": "./paths/screen_section.yml"
+  "/api/v3/screens/{id}/items":
+    "$ref": "./paths/screen_items.yml"
+  "/api/v3/screens/{id}/items/{iid}":
+    "$ref": "./paths/screen_item.yml"
+  "/api/v3/screens/{id}/activate":
+    "$ref": "./paths/screen_activate.yml"
+  "/api/v3/screens/{id}/deactivate":
+    "$ref": "./paths/screen_deactivate.yml"
   "/api/v3/screen_schemes":
     "$ref": "./paths/screen_schemes.yml"
   "/api/v3/screen_schemes/{id}":
     "$ref": "./paths/screen_scheme.yml"
+  "/api/v3/screen_schemes/{id}/activate":
+    "$ref": "./paths/screen_scheme_activate.yml"
+  "/api/v3/screen_schemes/{id}/deactivate":
+    "$ref": "./paths/screen_scheme_deactivate.yml"
   "/api/v3/projects/{id}/screen_scheme":
     "$ref": "./paths/project_screen_scheme.yml"
   "/api/v3/projects/{id}/types/{type_id}/screens/{context}":
@@ -1328,6 +1344,7 @@ tags:
   - "$ref": "./tags/projects.yml"
   - "$ref": "./tags/field_rules.yml"
   - "$ref": "./tags/type_schemes.yml"
+  - "$ref": "./tags/screens.yml"
   - "$ref": "./tags/queries.yml"
   - "$ref": "./tags/query_columns.yml"
   - "$ref": "./tags/query_filters.yml"

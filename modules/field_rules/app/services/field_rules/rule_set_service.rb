@@ -68,7 +68,9 @@ module FieldRules
       end
 
       def toggle(rule_set, active)
-        rule_set.update(active:) ? ok(rule_set) : fail_with(rule_set)
+        result = rule_set.update(active:) ? ok(rule_set) : fail_with(rule_set)
+        Resolver.reset_cache
+        result
       end
 
       def clone_name(rule_set)

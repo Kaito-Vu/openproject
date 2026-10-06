@@ -85,6 +85,26 @@ module FieldRules
         keys.index_with { |key| names[custom_field_id(key)] || label(key) }
       end
 
+      # Custom field keys => number of projects where the field is not enabled, so rules on it are ignored there.
+      def unavailable_project_counts(keys)
+        ids = keys.filter_map { |key| custom_field_id(key) }
+        return {} if ids.empty?
+
+        counts = unavailable_counts_by_custom_field
+        ids.each_with_object({}) do |id, result|
+          result["custom_field_#{id}"] = counts[id] if counts.key?(id)
+        end
+      end
+
+      # Computed once per request for every project-specific custom field (3 queries), not once per rule set.
+      def unavailable_counts_by_custom_field
+        RequestStore.store[:field_rules_unavailable_counts] ||= begin
+          enabled = CustomFieldsProject.group(:custom_field_id).count
+          total = Project.count
+          WorkPackageCustomField.where(is_for_all: false).pluck(:id).to_h { |id| [id, total - enabled.fetch(id, 0)] }
+        end
+      end
+
       def custom_field_id(key)
         key.to_s[CUSTOM_FIELD_KEY, 1]&.to_i
       end

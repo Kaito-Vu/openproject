@@ -48,8 +48,26 @@ module FieldRules
         errors: list.map { |v| { field: v.field, code: v.code, message: message_for(work_package, v) } } }
     end
 
+    # Effective configuration including the native layer (required custom fields, default description), with sources.
     def describe(project, type)
-      Resolver.for(project, type)
+      configuration = nil
+      OpenProject::FieldRules.fail_open("merging native layer", nil, project_id: project.try(:id), type_id: type.try(:id)) do
+        configuration = Resolver.for(project, type)
+        variant = project.type_variant(type) if project.respond_to?(:type_variant)
+        next configuration if variant.nil?
+
+        configuration.with_native(required_custom_field_ids: variant.required_custom_field_ids,
+                                  default_description: variant.default_work_package_description)
+      end || configuration || EffectiveConfiguration.empty
+    end
+
+    # Required-by-rule fields that an existing work package leaves empty. Not enforced (grandfathering), only reported.
+    def grandfathered_fields(work_package, configuration)
+      return [] if work_package.new_record? || configuration.empty?
+
+      configuration.select(&:required).filter_map do |field|
+        field.key if Fields.available?(work_package, field.key) && Fields.blank_value?(work_package, field.key)
+      end
     end
 
     def violation_for(work_package, field)

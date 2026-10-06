@@ -56,8 +56,8 @@ module API
           route_param :type_id, type: Integer do
             get :field_rules do
               authorize_in_project(:view_work_packages, project: @project)
-              type = Type.find(params[:type_id])
-              configuration = ::FieldRules::Resolver.for(@project, type)
+              type = @project.types.find(params[:type_id])
+              configuration = ::FieldRules::Validator.describe(@project, type)
 
               { _type: "FieldRuleConfiguration",
                 _links: { self: { href: api_v3_paths.project_type_field_rules(@project.id, type.id) },

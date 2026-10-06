@@ -64,7 +64,7 @@ module API
           end
 
           def filtered_schemes
-            scope = ScreenScheme.order(:name)
+            scope = visible_screen_schemes.order(:name)
             scope = scope.where(active: ActiveModel::Type::Boolean.new.cast(params[:active])) if params.key?(:active)
             page_size = params[:pageSize].to_i
             page_size.positive? ? scope.offset(params[:offset].to_i).limit(page_size) : scope
@@ -73,7 +73,7 @@ module API
 
         resources :screen_schemes do
           get do
-            authorize_logged_in
+            authorize_screens_read!
             ScreenSchemeCollectionRepresenter.new(filtered_schemes.to_a, self_link: api_v3_paths.screen_schemes,
                                                                       current_user:)
           end
@@ -93,8 +93,26 @@ module API
             end
 
             get do
-              authorize_logged_in
+              authorize_screens_read!
+              raise ::API::Errors::NotFound unless visible_screen_schemes.exists?(@scheme.id)
+
               render_scheme(@scheme)
+            end
+
+            post :activate do
+              authorize_admin
+              result = ::Screens::SchemeService.activate(@scheme)
+              raise_service_errors(result) if result.failure?
+
+              render_scheme(result.result.reload)
+            end
+
+            post :deactivate do
+              authorize_admin
+              result = ::Screens::SchemeService.deactivate(@scheme)
+              raise_service_errors(result) if result.failure?
+
+              render_scheme(result.result.reload)
             end
 
             patch do

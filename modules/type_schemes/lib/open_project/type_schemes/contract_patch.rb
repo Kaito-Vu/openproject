@@ -45,6 +45,8 @@ module OpenProject::TypeSchemes
 
     private
 
+    # Also overridden by openproject-field_rules. Both patches call +super+ first and only add their
+    # own errors afterwards, so the prepend order does not matter and both checks stay in effect.
     def validate_enabled_type
       super
       return unless model.project && type_context_changed? && errors[:type_id].empty?
@@ -53,17 +55,22 @@ module OpenProject::TypeSchemes
       errors.add :type_id, :not_in_scheme unless scheme_allows_type?
     end
 
+    # Fail-open by design: a scheme bug must never block work package creation, so on error the
+    # native enabled types are used. Logged at error level so the failure is not silent.
     def scheme_allowed_types(scope)
       ::TypeSchemes::Resolver.allowed_types(model.project, scope)
     rescue StandardError => e
-      Rails.logger.error("[type_schemes] resolving allowed types failed, using native types: #{e.class}: #{e.message}")
+      Rails.logger.error("[type_schemes] resolving allowed types failed (project #{model.project&.id}, " \
+                         "work package #{model.id.inspect}), using native types: #{e.class}: #{e.message}")
       nil
     end
 
     def scheme_allows_type?
       ::TypeSchemes::Resolver.type_allowed?(model.project, model.type_id)
+    # Fail-open by design, see +scheme_allowed_types+: on error the type is allowed.
     rescue StandardError => e
-      Rails.logger.error("[type_schemes] type check failed, allowing type: #{e.class}: #{e.message}")
+      Rails.logger.error("[type_schemes] type check failed (project #{model.project&.id}, type #{model.type_id.inspect}), " \
+                         "allowing type: #{e.class}: #{e.message}")
       true
     end
   end

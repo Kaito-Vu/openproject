@@ -112,3 +112,35 @@ Schema `to_json` patch phụ thuộc cấu trúc JSON của core (boot guard + s
 ## 11. Acceptance
 
 Theo idea-02 §26 (đã revise) và §7 ở trên.
+
+## 12. Cập nhật sau review hội đồng (2026-10-06)
+
+* **Grandfather warning:** schema work package thêm `requiredButEmpty: true` cho field mà work package cũ đang trống nhưng nay bị rule bắt buộc. Không chặn lưu (schema_patch).
+* **`unavailableInProjects`:** mỗi rule trong representer rule set có số project mà custom field không bật (rule bị bỏ qua ở đó).
+* **Endpoint resolved gộp Layer 0:** `GET /api/v3/projects/:id/types/:type_id/field_rules` trả cấu hình hiệu lực gộp lớp native (required custom field, description mặc định); mỗi field có `source: rule_set | native | both`. Type phải bật trong project, nếu không ⇒ 404.
+* **Quyền đọc (D1):** list/get rule set và scheme cần đăng nhập (401 nếu ẩn danh); admin thấy tất cả, người khác chỉ thấy bản ghi gắn với project có `view_work_packages`, còn lại 404.
+* **`manage_field_rules`** chỉ là khái niệm "admin-only", **không** phải permission thật đăng ký trong engine: ghi cần `admin`. Chỉ `assign_field_rule_scheme` là permission thật (project).
+* `/api/v3/projects/:id/field_rule_scheme` chỉ có `PUT` (scheme rỗng ⇒ bỏ gán).
+* Hệ thống (`SystemUser`) không bị áp rule; copy project bỏ qua rule có chủ đích.
+
+### Rollout / feature flag
+
+Không có flag riêng: field rules chỉ có hiệu lực khi một scheme active được gán cho project. Để bật cho project: tạo rule set + scheme, gán qua Project Settings hoặc API; để tắt: bỏ gán (`scheme_id` rỗng) hoặc deactivate scheme. Dữ liệu không bị sửa. Lỗi nội bộ của patch fail-open (không làm sập tạo/sửa work package) và được log.
+
+### Bảng mã lỗi chuẩn hoá (dùng chung F01/F02/F03)
+
+| Mã | Nơi dùng | Ý nghĩa |
+|---|---|---|
+| `not_in_scheme` | F01, lỗi `type_id` của work package | Type không được type scheme của project cho phép. |
+| `required_not_placed` | F03 | Screen create đang dùng không đặt field bắt buộc (hiện tại: `subject` hiển thị); cũng có ở scheme item (kèm field/project). |
+| `hidden_and_required` | F03 (scheme item/gán project) | Field vừa bị F02 ẩn vừa bắt buộc. |
+| `context_mismatch` | F03 | Screen gán vào slot của một context khác loại. |
+| `in_use` | (dự phòng) | Chưa được code phát ra (đã gỡ khoá i18n); giữ chỗ cho việc chặn sửa screen đang dùng. |
+| `invalid_context` | F03 resolver | `context` ngoài `create/edit/view/transition` ⇒ 422. |
+
+Các lỗi trên trả về trong body lỗi 422 của API v3 (validation), trừ khi ghi chú khác.
+
+### 404 và 403 thống nhất
+
+* Đọc (GET) cấu hình của cả ba module cần đăng nhập (ẩn danh ⇒ 401). Admin thấy tất cả; người khác chỉ thấy bản ghi gắn với project mà họ có `view_work_packages`. Bản ghi ngoài tập đó trả **404** (không lộ sự tồn tại). 403 chỉ dùng khi đã biết resource nhưng thiếu quyền (ghi cần admin, endpoint theo project thiếu quyền).
+* Endpoint theo project (resolver, `field_rules`, `available_types`) giữ quyền `view_work_packages` ở project đó; type không bật trong project ⇒ 404.

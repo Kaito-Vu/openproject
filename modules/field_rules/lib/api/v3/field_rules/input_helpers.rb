@@ -35,6 +35,24 @@ module API
         TRUE_VALUES = [true, "true", "1", 1].freeze
         FALSE_VALUES = [false, "false", "0", 0, "", nil].freeze
 
+        # D1: reading needs a logged in user (no anonymous); non-admins only see what applies to their projects.
+        def authorize_rule_reading
+          authorize_logged_in
+        end
+
+        def visible_rule_schemes
+          return FieldRuleScheme.all if current_user.admin?
+
+          projects = Project.allowed_to(current_user, :view_work_packages)
+          FieldRuleScheme.where(id: ProjectFieldRuleScheme.where(project_id: projects.select(:id)).select(:scheme_id))
+        end
+
+        def visible_rule_sets
+          return FieldRuleSet.all if current_user.admin?
+
+          FieldRuleSet.where(id: FieldRuleSchemeItem.where(scheme_id: visible_rule_schemes.select(:id)).select(:rule_set_id))
+        end
+
         def safe_id(value)
           return 0 unless value.is_a?(String) || value.is_a?(Integer)
 

@@ -54,8 +54,8 @@ module API
 
         resources :field_rule_schemes do
           get do
-            authorize_logged_in
-            FieldRuleSchemeCollectionRepresenter.new(FieldRuleScheme.includes(:items).order(:name).to_a,
+            authorize_rule_reading
+            FieldRuleSchemeCollectionRepresenter.new(visible_rule_schemes.includes(:items).order(:name).to_a,
                                                      self_link: api_v3_paths.field_rule_schemes,
                                                      current_user:)
           end
@@ -75,7 +75,9 @@ module API
             end
 
             get do
-              authorize_logged_in
+              authorize_rule_reading
+              raise ::API::Errors::NotFound unless visible_rule_schemes.exists?(@scheme.id)
+
               render_scheme(@scheme)
             end
 

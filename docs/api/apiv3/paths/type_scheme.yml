@@ -12,6 +12,11 @@ get:
       schema:
         type: integer
       example: 1
+  description: |-
+    Administrators can read every scheme. Other users can read a scheme only if it applies to a
+    project where they have the view work packages permission.
+
+    **Required permission:** logged-in user
   responses:
     '200':
       description: OK
@@ -19,8 +24,10 @@ get:
         application/hal+json:
           schema:
             $ref: '../components/schemas/type_scheme_model.yml'
+    '401':
+      description: Returned if the client is not authenticated.
     '404':
-      description: Returned if the scheme does not exist.
+      description: Returned if the scheme does not exist or is not visible to the user (404 is used so the existence is not revealed).
 patch:
   summary: Update a type scheme
   operationId: update_type_scheme

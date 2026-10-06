@@ -117,6 +117,33 @@ RSpec.describe "Field rules enforcement in work package contracts" do # rubocop:
     end
   end
 
+  describe "project copy" do
+    # Documented, unchanged behaviour: only the copy contract bypasses the rules (values must survive the copy).
+    it "keeps read-only fields writable for the copy contract only" do
+      work_package = build(:work_package, project:, type: bug, author: user, status:)
+
+      expect(WorkPackages::CopyProjectContract.new(work_package, user).writable_attributes).to include("estimated_hours")
+      expect(WorkPackages::CreateContract.new(work_package, user).writable_attributes).not_to include("estimated_hours")
+      expect(WorkPackages::UpdateContract.new(work_package, user).writable_attributes).not_to include("estimated_hours")
+    end
+  end
+
+  describe "together with the type scheme patch" do
+    it "keeps both checks in effect: a type outside the scheme and a missing required field" do
+      skip "openproject-type_schemes is not loaded" unless defined?(TypeScheme)
+
+      allowed = create(:type, name: "Allowed")
+      project.types << allowed
+      scheme = create(:type_scheme, types: [allowed])
+      ProjectTypeScheme.create!(project:, scheme:)
+      TypeSchemes::Resolver.reset_cache
+      contract = create_contract(description: nil)
+
+      expect(contract.errors.symbols_for(:type_id)).to include(:not_in_scheme)
+      expect(contract.errors.symbols_for(:description)).to include(:required_by_field_rules)
+    end
+  end
+
   describe "required assignee" do
     let(:rules) { [{ field_key: "assignee", required: true }] }
 

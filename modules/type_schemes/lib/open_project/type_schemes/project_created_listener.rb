@@ -33,6 +33,8 @@ module OpenProject::TypeSchemes
     module_function
 
     def call(payload)
+      return unless Setting.type_scheme_auto_assign_default?
+
       project = payload[:project]
       return if project.nil? || ProjectTypeScheme.exists?(project_id: project.id)
 

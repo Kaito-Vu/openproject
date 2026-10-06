@@ -64,6 +64,7 @@ module FieldRules
         FieldRule.where(id: orphans.map(&:id)).delete_all
         FieldRule.where(id: invalid.map(&:id)).update_all(required: false, read_only: false)
       end
+      Resolver.reset_cache # delete_all/update_all skip the model callbacks
     end
   end
 end

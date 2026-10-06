@@ -46,8 +46,94 @@ RSpec.describe "API v3 field rule sets, schemes and project assignment" do # rub
   let(:json) { JSON.parse(last_response.body) }
   let(:headers) { { "CONTENT_TYPE" => "application/json" } }
 
+  describe "reading rule sets and schemes (D1)" do
+    shared_let(:outsider) { create(:user) }
+    shared_let(:other_rule_set) { create(:field_rule_set, name: "Unassigned rules") }
+    shared_let(:other_scheme) { create(:field_rule_scheme, name: "Unassigned", mapping: { bug => other_rule_set }) }
+
+    before { FieldRules::SchemeService.assign(project, scheme) }
+
+    it "answers 401 for anonymous users" do
+      login_as(User.anonymous)
+      [api_v3_paths.field_rule_sets, api_v3_paths.field_rule_schemes].each do |path|
+        get path
+        expect(last_response).to have_http_status(:unauthorized), path
+      end
+    end
+
+    it "shows users without view permission nothing and answers 404 for single records" do
+      login_as(outsider)
+      get api_v3_paths.field_rule_sets
+      expect(json["_embedded"]["elements"]).to be_empty
+      get api_v3_paths.field_rule_schemes
+      expect(json["_embedded"]["elements"]).to be_empty
+
+      [api_v3_paths.field_rule_set(rule_set.id), api_v3_paths.field_rule_scheme(scheme.id)].each do |path|
+        get path
+        expect(last_response).to have_http_status(:not_found), path
+      end
+    end
+
+    it "shows members only the records used by their projects" do
+      login_as(viewer)
+      get api_v3_paths.field_rule_schemes
+      expect(json["_embedded"]["elements"].pluck("name")).to eq ["Dev"]
+      get api_v3_paths.field_rule_sets
+      expect(json["_embedded"]["elements"].pluck("name")).to eq ["Bug rules"]
+
+      get api_v3_paths.field_rule_scheme(other_scheme.id)
+      expect(last_response).to have_http_status(:not_found)
+      get api_v3_paths.field_rule_set(other_rule_set.id)
+      expect(last_response).to have_http_status(:not_found)
+    end
+
+    it "shows administrators everything" do
+      login_as(admin)
+      get api_v3_paths.field_rule_schemes
+      expect(json["_embedded"]["elements"].pluck("name")).to include("Dev", "Unassigned")
+      get api_v3_paths.field_rule_set(other_rule_set.id)
+      expect(last_response).to have_http_status(:ok)
+    end
+
+    it "does not run more queries when more rule sets are listed" do
+      custom_field = create(:string_wp_custom_field, is_for_all: false, types: [bug], projects: [project])
+      add_sets = lambda do |prefix|
+        3.times do |i|
+          create(:field_rule_set, name: "#{prefix} #{i}", rule_attributes: [{ field_key: "custom_field_#{custom_field.id}", hidden: true }])
+        end
+      end
+      count_queries = lambda do
+        count = 0
+        counter = ->(*, payload) { count += 1 unless %w[SCHEMA CACHE].include?(payload[:name]) }
+        ActiveSupport::Notifications.subscribed(counter, "sql.active_record") { get api_v3_paths.field_rule_sets }
+        count
+      end
+      login_as(admin)
+      add_sets.call("A")
+      get api_v3_paths.field_rule_sets # warm up
+      few = count_queries.call
+      add_sets.call("B")
+
+      expect(count_queries.call).to eq few
+    end
+  end
+
+  describe "rules on custom fields not enabled everywhere" do
+    it "reports in how many projects the field is not available" do
+      custom_field = create(:string_wp_custom_field, is_for_all: false, types: [bug], projects: [project])
+      create(:project)
+      set = create(:field_rule_set, rule_attributes: [{ field_key: "custom_field_#{custom_field.id}", hidden: true }])
+      login_as(admin)
+
+      get api_v3_paths.field_rule_set(set.id)
+
+      expect(json["rules"].first["unavailableInProjects"]).to eq(Project.count - 1)
+    end
+  end
+
   describe "rule sets" do
-    it "lets any logged in user read them" do
+    it "lets a member read the rule sets of the scheme assigned to the project" do
+      FieldRules::SchemeService.assign(project, scheme)
       login_as(viewer)
       get api_v3_paths.field_rule_sets
       expect(last_response).to have_http_status(:ok)
@@ -185,6 +271,13 @@ RSpec.describe "API v3 field rule sets, schemes and project assignment" do # rub
       expect(last_response).to have_http_status(:ok)
       expect(json["fields"]).to contain_exactly(include("key" => "description", "required" => true,
                                                          "visibility" => "visible", "source" => "rule_set"))
+    end
+
+    it "answers 404 for a type that is not enabled in the project" do
+      other_type = create(:type, name: "Other")
+      login_as(viewer)
+      get api_v3_paths.project_type_field_rules(project.id, other_type.id)
+      expect(last_response).to have_http_status(:not_found)
     end
 
     it "hides the project from users who cannot see it" do

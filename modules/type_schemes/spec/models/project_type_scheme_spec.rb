@@ -42,13 +42,13 @@ RSpec.describe ProjectTypeScheme do
     described_class.create!(project:, scheme:)
     other = described_class.new(project:, scheme: create(:type_scheme))
     expect(other).not_to be_valid
-    expect(other.errors[:project_id]).to be_present
+    expect(other.errors.symbols_for(:project_id)).to include(:taken)
   end
 
   it "rejects an inactive scheme" do
     inactive = create(:type_scheme, active: false)
     assignment = described_class.new(project:, scheme: inactive)
     expect(assignment).not_to be_valid
-    expect(assignment.errors[:scheme]).to be_present
+    expect(assignment.errors.symbols_for(:scheme)).to include(:inactive)
   end
 end

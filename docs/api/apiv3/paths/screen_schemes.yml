@@ -5,6 +5,11 @@ get:
   operationId: list_screen_schemes
   tags:
     - Screens
+  description: |-
+    Administrators see all screen schemes. Other users see only schemes assigned to a project where they have the
+    view work packages permission. Anonymous access is not allowed.
+
+    **Required permission:** logged-in user
   responses:
     '200':
       description: OK
@@ -35,6 +40,8 @@ post:
         application/hal+json:
           schema:
             $ref: '../components/schemas/screen_scheme_model.yml'
+    '401':
+      description: Returned if the client is not authenticated.
     '403':
       description: Returned if the user is not an administrator.
     '422':

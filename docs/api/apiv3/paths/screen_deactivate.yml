@@ -1,0 +1,26 @@
+# /api/v3/screens/{id}/deactivate
+---
+post:
+  summary: Deactivate a screen
+  operationId: deactivate_screen
+  tags:
+    - Screens
+  description: |-
+    Inactive screens are ignored by the resolver and the project falls back to the native layout.
+
+    **Required permission:** administrator
+  responses:
+    '200':
+      description: OK
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../components/schemas/screen_model.yml'
+    '401':
+      description: Returned if the client is not authenticated.
+    '403':
+      description: Returned if the user is not an administrator.
+    '404':
+      description: Returned if the screen does not exist.
+    '422':
+      description: Returned if the change is rejected.

@@ -92,6 +92,9 @@ en:
       not_applied: "Not applied"
       field_not_active: "Field not enabled in this project, ignored"
       default_value: "default %{value}"
+      native_layer: "From the type's form configuration (rules cannot loosen these):"
+      native_required: "required by form configuration"
+      native_default: "default description from form configuration"
   activerecord:
     attributes:
       field_rule_set:

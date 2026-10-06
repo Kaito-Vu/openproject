@@ -33,6 +33,9 @@ class ProjectTypeScheme < ApplicationRecord
 
   after_save { ::TypeSchemes::Resolver.reset_cache }
   after_destroy { ::TypeSchemes::Resolver.reset_cache }
+  # Also reset once the transaction ends, so bulk writes and rollbacks cannot leave a stale request cache.
+  after_commit { ::TypeSchemes::Resolver.reset_cache }
+  after_rollback { ::TypeSchemes::Resolver.reset_cache }
   belongs_to :project
   belongs_to :scheme, class_name: "TypeScheme", inverse_of: :project_assignments
   validates :project_id, uniqueness: true

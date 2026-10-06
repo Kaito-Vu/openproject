@@ -7,7 +7,8 @@ put:
     - Screens
   description: |-
     Replaces every section and item of the screen in one transaction. Requires an `If-Match` header
-    holding the screen's ETag.
+    holding the ETag of the screen (returned by `GET /api/v3/screens/{id}` and by this call). The
+    response carries the new `ETag` and the non-blocking `warnings` list.
 
     **Required permission:** administrator
   responses:
@@ -17,6 +18,14 @@ put:
         application/hal+json:
           schema:
             $ref: '../components/schemas/screen_model.yml'
+    '401':
+      description: Returned if the client is not authenticated.
+    '403':
+      description: Returned if the user is not an administrator.
+    '404':
+      description: Returned if the screen does not exist.
+    '422':
+      description: Returned if the layout is invalid (unknown or duplicate field, invalid width, too many sections or items) or leaves an in-use create screen without the required fields (`required_not_placed`).
     '409':
       description: Returned if the `If-Match` header does not match the current ETag.
     '428':

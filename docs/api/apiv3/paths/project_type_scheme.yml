@@ -6,7 +6,14 @@ put:
   tags:
     - Type Schemes
   description: |-
-    Assigns the active scheme with the given `scheme_id` to the project. Every project always has a scheme (projects without an explicit assignment use the default scheme), so an empty or unknown `scheme_id` is rejected.
+    Assigns the active scheme with the given `scheme_id` to the project. An empty, unknown or inactive `scheme_id` is rejected; the assignment cannot be cleared through the API.
+
+    This resource only supports `PUT`. To read the types a project may use, call
+    `GET /api/v3/projects/{id}/available_types`.
+
+    Without an explicit assignment, a project uses the default scheme only while the setting
+    `type_scheme_auto_assign_default` is on. When it is off, projects without an assignment are not
+    filtered at all (native behavior).
 
     **Required permission:** assign type scheme (in the project)
   parameters:
@@ -26,6 +33,8 @@ put:
   responses:
     '204':
       description: No Content
+    '401':
+      description: Returned if the client is not authenticated.
     '403':
       description: Returned if the user lacks the permission.
     '404':

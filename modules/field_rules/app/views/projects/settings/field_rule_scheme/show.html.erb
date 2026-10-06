@@ -30,6 +30,9 @@ See COPYRIGHT and LICENSE files for more details.
   scheme = @current
   items = scheme ? scheme.items.includes(:rule_set).index_by(&:type_id) : {}
   active_custom_field_ids = @project.all_work_package_custom_fields.pluck(:id)
+  # Preload once so the per-type describe below does not query per type.
+  ::FieldRules::Resolver.for_many([@project.id])
+  ActiveRecord::Associations::Preloader.new(records: [@project], associations: { project_types: :variant }).call
 %>
 <% html_title @project.name, t("field_rules.project_settings.title") %>
 <%=
@@ -90,6 +93,20 @@ See COPYRIGHT and LICENSE files for more details.
               <% end %>
             </ul>
           <% end %>
+        <% end %>
+        <% native_fields = ::FieldRules::Validator.describe(@project, type).select { |field| field.source != :rule_set } %>
+        <% if native_fields.any? %>
+          <div class="color-fg-muted mt-1"><%= t("field_rules.project_settings.native_layer") %></div>
+          <ul class="native-field-states">
+            <% native_fields.each do |field| %>
+              <li>
+                <%= ::FieldRules::Fields.label(field.key) %>:
+                <%= [(t("field_rules.project_settings.native_required") if field.required && ::FieldRules::Fields.custom_field_id(field.key)),
+                     (t("field_rules.project_settings.native_default") if field.key == "description" && field.default_value.present?)]
+                      .compact.to_sentence %>
+              </li>
+            <% end %>
+          </ul>
         <% end %>
       </li>
     <% end %>

@@ -36,6 +36,7 @@ Rails.application.routes.draw do
         post :deactivate
         post :activate
       end
+      collection { patch :settings, action: :update_settings }
     end
   end
 

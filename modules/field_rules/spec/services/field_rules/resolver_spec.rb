@@ -85,10 +85,92 @@ RSpec.describe FieldRules::Resolver do
       expect(result[[project.id, story.id]]).to be_empty
     end
 
+    it "loads every type of a project with one query" do
+      described_class.reset_cache
+
+      expect do
+        described_class.for(project, bug)
+        described_class.for(project, story)
+        described_class.for(project, bug)
+      end.to have_a_query_limit(1)
+    end
+
+    it "resets the request cache when a scheme is assigned, unassigned, activated or deactivated" do
+      other = create(:project, types: [bug])
+      expect(described_class.for(other, bug)).to be_empty
+
+      FieldRules::SchemeService.assign(other, scheme)
+      expect(described_class.for(other, bug).required?("description")).to be(true)
+
+      FieldRules::SchemeService.deactivate(scheme)
+      expect(described_class.for(other, bug)).to be_empty
+
+      FieldRules::SchemeService.activate(scheme)
+      expect(described_class.for(other, bug).required?("description")).to be(true)
+
+      FieldRules::SchemeService.unassign(other)
+      expect(described_class.for(other, bug)).to be_empty
+    end
+
+    it "resets the request cache when a rule set is toggled" do
+      expect(described_class.for(project, bug).required?("description")).to be(true)
+
+      FieldRules::RuleSetService.deactivate(rule_set)
+      expect(described_class.for(project, bug)).to be_empty
+    end
+
+    it "always returns a Hash from for_many, with or without type ids" do
+      described_class.reset_cache
+
+      all_types = described_class.for_many([project.id])
+      expect(all_types).to be_a(Hash)
+      expect(all_types[[project.id, bug.id]].required?("description")).to be(true)
+
+      expect(described_class.for_many([project.id], [bug.id])).to be_a(Hash)
+      expect(described_class.for_many([project.id])).to be_a(Hash)
+      expect(described_class.for_many([])).to eq({})
+      expect(described_class.for(project, bug).required?("description")).to be(true)
+    end
+
+    it "does not serve a deleted rule after it was removed in the same request" do
+      expect(described_class.for(project, bug).hidden?("priority")).to be(true)
+
+      rule_set.rules.find { |rule| rule.field_key == "priority" }.destroy
+
+      expect(described_class.for(project, bug).hidden?("priority")).to be(false)
+    end
+
+    it "does not keep a cache built from rows of a rolled back transaction" do
+      described_class.reset_cache
+
+      FieldRuleSet.transaction(requires_new: true) do
+        rule_set.rules.first.update!(required: false)
+        expect(described_class.for(project, bug).required?("description")).to be(false)
+        raise ActiveRecord::Rollback
+      end
+
+      expect(described_class.for(project, bug).required?("description")).to be(true)
+    end
+
     it "caches per request and resets after changes" do
       expect(described_class.for(project, bug).required?("description")).to be(true)
       rule_set.rules.first.update!(required: false)
       expect(described_class.for(project, bug).required?("description")).to be(false)
+    end
+  end
+
+  describe ".system_actor?" do
+    it "is only true for the system user, not for a missing user" do
+      expect(described_class.system_actor?(User.system)).to be(true)
+      expect(described_class.system_actor?(nil)).to be(false)
+      expect(described_class.system_actor?(build_stubbed(:user))).to be(false)
+    end
+
+    it "applies the rules when no user is given" do
+      ProjectFieldRuleScheme.create!(project:, scheme:)
+      work_package = build(:work_package, project:, type: bug, description: nil)
+
+      expect(FieldRules::Validator.violations(work_package, user: nil).map(&:field)).to include("description")
     end
   end
 

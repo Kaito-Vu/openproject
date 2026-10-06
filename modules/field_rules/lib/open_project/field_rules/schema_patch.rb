@@ -40,20 +40,18 @@ module OpenProject::FieldRules
     private
 
     def adjust_schema_json(json, configuration)
-      JSON.dump(apply_field_rules(JSON.parse(json), configuration))
-    rescue StandardError => e
-      Rails.logger.error("[field_rules] adjusting schema failed, using native schema: #{e.class}: #{e.message}")
-      json
+      OpenProject::FieldRules.fail_open("adjusting schema", json) do
+        JSON.dump(apply_field_rules(JSON.parse(json), configuration))
+      end
     end
 
     # Hidden fields change the cached attribute groups, which the schema cache key does not know about.
     def json_key_dependencies
       dependencies = super
-      hidden = field_rules_schema_configuration&.select(&:hidden)&.map(&:key)
-      [dependencies, (["field_rules", *hidden.sort].join(":") if hidden.present?)]
-    rescue StandardError => e
-      Rails.logger.error("[field_rules] schema cache key failed, using native key: #{e.class}: #{e.message}")
-      dependencies || super
+      OpenProject::FieldRules.fail_open("schema cache key", dependencies) do
+        hidden = field_rules_schema_configuration&.select(&:hidden)&.map(&:key)
+        [dependencies, (["field_rules", *hidden.sort].join(":") if hidden.present?)]
+      end
     end
 
     def field_rules_schema_configuration
@@ -65,6 +63,8 @@ module OpenProject::FieldRules
     end
 
     def apply_field_rules(hash, configuration)
+      work_package = represented.try(:work_package)
+      empty_required = work_package ? ::FieldRules::Validator.grandfathered_fields(work_package, configuration) : []
       configuration.each do |field|
         key = ::FieldRules::Fields.schema_key(field.key)
         next if key.nil? || !hash.key?(key)
@@ -72,7 +72,7 @@ module OpenProject::FieldRules
         if field.hidden
           remove_property(hash, key)
         else
-          adjust_property(hash[key], field)
+          adjust_property(hash[key], field, empty_required.include?(field.key))
         end
       end
       remove_property(hash, "date") if %w[start_date due_date].all? { |key| configuration.hidden?(key) }
@@ -84,8 +84,12 @@ module OpenProject::FieldRules
       remove_from_attribute_groups(hash, key)
     end
 
-    def adjust_property(property, field)
+    # requiredButEmpty is the grandfather warning: an existing work package left empty a field that is now required.
+    # It never blocks saving; the form can show "this field is required but empty".
+    def adjust_property(property, field, required_but_empty = false)
       return unless property.is_a?(Hash)
+
+      property["requiredButEmpty"] = true if required_but_empty
 
       property["required"] = true if field.required
       property["writable"] = false if field.read_only

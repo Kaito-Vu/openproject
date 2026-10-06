@@ -42,6 +42,8 @@ module API
 
         property :sections, exec_context: :decorator, getter: ->(*) { sections }
 
+        property :warnings, exec_context: :decorator, getter: ->(*) { represented.warnings }, render_nil: false
+
         date_time_property :created_at
         date_time_property :updated_at
 

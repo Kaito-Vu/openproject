@@ -39,17 +39,21 @@ RSpec.describe "Safety fallbacks in the core patches" do # rubocop:disable RSpec
 
   it "falls back to native types when the resolver raises" do
     allow(TypeSchemes::Resolver).to receive(:allowed_types).and_raise(StandardError, "boom")
+    allow(Rails.logger).to receive(:error)
     contract = WorkPackages::CreateContract.new(build(:work_package, project:, type: story), user)
 
     expect(contract.assignable_types.to_a).to eq [story]
+    expect(Rails.logger).to have_received(:error).with(/resolving allowed types failed \(project #{project.id}.*boom/m)
   end
 
   it "allows the type when the scheme check raises" do
     allow(TypeSchemes::Resolver).to receive(:type_allowed?).and_raise(StandardError, "boom")
+    allow(Rails.logger).to receive(:error)
     contract = WorkPackages::CreateContract.new(build(:work_package, project:, type: story, author: user), user)
 
     contract.validate
     expect(contract.errors.symbols_for(:type_id)).not_to include(:not_in_scheme)
+    expect(Rails.logger).to have_received(:error).with(/type check failed \(project #{project.id}.*boom/m)
   end
 
   it "reports a concurrent default switch as a validation failure instead of raising" do

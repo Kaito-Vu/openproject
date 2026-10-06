@@ -1,0 +1,47 @@
+# /api/v3/screens/{id}/sections
+---
+post:
+  summary: Add a section to a screen
+  operationId: create_screen_section
+  tags:
+    - Screens
+  description: |-
+    Appends a section (`name`) at the end of the screen. The edit runs under the screen lock and
+    bumps the `updated_at` of the screen, so the ETag used by `PUT .../layout` changes. At most 20
+    sections are allowed per screen.
+
+    The response is the whole screen, including the non-blocking `warnings` list.
+
+    **Required permission:** administrator
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+              description: Section name, unique within the screen.
+  responses:
+    '200':
+      description: OK
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../components/schemas/screen_model.yml'
+    '401':
+      description: Returned if the client is not authenticated.
+    '403':
+      description: Returned if the user is not an administrator.
+    '404':
+      description: Returned if the screen does not exist.
+    '422':
+      description: |-
+        Returned if the name is blank, too long or taken, the section limit is reached, or the
+        change leaves an in-use create screen without the required fields (`required_not_placed`).

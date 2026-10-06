@@ -35,7 +35,9 @@ RSpec.describe "API v3 screen schemes" do # rubocop:disable RSpec/DescribeClass
   include API::V3::Utilities::PathHelper
 
   shared_let(:admin) { create(:admin) }
-  shared_let(:user) { create(:user) }
+  shared_let(:project) { create(:project) }
+  shared_let(:user) { create(:user, member_with_permissions: { project => %i[view_work_packages] }) }
+  shared_let(:outsider) { create(:user) }
   shared_let(:type) { create(:type) }
   shared_let(:scheme) { create(:screen_scheme, name: "Dev") }
   shared_let(:create_screen) { create(:create_screen) }
@@ -43,11 +45,51 @@ RSpec.describe "API v3 screen schemes" do # rubocop:disable RSpec/DescribeClass
   let(:json) { JSON.parse(last_response.body) }
   let(:headers) { { "CONTENT_TYPE" => "application/json" } }
 
-  it "lets a logged in user read schemes" do
+  it "lets a user read schemes assigned to a project they can view" do
+    create(:project_screen_scheme, project:, scheme:)
     login_as(user)
     get api_v3_paths.screen_schemes
     expect(last_response).to have_http_status(:ok)
     expect(json["_embedded"]["elements"].pluck("name")).to include("Dev")
+    get api_v3_paths.screen_scheme(scheme.id)
+    expect(last_response).to have_http_status(:ok)
+  end
+
+  it "hides schemes from users without view permission (empty list, 404 on show) and anonymous gets 401" do
+    create(:project_screen_scheme, project:, scheme:)
+    login_as(outsider)
+    get api_v3_paths.screen_schemes
+    expect(json["_embedded"]["elements"]).to be_empty
+    get api_v3_paths.screen_scheme(scheme.id)
+    expect(last_response).to have_http_status(:not_found)
+
+    logout
+    get api_v3_paths.screen_schemes
+    expect(last_response).to have_http_status(:unauthorized)
+  end
+
+  it "activates and deactivates as administrator only" do
+    login_as(user)
+    post "#{api_v3_paths.screen_scheme(scheme.id)}/deactivate", nil, headers
+    expect(last_response).to have_http_status(:forbidden)
+
+    login_as(admin)
+    post "#{api_v3_paths.screen_scheme(scheme.id)}/deactivate", nil, headers
+    expect(last_response).to have_http_status(:ok)
+    expect(scheme.reload.active).to be(false)
+    post "#{api_v3_paths.screen_scheme(scheme.id)}/activate", nil, headers
+    expect(scheme.reload.active).to be(true)
+  end
+
+  it "rejects a scheme update that breaks required coverage for a using project" do
+    used_type = create(:type)
+    used = create(:screen_scheme, name: "Used")
+    create(:project_screen_scheme, project: create(:project, types: [used_type]), scheme: used)
+    login_as(admin)
+    patch api_v3_paths.screen_scheme(used.id),
+          { typeItems: [{ typeId: used_type.id, createScreen: create_screen.id }] }.to_json, headers
+    expect(last_response).to have_http_status(:unprocessable_entity)
+    expect(used.reload.items).to be_empty
   end
 
   it "forbids writes for non administrators" do

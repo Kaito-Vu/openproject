@@ -57,8 +57,8 @@ module API
 
         resources :field_rule_sets do
           get do
-            authorize_logged_in
-            FieldRuleSetCollectionRepresenter.new(FieldRuleSet.includes(:rules).order(:name).to_a,
+            authorize_rule_reading
+            FieldRuleSetCollectionRepresenter.new(visible_rule_sets.includes(:rules).order(:name).to_a,
                                                   self_link: api_v3_paths.field_rule_sets,
                                                   current_user:)
           end
@@ -78,7 +78,9 @@ module API
             end
 
             get do
-              authorize_logged_in
+              authorize_rule_reading
+              raise ::API::Errors::NotFound unless visible_rule_sets.exists?(@rule_set.id)
+
               render_rule_set(@rule_set)
             end
 

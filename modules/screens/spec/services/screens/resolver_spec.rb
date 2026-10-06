@@ -121,6 +121,16 @@ RSpec.describe ::Screens::Resolver do
       expect(count).to eq(0)
     end
 
+    it "resolves all placed fields of a screen with a bounded number of queries" do
+      screen = build_screen(create(:create_screen), [["subject", {}], ["priority", {}], ["description", {}]])
+      assign(screen)
+
+      result = nil
+      count = ScreensQueryCounter.count { result = described_class.for(project, type, :create) }
+      expect(result.field_keys).to eq(%w[subject priority description])
+      expect(count).to be <= 40 # ponytail: loose ceiling, tighten after measuring in CI
+    end
+
     it "fails open on internal errors" do
       allow(described_class).to receive(:project_assignment).and_raise("boom")
       allow(Rails.error).to receive(:report)
@@ -135,6 +145,45 @@ RSpec.describe ::Screens::Resolver do
       described_class.raise_on_error = true
       allow(described_class).to receive(:project_assignment).and_raise("boom")
       expect { described_class.for(project, type, :create) }.to raise_error("boom")
+    end
+  end
+
+  describe ".for_many" do
+    def assign_project(scheme, other_project)
+      ProjectType.create!(project: other_project, type:)
+      create(:project_screen_scheme, project: other_project, scheme:)
+    end
+
+    it "resolves every key like .for" do
+      screen = build_screen(create(:create_screen), [["subject", {}], ["priority", {}]])
+      scheme = assign(screen)
+      other = create(:project)
+      assign_project(scheme, other)
+      ::Screens::Resolver.reset_cache
+
+      result = described_class.for_many(project_ids: [project.id, other.id], type_ids: [type.id], contexts: %i[create view])
+      expect(result.keys.size).to eq(4)
+      expect(result[[project.id, type.id, :create]].field_keys).to eq(%w[subject priority])
+      expect(result[[other.id, type.id, :view]].reason).to eq("no_usable_screen")
+    end
+
+    it "does not issue queries linear in the number of keys" do
+      screen = build_screen(create(:create_screen), [["subject", {}]])
+      scheme = assign(screen)
+      extra = create_list(:project, 5)
+      extra.each { |other| assign_project(scheme, other) }
+      ids = [project.id, *extra.map(&:id)]
+
+      ::Screens::Resolver.reset_cache
+      few = ScreensQueryCounter.count do
+        described_class.for_many(project_ids: ids.first(2), type_ids: [type.id], contexts: %i[create edit view])
+      end
+      ::Screens::Resolver.reset_cache
+      many = ScreensQueryCounter.count do
+        described_class.for_many(project_ids: ids, type_ids: [type.id], contexts: %i[create edit view])
+      end
+      # 4 more projects x 3 contexts = 12 more keys; the old code spent about 5 queries per key.
+      expect(many - few).to be <= 4 * 4
     end
   end
 

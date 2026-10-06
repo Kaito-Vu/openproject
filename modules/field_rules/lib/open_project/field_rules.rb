@@ -38,15 +38,47 @@ module OpenProject
       "API::V3::WorkPackages::Schema::WorkPackageSchemaRepresenter" => %i[to_json json_key_dependencies]
     }.freeze
 
+    # Arity of the overridden methods (-1 = variable arguments); the patches call super, so a changed core
+    # signature would break them at runtime. Checked at boot and only logged.
+    PATCH_ARITIES = {
+      writable_attributes: 0, validate_enabled_type: 0, set_calculated_attributes: 1,
+      update_derivable_date_attribute: 0, to_json: -1, json_key_dependencies: 0
+    }.freeze
+
+    # Runs the block; on StandardError logs it (class, message, context), reports it and returns +fallback+, so a
+    # field rules failure never breaks work package handling but stays observable.
+    def self.fail_open(where, fallback, **context)
+      yield
+    rescue StandardError => e
+      detail = context.map { |key, value| " #{key}=#{value.inspect}" }.join
+      Rails.logger.error("[field_rules] #{where} failed, failing open: #{e.class}: #{e.message}#{detail}")
+      begin
+        Rails.error.report(e, handled: true, context: context.merge(where:))
+      rescue StandardError
+        nil
+      end
+      fallback
+    end
+
     def self.assert_patch_targets!
       PATCH_TARGETS.each do |class_name, methods|
         klass = class_name.constantize
         missing = methods.reject { |name| klass.method_defined?(name) || klass.private_method_defined?(name) }
-        next if missing.empty?
+        unless missing.empty?
+          raise "openproject-field_rules patches #{class_name}##{missing.join(', #')}, which core no longer defines"
+        end
 
-        raise "openproject-field_rules patches #{class_name}##{missing.join(', #')}, which core no longer defines"
+        methods.each { |name| check_arity(klass, name) }
       end
       raise "openproject-field_rules needs TypeVariant.add_constraint" unless TypeVariant.respond_to?(:add_constraint)
+    end
+
+    def self.check_arity(klass, name)
+      expected = PATCH_ARITIES[name]
+      actual = klass.instance_method(name).arity
+      return if expected.nil? || actual == expected
+
+      Rails.logger.error("[field_rules] #{klass}##{name} has arity #{actual}, expected #{expected}: "                          "core signature changed, the field rules patch may break")
     end
   end
 end

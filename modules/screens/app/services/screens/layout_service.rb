@@ -46,7 +46,49 @@ module Screens
         fail_with(screen)
       end
 
+      # Runs a partial edit (one section or item) under the screen lock with the same coverage check
+      # as replace, then bumps updated_at so the ETag of PUT layout notices the change.
+      def edit(screen)
+        result = nil
+        Screen.transaction do
+          screen.lock!
+          yield screen
+          screen.reload
+          coverage = coverage_errors(screen)
+          if coverage.any?
+            result = failure(coverage)
+            raise ActiveRecord::Rollback
+          end
+          screen.touch
+          result = ok(screen)
+        end
+        result
+      rescue ActiveRecord::RecordNotUnique
+        screen.errors.add(:base, :conflict)
+        fail_with(screen)
+      end
+
+      # Puts record at position (1-based, clamped to 1..n) among its siblings and renumbers them
+      # 1..n. A nil position keeps the current one (appends a new record). Returns false when a
+      # record is invalid.
+      def place(record, siblings, position)
+        list = siblings.reject { |sibling| sibling.id == record.id }.sort_by { |sibling| [sibling.position.to_i, sibling.id] }
+        position ||= record.persisted? ? record.position : list.size + 1
+        list.insert(position.to_i.clamp(1, list.size + 1) - 1, record)
+        renumber(list)
+      end
+
+      # Closes the gaps left by a delete or move.
+      def compact(records)
+        renumber(records.sort_by { |record| [record.position.to_i, record.id] })
+      end
+
       private
+
+      def renumber(list)
+        list.each_with_index { |record, index| record.position = index + 1 }
+        list.select(&:changed?).map(&:save).all?
+      end
 
       def normalize(sections_params)
         Array(sections_params).map { |section| section.to_h.symbolize_keys }
@@ -60,7 +102,10 @@ module Screens
         coverage = coverage_errors(screen)
         return failure(coverage) if coverage.any?
 
-        screen.save ? ok(screen) : fail_with(screen)
+        return fail_with(screen) unless screen.save
+
+        screen.touch if screen.persisted? # layout-only changes must still move the ETag
+        ok(screen)
       end
 
       def coverage_errors(screen)

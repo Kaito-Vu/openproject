@@ -11,6 +11,11 @@ get:
       required: true
       schema:
         type: integer
+  description: |-
+    Administrators can read every rule set. Other users can read a rule set only if it is assigned to a project
+    where they have the view work packages permission; otherwise 404 is returned.
+
+    **Required permission:** logged-in user
   responses:
     '200':
       description: OK
@@ -18,8 +23,10 @@ get:
         application/hal+json:
           schema:
             $ref: '../components/schemas/field_rule_set_model.yml'
+    '401':
+      description: Returned if the client is not authenticated.
     '404':
-      description: Returned if the rule set does not exist.
+      description: Returned if the rule set does not exist or is not visible to the user.
 patch:
   summary: Update a field rule set
   operationId: update_field_rule_set

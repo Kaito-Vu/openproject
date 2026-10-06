@@ -45,14 +45,14 @@ RSpec.describe TypeScheme do
   it "requires a name" do
     scheme = build_scheme([[epic, true]], name: nil)
     expect(scheme).not_to be_valid
-    expect(scheme.errors[:name]).to be_present
+    expect(scheme.errors.symbols_for(:name)).to include(:blank)
   end
 
   it "requires a unique name" do
     create(:type_scheme, name: "Dev")
     scheme = build_scheme([[epic, true]])
     expect(scheme).not_to be_valid
-    expect(scheme.errors[:name]).to be_present
+    expect(scheme.errors.symbols_for(:name)).to include(:taken)
   end
 
   it "rejects duplicate types" do

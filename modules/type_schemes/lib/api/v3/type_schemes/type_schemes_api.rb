@@ -80,6 +80,21 @@ module API
             ::API::Utilities::ResourceLinkParser.parse_id(href, property: "type", expected_version: "3", expected_namespace: "types")
           end
 
+          # Spec §6: admins see all; others see schemes used by a project where they may view work
+          # packages, plus the default scheme when such a project has no explicit assignment and
+          # auto-assign is on (otherwise unassigned projects are not filtered by any scheme).
+          # Callers must authorize_logged_in first (anonymous => 401); invisible records are 404.
+          def visible_schemes
+            return TypeScheme.all if current_user.admin?
+
+            projects = Project.allowed_to(current_user, :view_work_packages)
+            scope = TypeScheme.where(id: ProjectTypeScheme.where(project_id: projects.select(:id)).select(:scheme_id))
+            return scope unless Setting.type_scheme_auto_assign_default?
+
+            unassigned = projects.where.not(id: ProjectTypeScheme.select(:project_id))
+            scope.or(TypeScheme.where(is_default: true).where(unassigned.arel.exists))
+          end
+
           def render_scheme(scheme)
             TypeSchemeRepresenter.create(scheme, current_user:, embed_links: true)
           end
@@ -92,7 +107,7 @@ module API
         resources :type_schemes do
           get do
             authorize_logged_in
-            schemes = TypeScheme.includes(items: :color).order(:name).to_a
+            schemes = visible_schemes.includes(items: :color).order(:name).to_a
             TypeSchemeCollectionRepresenter.new(schemes,
                                                 self_link: api_v3_paths.type_schemes,
                                                 current_user:)
@@ -114,9 +129,13 @@ module API
 
             get do
               authorize_logged_in
+              raise ::API::Errors::NotFound unless visible_schemes.exists?(@scheme.id)
+
               render_scheme(@scheme)
             end
 
+            # No impact confirmation here: spec section 5 defines the impact warning as UI-only and
+            # section 7 specifies no confirm parameter, so an explicit admin PATCH counts as confirmed.
             patch do
               authorize_admin
               result = nil

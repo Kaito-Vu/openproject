@@ -80,13 +80,14 @@ module Screens
 
       projects = Project.where(id: project_ids).index_by(&:id)
       types = Type.where(id: type_ids).index_by(&:id)
+      preloaded = preload_many(projects.keys, types.keys)
       pairs.index_with do |project_id, type_id, context|
         project = projects[project_id]
         type = types[type_id]
         if project.nil? || type.nil?
           native(:no_scheme, context)
         else
-          self.for(project, type, context)
+          resolve_guarded(project, type, context, preloaded)
         end
       end
     end
@@ -123,8 +124,8 @@ module Screens
     end
 
     def reset_cache
-      RequestStore.store.delete(CACHE_KEY) if defined?(RequestStore)
-      ::FieldRules::Resolver.reset_cache if defined?(::FieldRules::Resolver)
+      RequestStore.store.delete(CACHE_KEY)
+      ::FieldRules::Resolver.reset_cache if RequiredSet.field_rules?
     end
 
     def normalize_context(context)
@@ -138,21 +139,54 @@ module Screens
       record.respond_to?(:id) ? record.id : record
     end
 
-    def resolve(project, type, context)
-      return native(:type_not_in_project, context) unless type_in_project?(project, type)
+    # for_many variant of the error handling in .for: any internal error falls back to native.
+    def resolve_guarded(project, type, context, preloaded)
+      resolve(project, type, context, preloaded)
+    rescue StandardError => e
+      raise if raise_on_error
 
-      assignment = project_assignment(project.id)
+      report(e, project, type, context)
+      native(:error, context, error: true)
+    end
+
+    # Loads everything for_many needs with a constant number of queries: project/type links,
+    # scheme assignments, scheme items and the used screens with their sections and items.
+    def preload_many(project_ids, type_ids)
+      links = ProjectType.where(project_id: project_ids, type_id: type_ids).pluck(:project_id, :type_id).to_set
+      assignments = ProjectScreenScheme
+                    .joins(:scheme)
+                    .where(project_id: project_ids)
+                    .select("project_screen_schemes.*, screen_schemes.active AS scheme_active")
+                    .index_by(&:project_id)
+      items = ScreenSchemeItem.where(scheme_id: assignments.values.map(&:scheme_id).uniq, type_id: type_ids)
+                              .index_by { |item| [item.scheme_id, item.type_id] }
+      screen_ids = items.values.flat_map { |item| ScreenScheme::SLOTS.values.map { |slot| item.public_send(:"#{slot}_id") } }
+      screens = Screen.includes(sections: :items).where(id: screen_ids.compact.uniq).index_by(&:id)
+      { links:, assignments:, items:, screens:,
+        field_keys: screens.values.flat_map { |screen| screen.sections.flat_map { |section| section.items.map(&:field_key) } }.uniq,
+        availability: {}, required: {} }
+    end
+
+    def resolve(project, type, context, preloaded = nil)
+      in_project = preloaded ? preloaded[:links].include?([project.id, type.id]) : type_in_project?(project, type)
+      return native(:type_not_in_project, context) unless in_project
+
+      assignment = preloaded ? preloaded[:assignments][project.id] : project_assignment(project.id)
       return native(:no_scheme, context) if assignment.nil?
       return native(:scheme_inactive, context) unless assignment.scheme_active?
 
-      item = ScreenSchemeItem.where(scheme_id: assignment.scheme_id, type_id: type.id).first
+      item = if preloaded
+               preloaded[:items][[assignment.scheme_id, type.id]]
+             else
+               ScreenSchemeItem.where(scheme_id: assignment.scheme_id, type_id: type.id).first
+             end
       return native(:type_not_in_scheme, context) if item.nil?
 
-      screen, skipped = choose_screen(item, context)
+      screen, skipped = choose_screen(item, context, preloaded&.fetch(:screens))
       return native(:no_usable_screen, context, skipped:) if screen.nil?
 
-      loaded = Screen.includes(sections: :items).find(screen.id)
-      build_screen(project, type, context, loaded, skipped)
+      loaded = preloaded ? screen : Screen.includes(sections: :items).find(screen.id)
+      build_screen(project, type, context, loaded, skipped, preloaded)
     end
 
     def type_in_project?(project, type)
@@ -196,20 +230,34 @@ module Screens
       end
     end
 
-    def build_screen(project, type, context, screen, skipped)
+    def build_screen(project, type, context, screen, skipped, preloaded = nil)
       field_rules = field_rules_for(project, type)
       all_items = screen.sections.flat_map(&:items)
 
-      unavailable = all_items.reject { |item| fields_available?(item.field_key, project, type) }.map(&:field_key).uniq
+      available = if preloaded
+                    # once per (project, type) for the keys of every preloaded screen
+                    preloaded[:availability][[project.id, type.id]] ||=
+                      ::Screens::Fields.availability(preloaded[:field_keys], project:, type:)
+                  else
+                    ::Screens::Fields.availability(all_items.map(&:field_key), project:, type:)
+                  end
+      unavailable = all_items.reject { |item| available[item.field_key] }.map(&:field_key).uniq
       hidden = all_items.select { |item| field_rules&.hidden?(item.field_key) }.map(&:field_key).uniq
       not_visible = all_items.reject(&:visible).map(&:field_key).uniq
       placed = all_items.select(&:visible).map(&:field_key).to_set
-      required_not_placed = context == :create ? RequiredSet.for(project, type).reject { |key| placed.include?(key) } : []
+      required = if context != :create
+                   []
+                 elsif preloaded
+                   preloaded[:required][[project.id, type.id]] ||= RequiredSet.for(project, type)
+                 else
+                   RequiredSet.for(project, type)
+                 end
+      required_not_placed = required.reject { |key| placed.include?(key) }
 
       sections = screen.sections.map do |section|
         fields = section.items
                         .sort_by { |item| [item.position.to_i, item.id.to_i] }
-                        .select { |item| visible_field?(item, project, type, field_rules) }
+                        .select { |item| item.visible && available[item.field_key] && !field_rules&.hidden?(item.field_key) }
                         .map { |item| build_field(item, field_rules) }
         { id: section.id, name: section.name, position: section.position, fields: fields }
       end
@@ -233,16 +281,6 @@ module Screens
       )
     end
 
-    def visible_field?(item, project, type, field_rules)
-      item.visible &&
-        fields_available?(item.field_key, project, type) &&
-        !field_rules&.hidden?(item.field_key)
-    end
-
-    def fields_available?(key, project, type)
-      ::Screens::Fields.available?(key, project:, type:)
-    end
-
     def build_field(item, field_rules)
       state = if field_rules
                 { required: field_rules.required?(item.field_key),
@@ -257,11 +295,11 @@ module Screens
     end
 
     def field_rules_for(project, type)
-      return nil unless defined?(::FieldRules::Resolver)
+      return nil unless RequiredSet.field_rules?
 
-      ::FieldRules::Resolver.for(project, type)
-    rescue StandardError
-      nil
+      fail_open("field rules lookup", nil, project_id: id_of(project), type_id: id_of(type)) do
+        ::FieldRules::Resolver.for(project, type)
+      end
     end
 
     def native(reason, context, skipped: [], error: false)
@@ -282,6 +320,19 @@ module Screens
           error:
         }
       )
+    end
+
+    # Runs the block; on StandardError logs and reports it (never silent) and returns fallback.
+    def fail_open(where, fallback, **context)
+      yield
+    rescue StandardError => e
+      OpenProject.logger.error("[screens] #{where} failed, failing open: #{e.class}: #{e.message}")
+      begin
+        Rails.error.report(e, handled: true, context: context.merge(where:))
+      rescue StandardError
+        nil
+      end
+      fallback
     end
 
     def report(error, project, type, context)

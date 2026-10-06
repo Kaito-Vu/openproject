@@ -5,7 +5,12 @@ get:
   operationId: list_type_schemes
   tags:
     - Type Schemes
-  description: Lists all type schemes. Requires an authenticated user.
+  description: |-
+    Administrators see all schemes. Other users see only the schemes assigned to a project where they
+    have the view work packages permission (plus the default scheme for such projects without an
+    assignment while `type_scheme_auto_assign_default` is on). Anonymous access is not allowed.
+
+    **Required permission:** logged-in user
   responses:
     '200':
       description: OK
@@ -13,6 +18,8 @@ get:
         application/hal+json:
           schema:
             $ref: '../components/schemas/type_scheme_collection_model.yml'
+    '401':
+      description: Returned if the client is not authenticated.
 post:
   summary: Create a type scheme
   operationId: create_type_scheme

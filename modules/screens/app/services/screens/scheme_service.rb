@@ -57,6 +57,9 @@ module Screens
           ProjectScreenScheme.transaction(requires_new: true) do
             record = ProjectScreenScheme.find_or_initialize_by(project_id: project.id)
             record.scheme = scheme
+            entries = coverage_entries(scheme.items, project_ids: [project.id])
+            return coverage_failure(record, entries) if entries.any?
+
             return record.save ? ok(record) : fail_with(record)
           end
         rescue ActiveRecord::RecordNotUnique
@@ -113,6 +116,10 @@ module Screens
           scheme.assign_attributes(params.slice(:name, :description, :active))
           sync_items(scheme, params[:items]) if params.key?(:items)
           result = scheme.save ? ok(scheme) : fail_with(scheme)
+          if result.success?
+            entries = coverage_entries(scheme.items.reload)
+            result = coverage_failure(scheme, entries) if entries.any?
+          end
           raise ActiveRecord::Rollback if result.failure?
         end
         result
@@ -125,6 +132,19 @@ module Screens
           item = scheme.items.find { |existing| existing.type_id == type_id } || scheme.items.build(type_id:)
           SLOT_KEYS.each { |slot| item.public_send(:"#{slot}=", attrs[slot].presence) }
         end
+      end
+
+      # Required fields missing from (or hidden for) a create screen on a scheme row, see
+      # CoverageValidation.scheme_item.
+      def coverage_entries(items, project_ids: nil)
+        items.flat_map { |item| CoverageValidation.scheme_item(item, project_ids:).errors }
+      end
+
+      def coverage_failure(model, entries)
+        entries.group_by { |entry| entry[:code] }.each do |code, rows|
+          model.errors.add(:base, code, fields: rows.pluck(:field).uniq.join(", "))
+        end
+        fail_with(model)
       end
 
       def conflict_failure

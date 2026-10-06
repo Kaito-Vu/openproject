@@ -69,6 +69,15 @@ RSpec.describe "API v3 project screen scheme" do # rubocop:disable RSpec/Describ
       expect(ProjectScreenScheme.find_by(project_id: project.id).scheme).to eq(scheme)
     end
 
+    it "rejects with 422 a scheme whose create screen lacks required fields (required_not_placed)" do
+      coverage_scheme = create(:screen_scheme, name: "Coverage")
+      create(:screen_scheme_item, scheme: coverage_scheme, type:, create_screen: create(:create_screen))
+      login_as(assigner)
+      put api_v3_paths.project_screen_scheme(project.id), { schemeId: coverage_scheme.id }.to_json, headers
+      expect(last_response).to have_http_status(:unprocessable_entity)
+      expect(ProjectScreenScheme.find_by(project_id: project.id)).to be_nil
+    end
+
     it "rejects an inactive scheme with 422" do
       inactive = create(:screen_scheme, name: "Inactive", active: false)
       login_as(assigner)

@@ -1,0 +1,92 @@
+# /api/v3/screens/{id}/items/{iid}
+---
+patch:
+  summary: Change or move a screen item
+  operationId: update_screen_item
+  tags:
+    - Screens
+  description: |-
+    Updates `width` and `visible`, and/or moves the item with `sectionId` and `position`.
+
+    - Without `position` the order is left unchanged; when `sectionId` moves the item to another
+      section it is appended there.
+    - `position` is 1-based; values below 1 (including `0`) mean first, values above the item count
+      mean last. Siblings are renumbered, and the section the item left is compacted.
+
+    The response is the whole screen, including the non-blocking `warnings` list.
+
+    **Required permission:** administrator
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+    - name: iid
+      in: path
+      required: true
+      schema:
+        type: integer
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            width:
+              type: string
+              enum: [full, half]
+            visible:
+              type: boolean
+            sectionId:
+              type: integer
+            position:
+              type: integer
+  responses:
+    '200':
+      description: OK
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../components/schemas/screen_model.yml'
+    '401':
+      description: Returned if the client is not authenticated.
+    '403':
+      description: Returned if the user is not an administrator.
+    '404':
+      description: Returned if the screen, the item or the target section does not exist.
+    '422':
+      description: |-
+        Returned if the width is invalid, or the change leaves an in-use create screen without the
+        required fields (`required_not_placed`), for example by hiding the subject.
+delete:
+  summary: Remove a field from a screen
+  operationId: delete_screen_item
+  tags:
+    - Screens
+  description: |-
+    Removes the item and renumbers the remaining items of its section.
+
+    **Required permission:** administrator
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+    - name: iid
+      in: path
+      required: true
+      schema:
+        type: integer
+  responses:
+    '204':
+      description: No Content
+    '401':
+      description: Returned if the client is not authenticated.
+    '403':
+      description: Returned if the user is not an administrator.
+    '404':
+      description: Returned if the screen or the item does not exist.
+    '422':
+      description: Returned if the removal leaves an in-use create screen without the required fields (`required_not_placed`).

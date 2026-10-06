@@ -5,15 +5,29 @@ get:
   operationId: get_screen
   tags:
     - Screens
+  description: |-
+    Administrators can read every screen. Other users can read a screen only if one of the screen schemes
+    visible to them uses it (a scheme assigned to a project where they have the view work packages
+    permission); otherwise 404 is returned. Anonymous access is not allowed.
+
+    The response carries an `ETag` header, to be sent as `If-Match` with `PUT /api/v3/screens/{id}/layout`.
+
+    **Required permission:** logged-in user
   responses:
     '200':
       description: OK
+      headers:
+        ETag:
+          schema:
+            type: string
       content:
         application/hal+json:
           schema:
             $ref: '../components/schemas/screen_model.yml'
+    '401':
+      description: Returned if the client is not authenticated.
     '404':
-      description: Returned if the screen does not exist.
+      description: Returned if the screen does not exist or is not visible to the user.
 patch:
   summary: Update a screen
   operationId: update_screen
@@ -35,7 +49,11 @@ patch:
         application/hal+json:
           schema:
             $ref: '../components/schemas/screen_model.yml'
+    '401':
+      description: Returned if the client is not authenticated.
     '403':
       description: Returned if the user is not an administrator.
+    '404':
+      description: Returned if the screen does not exist.
     '422':
-      description: Returned if the update is invalid.
+      description: Returned if the update is invalid, or if `screenType` is sent with a different value (read-only).

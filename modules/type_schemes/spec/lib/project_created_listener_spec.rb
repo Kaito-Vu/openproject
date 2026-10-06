@@ -58,6 +58,19 @@ RSpec.describe OpenProject::TypeSchemes::ProjectCreatedListener do
     expect(ProjectTypeScheme.find_by(project_id: project.id).scheme).to eq other
   end
 
+  it "does not assign a scheme when auto-assignment is disabled" do
+    create(:type_scheme, types: [story], is_default: true)
+
+    allow(Setting).to receive(:type_scheme_auto_assign_default?).and_return(false)
+    described_class.call(project:)
+
+    expect(ProjectTypeScheme.exists?(project_id: project.id)).to be false
+  end
+
+  it "auto-assignment is enabled by default" do
+    expect(Setting.type_scheme_auto_assign_default?).to be true
+  end
+
   it "is triggered by the PROJECT_CREATED event" do
     scheme = create(:type_scheme, types: [story], is_default: true)
 

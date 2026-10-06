@@ -18,6 +18,8 @@ get:
         application/hal+json:
           schema:
             $ref: '../components/schemas/screen_layout_model.yml'
+    '401':
+      description: Returned if the client is not authenticated.
     '403':
       description: Returned if the user lacks the permission.
     '404':

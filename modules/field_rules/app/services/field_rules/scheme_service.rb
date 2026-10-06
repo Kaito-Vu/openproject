@@ -52,7 +52,7 @@ module FieldRules
             record = ProjectFieldRuleScheme.find_or_initialize_by(project_id: project.id)
             record.scheme = scheme
             record.save ? ok(record) : fail_with(record)
-          end
+          end.tap { Resolver.reset_cache }
         rescue ActiveRecord::RecordNotUnique
           retry if (attempts += 1) < 2
           ServiceResult.failure(errors: ActiveModel::Errors.new(ProjectFieldRuleScheme.new).tap { _1.add(:base, :conflict) })
@@ -73,7 +73,9 @@ module FieldRules
       private
 
       def toggle(scheme, active)
-        scheme.update(active:) ? ok(scheme) : fail_with(scheme)
+        result = scheme.update(active:) ? ok(scheme) : fail_with(scheme)
+        Resolver.reset_cache
+        result
       end
 
       def clone_name(scheme)

@@ -1,7 +1,7 @@
 ---
 description: |-
   A type scheme limits, orders and defaults the work package types that can be chosen when a work package is created
-  or its type is changed in the projects the scheme is assigned to. Every project has a scheme: projects without an explicit assignment use the default scheme, whose default type is Task. Type schemes cannot be deleted, only deactivated. Existing work packages are never modified.
+  or its type is changed in the projects the scheme is assigned to. New projects get the default scheme (default type Task) while the setting `type_scheme_auto_assign_default` is on, and projects without an assignment use the default scheme only while it is on; otherwise they are not filtered. Reading schemes needs a logged-in user; non-administrators only see schemes tied to projects where they have the view work packages permission (otherwise 404). Type schemes cannot be deleted, only deactivated. Existing work packages are never modified.
 
   ## Actions
 

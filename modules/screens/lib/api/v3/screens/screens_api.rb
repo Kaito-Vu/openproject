@@ -42,7 +42,9 @@ module API
             params
           end
 
-          def render_screen(screen)
+          # warn: true adds the non-blocking editor warnings (e.g. hidden_but_placed) to the response.
+          def render_screen(screen, warn: false)
+            screen.warnings = ::Screens::CoverageValidation.warnings_for(screen) if warn
             ScreenRepresenter.create(screen, current_user:, embed_links: true)
           end
 
@@ -59,7 +61,7 @@ module API
           end
 
           def filtered_screens
-            scope = Screen.order(:name)
+            scope = visible_screens.order(:name)
             scope = scope.where(screen_type: params[:screenType]) if params[:screenType].present?
             scope = scope.where(active: ActiveModel::Type::Boolean.new.cast(params[:active])) if params.key?(:active)
             scope = scope.where("name ILIKE ?", "%#{Screen.sanitize_sql_like(params[:name])}%") if params[:name].present?
@@ -77,17 +79,18 @@ module API
               raise(::API::Errors::NotFound.new)
           end
 
-          def clamp_position(value, max)
-            value = value.to_i
-            return max if value < 1
+          # Runs a partial edit through LayoutService (lock, coverage check, ETag bump).
+          def edit_layout!(render: true, &)
+            result = ::Screens::LayoutService.edit(@screen, &)
+            raise_service_errors(result) if result.failure?
 
-            [value, max].min
+            render_screen(@screen.reload, warn: true) if render
           end
         end
 
         resources :screens do
           get do
-            authorize_logged_in
+            authorize_screens_read!
             ScreenCollectionRepresenter.new(filtered_screens.to_a, self_link: api_v3_paths.screens, current_user:)
           end
 
@@ -106,7 +109,9 @@ module API
             end
 
             get do
-              authorize_logged_in
+              authorize_screens_read!
+              raise ::API::Errors::NotFound unless visible_screens.exists?(@screen.id)
+
               header "ETag", etag_for(@screen)
               render_screen(@screen)
             end
@@ -135,44 +140,58 @@ module API
 
               @screen.reload
               header "ETag", etag_for(@screen)
-              render_screen(@screen)
+              render_screen(@screen, warn: true)
+            end
+
+            post :activate do
+              authorize_admin
+              result = ::Screens::ScreenService.activate(@screen)
+              raise_service_errors(result) if result.failure?
+
+              render_screen(@screen.reload)
+            end
+
+            post :deactivate do
+              authorize_admin
+              result = ::Screens::ScreenService.deactivate(@screen)
+              raise_service_errors(result) if result.failure?
+
+              render_screen(@screen.reload)
             end
 
             post :sections do
               authorize_admin
-              body = body_hash!
-              name = safe_string(body[:name]).to_s
-              Screen.transaction do
-                @screen.lock!
-                if @screen.sections.count >= Screen::MAX_SECTIONS
+              name = safe_string(body_hash![:name]).to_s
+              edit_layout! do |screen|
+                if screen.sections.count >= Screen::MAX_SECTIONS
                   raise ::API::Errors::Validation.new("sections", I18n.t("screens.admin.errors.too_many_sections",
                                                                          count: Screen::MAX_SECTIONS))
                 end
 
-                section = @screen.sections.build(name:, position: @screen.sections.count + 1)
+                section = screen.sections.build(name:, position: screen.sections.count + 1)
                 raise_model_errors!(section) unless section.save
               end
-              @screen.reload
-              render_screen(@screen)
             end
 
             route_param :sid, type: Integer do
               patch do
                 authorize_admin
                 body = body_hash!
-                section = find_section!(@screen)
-                section.name = safe_string(body[:name]) if body.key?(:name)
-                if body.key?(:position)
-                  section.position = clamp_position(body[:position], @screen.sections.count)
+                edit_layout! do |screen|
+                  section = find_section!(screen)
+                  section.name = safe_string(body[:name]) if body.key?(:name)
+                  placed = !body.key?(:position) ||
+                           ::Screens::LayoutService.place(section, screen.sections.to_a, safe_id(body[:position]))
+                  raise_model_errors!(section) unless placed && section.save
                 end
-                raise_model_errors!(section) unless section.save
-
-                render_screen(@screen.reload)
               end
 
               delete do
                 authorize_admin
-                find_section!(@screen).destroy
+                edit_layout!(render: false) do |screen|
+                  find_section!(screen).destroy
+                  ::Screens::LayoutService.compact(screen.sections.reload.to_a)
+                end
                 status 204
                 body false
               end
@@ -181,52 +200,58 @@ module API
             post :items do
               authorize_admin
               body = body_hash!
-              section = @screen.sections.find { |candidate| candidate.id == safe_id(body[:sectionId]) } ||
-                        raise(::API::Errors::NotFound.new)
               field_key = safe_string(body[:fieldKey] || body[:field_key]).to_s
               unless ::Screens::Fields.placeable?(field_key)
                 raise ::API::Errors::Validation.new("fieldKey", I18n.t("screens.admin.errors.unknown_field"))
               end
 
-              Screen.transaction do
-                @screen.lock!
-                if @screen.items.count >= Screen::MAX_ITEMS
+              edit_layout! do |screen|
+                section = screen.sections.find { |candidate| candidate.id == safe_id(body[:sectionId]) } ||
+                          raise(::API::Errors::NotFound.new)
+                if screen.items.count >= Screen::MAX_ITEMS
                   raise ::API::Errors::Validation.new("items", I18n.t("screens.admin.errors.too_many_items",
                                                                       count: Screen::MAX_ITEMS))
                 end
 
-                item = @screen.items.build(section:, field_key:,
-                                           width: safe_string(body[:width]).presence || "full",
-                                           visible: body.key?(:visible) ? safe_bool(body[:visible]) : true,
-                                           position: @screen.items.count + 1)
+                item = screen.items.build(section:, field_key:,
+                                          width: safe_string(body[:width]).presence || "full",
+                                          visible: body.key?(:visible) ? safe_bool(body[:visible]) : true,
+                                          position: section.items.count + 1)
                 raise_model_errors!(item) unless item.save
               end
-              render_screen(@screen.reload)
             end
 
             route_param :iid, type: Integer do
               patch do
                 authorize_admin
                 body = body_hash!
-                item = find_item!(@screen)
-                item.width = safe_string(body[:width]) if body.key?(:width)
-                item.visible = safe_bool(body[:visible]) if body.key?(:visible)
-                if body.key?(:sectionId)
-                  target = @screen.sections.find { |section| section.id == safe_id(body[:sectionId]) } ||
-                           raise(::API::Errors::NotFound.new)
-                  item.section = target
+                edit_layout! do |screen|
+                  item = find_item!(screen)
+                  source = screen.sections.find { |section| section.id == item.section_id }
+                  target = source
+                  item.width = safe_string(body[:width]) if body.key?(:width)
+                  item.visible = safe_bool(body[:visible]) if body.key?(:visible)
+                  if body.key?(:sectionId)
+                    target = screen.sections.find { |section| section.id == safe_id(body[:sectionId]) } ||
+                             raise(::API::Errors::NotFound.new)
+                    item.section = target
+                  end
+                  moved = target != source
+                  position = body.key?(:position) ? safe_id(body[:position]) : (moved ? target.items.size + 1 : nil)
+                  placed = ::Screens::LayoutService.place(item, target.items.to_a, position)
+                  raise_model_errors!(item) unless placed && item.save
+                  ::Screens::LayoutService.compact(source.items.reload.to_a) if moved
                 end
-                if body.key?(:position)
-                  item.position = clamp_position(body[:position], @screen.items.count)
-                end
-                raise_model_errors!(item) unless item.save
-
-                render_screen(@screen.reload)
               end
 
               delete do
                 authorize_admin
-                find_item!(@screen).destroy
+                edit_layout!(render: false) do |screen|
+                  item = find_item!(screen)
+                  section = screen.sections.find { |candidate| candidate.id == item.section_id }
+                  item.destroy
+                  ::Screens::LayoutService.compact(section.items.reload.to_a)
+                end
                 status 204
                 body false
               end

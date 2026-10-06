@@ -48,8 +48,10 @@ class Screen < ApplicationRecord
   attr_readonly :screen_type
 
   before_destroy :prevent_destroy
-  after_save { ::Screens::Resolver.reset_cache }
-  after_destroy { ::Screens::Resolver.reset_cache }
+  # after_commit so a concurrent request cannot cache pre-commit data; rollback drops what was
+  # cached from inside the aborted transaction.
+  after_commit { ::Screens::Resolver.reset_cache }
+  after_rollback { ::Screens::Resolver.reset_cache }
 
   scope :active, -> { where(active: true) }
 
@@ -57,13 +59,17 @@ class Screen < ApplicationRecord
     define_method(:"#{type}?") { screen_type == type }
   end
 
-  def in_use?
+  # Non-blocking warnings of the last editor save, set by the API and rendered in its response.
+  attr_accessor :warnings
+
+  def scheme_items
     ScreenSchemeItem
       .where(create_screen_id: id).or(ScreenSchemeItem.where(edit_screen_id: id))
       .or(ScreenSchemeItem.where(view_screen_id: id))
       .or(ScreenSchemeItem.where(transition_screen_id: id))
-      .exists?
   end
+
+  def in_use? = scheme_items.exists?
 
   def subject_visible?
     items.any? { |item| item.field_key == "subject" && item.visible }

@@ -56,6 +56,18 @@ RSpec.describe TypeSchemes::Resolver do
       expect(described_class.allowed_types(other).to_a).to eq([bug])
     end
 
+    it "reports and logs a scheme with no enabled type, without crashing" do
+      other = create(:project, types: [bug])
+      ProjectTypeScheme.create!(project: other, scheme:)
+      allow(Rails.logger).to receive(:warn)
+
+      expect(described_class.disjoint?(other)).to be true
+      expect(described_class.disjoint?(project)).to be false
+      expect(described_class.type_allowed?(other, bug.id)).to be true
+      described_class.allowed_types(other)
+      expect(Rails.logger).to have_received(:warn).with(/no type enabled in project #{other.id}/).once
+    end
+
     it "ignores inactive schemes" do
       scheme.update_columns(active: false)
       expect(described_class.for_project(project)).to be_nil
@@ -156,6 +168,33 @@ RSpec.describe TypeSchemes::Resolver do
 
   context "with a default scheme and no explicit assignment" do
     let!(:default) { create(:type_scheme, types: [story, epic], is_default: true) }
+
+    context "when auto-assign is disabled" do
+      before { allow(Setting).to receive(:type_scheme_auto_assign_default?).and_return(false) }
+
+      it "does not filter: no scheme applies and every enabled type is allowed" do
+        expect(described_class.for_project(project)).to be_nil
+        expect(described_class.allowed_types(project)).to match_array([epic, story, bug])
+        expect(described_class.type_allowed?(project, bug.id)).to be true
+      end
+
+      it "still applies an explicit assignment" do
+        ProjectTypeScheme.create!(project:, scheme: create(:type_scheme, types: [bug]))
+        expect(described_class.allowed_types(project).to_a).to eq([bug])
+      end
+    end
+
+    it "filters by the default scheme when auto-assign is enabled" do
+      expect(described_class.type_allowed?(project, story.id)).to be true
+      expect(described_class.type_allowed?(project, bug.id)).to be false
+    end
+
+    it "memoises allowed_types per request and recomputes after a reset" do
+      expect(described_class.allowed_types(project)).to equal(described_class.allowed_types(project))
+      first = described_class.allowed_types(project)
+      described_class.reset_cache
+      expect(described_class.allowed_types(project)).not_to equal(first)
+    end
 
     it "falls back to the default scheme" do
       expect(described_class.for_project(project)).to eq default

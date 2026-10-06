@@ -16,6 +16,8 @@ en:
         one: "Deactivate this type scheme? The %{count} project using it will switch to the default scheme."
         other: "Deactivate this type scheme? The %{count} projects using it will switch to the default scheme."
       activate: "Activate"
+      auto_assign_default: "Assign the default scheme to new projects"
+      auto_assign_default_hint: "When disabled, new projects get no scheme until one is assigned, and work package types are not filtered for them."
       blank_heading: "No type schemes yet"
       blank_description: "Type schemes become available once at least one work package type exists."
     form:
@@ -52,6 +54,7 @@ en:
       available_types_hint: "Types are offered in this order. The type marked as default is preselected for new work packages."
       no_types: "No types are available for this project."
       manage_types: "Manage the types enabled in this project."
+      no_enabled_types: "None of the types of this scheme is enabled in this project, so the scheme is not applied and all enabled types are offered."
       missing_types: "These types belong to the scheme but are not enabled in this project: %{types}."
     confirm:
       title: "Confirm type scheme changes"

@@ -36,12 +36,18 @@ module TypeSchemes
 
     def for_project(project)
       return if project.nil?
-      return default_scheme if project.id.nil?
+      return fallback_scheme if project.id.nil?
 
       by_project = cache[:projects]
       return by_project[project.id] if by_project.key?(project.id)
 
-      by_project[project.id] = find_active_scheme(project.id) || default_scheme
+      by_project[project.id] = find_active_scheme(project.id) || fallback_scheme
+    end
+
+    # Projects without an (active) assignment use the default scheme only while auto-assign is on;
+    # when it is off they are not filtered at all (native behaviour).
+    def fallback_scheme
+      default_scheme if Setting.type_scheme_auto_assign_default?
     end
 
     def type_allowed?(project, type_id)
@@ -50,7 +56,17 @@ module TypeSchemes
 
       enabled_ids = project.project_types.map(&:type_id)
       scheme_ids = scheme.items.map(&:type_id) & enabled_ids
+      warn_disjoint(project, scheme) if scheme_ids.empty?
       scheme_ids.empty? || scheme_ids.include?(type_id)
+    end
+
+    # True when the project's scheme has types but none is enabled in the project. Resolution then
+    # fails open to the native enabled types; surfaced to the project settings page and the API.
+    def disjoint?(project)
+      scheme = for_project(project)
+      return false unless scheme&.items&.any?
+
+      (scheme.items.map(&:type_id) & project.project_types.map(&:type_id)).empty?
     end
 
     def reset_cache
@@ -59,14 +75,33 @@ module TypeSchemes
 
     # Returns +scope+ untouched when no scheme applies, so project settings stay native.
     # With +default_first+ the scheme's default type leads, so callers taking +.first+ preselect it.
-    def allowed_types(project, scope = project.enabled_types, default_first: true)
+    def allowed_types(project, scope = nil, default_first: true)
       scheme = for_project(project)
-      return scope unless scheme
+      return scope || project.enabled_types unless scheme
 
+      # Memoised per request for the common call (project's own enabled types, no custom scope).
+      return compute_allowed_types(project, scheme, scope, default_first) if scope || project.id.nil?
+
+      key = [project.id, default_first, project.project_types.map(&:type_id).sort]
+      (cache[:allowed] ||= {})[key] ||= compute_allowed_types(project, scheme, project.enabled_types, default_first)
+    end
+
+    def compute_allowed_types(project, scheme, scope, default_first)
+      scope ||= project.enabled_types
       by_id = scope.index_by(&:id)
       ordered = scheme.items.sort_by { |i| [default_first && i.is_default ? 0 : 1, i.position, i.id.to_i] }
                       .filter_map { |i| by_id[i.type_id] }
+      warn_disjoint(project, scheme) if ordered.empty?
       ordered.presence || scope
+    end
+
+    # Logged once per project and request to keep the log readable.
+    def warn_disjoint(project, scheme)
+      warned = (cache[:warned] ||= Set.new)
+      return unless warned.add?(project.id)
+
+      Rails.logger.warn("[type_schemes] scheme #{scheme.id} has no type enabled in project #{project.id}; " \
+                        "not filtering, using the project's enabled types")
     end
 
     def find_active_scheme(project_id)

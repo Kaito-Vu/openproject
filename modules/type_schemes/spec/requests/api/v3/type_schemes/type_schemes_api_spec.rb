@@ -55,7 +55,10 @@ RSpec.describe "API v3 type schemes" do
   end
 
   describe "reading" do
-    before { login_as(viewer) }
+    before do
+      TypeSchemes::SchemeService.assign(project, scheme)
+      login_as(viewer)
+    end
 
     it "lists schemes" do
       get api_v3_paths.type_schemes
@@ -79,6 +82,78 @@ RSpec.describe "API v3 type schemes" do
     it "forbids writing" do
       post api_v3_paths.type_schemes, body_for("X", [bug]), headers
       expect(last_response).to have_http_status(:forbidden)
+    end
+
+    it "hides schemes not used by a project the user may view" do
+      other_project = create(:project, types: [bug])
+      hidden = create(:type_scheme, name: "Hidden", types: [bug])
+      TypeSchemes::SchemeService.assign(other_project, hidden)
+
+      get api_v3_paths.type_schemes
+      names = json["_embedded"]["elements"].pluck("name")
+      expect(names).to include("Dev")
+      expect(names).not_to include("Hidden")
+
+      get api_v3_paths.type_scheme(hidden.id)
+      expect(last_response).to have_http_status(:not_found)
+    end
+
+    it "does not list schemes for a user without view_work_packages" do
+      login_as(create(:user, member_with_permissions: { project => %i[assign_type_scheme] }))
+
+      get api_v3_paths.type_schemes
+      expect(json["_embedded"]["elements"]).to be_empty
+
+      get api_v3_paths.type_scheme(scheme.id)
+      expect(last_response).to have_http_status(:not_found)
+    end
+
+    it "requires login" do
+      login_as(User.anonymous)
+      get api_v3_paths.type_schemes
+      expect(last_response).to have_http_status(:unauthorized)
+
+      get api_v3_paths.type_scheme(scheme.id)
+      expect(last_response).to have_http_status(:unauthorized)
+    end
+
+    describe "default scheme for projects without an assignment" do
+      let!(:default) { create(:type_scheme, name: "Fallback", types: [bug], is_default: true) }
+      let(:unassigned) { create(:project, types: [bug]) }
+      let(:unassigned_viewer) { create(:user, member_with_permissions: { unassigned => %i[view_work_packages] }) }
+
+      before { login_as(unassigned_viewer) }
+
+      it "lists the default scheme when auto-assign is on" do
+        get api_v3_paths.type_schemes
+        expect(json["_embedded"]["elements"].pluck("name")).to include("Fallback")
+      end
+
+      it "hides the default scheme (404) when auto-assign is off" do
+        allow(Setting).to receive(:type_scheme_auto_assign_default?).and_return(false)
+
+        get api_v3_paths.type_schemes
+        expect(json["_embedded"]["elements"].pluck("name")).not_to include("Fallback")
+
+        get api_v3_paths.type_scheme(default.id)
+        expect(last_response).to have_http_status(:not_found)
+      end
+    end
+
+    it "lets an admin see every scheme" do
+      unused = create(:type_scheme, name: "Unused", types: [bug])
+      login_as(admin)
+
+      get api_v3_paths.type_schemes
+      expect(json["_embedded"]["elements"].pluck("name")).to include("Dev", "Unused")
+      get api_v3_paths.type_scheme(unused.id)
+      expect(last_response).to have_http_status(:ok)
+    end
+
+    it "forbids PATCH for a non-admin" do
+      patch api_v3_paths.type_scheme(scheme.id), { name: "Nope" }.to_json, headers
+      expect(last_response).to have_http_status(:forbidden)
+      expect(scheme.reload.name).to eq "Dev"
     end
   end
 
@@ -170,6 +245,27 @@ RSpec.describe "API v3 type schemes" do
       expect(last_response).to have_http_status(:unprocessable_entity)
     end
 
+    it "deactivates and reactivates a non-default scheme" do
+      patch api_v3_paths.type_scheme(scheme.id), { active: false }.to_json, headers
+      expect(last_response).to have_http_status(:ok)
+      expect(scheme.reload).not_to be_active
+
+      patch api_v3_paths.type_scheme(scheme.id), { active: true }.to_json, headers
+      expect(last_response).to have_http_status(:ok)
+      expect(scheme.reload).to be_active
+    end
+
+    it "rolls back item changes when the activation toggle fails" do
+      default = TypeSchemes::DefaultScheme.ensure!
+      before_ids = default.items.pluck(:type_id)
+      body = { name: "Renamed", active: false, typeItems: [{ typeId: bug.id, position: 1, default: true }] }
+      patch api_v3_paths.type_scheme(default.id), body.to_json, headers
+
+      expect(last_response).to have_http_status(:unprocessable_entity)
+      expect(default.reload.name).not_to eq "Renamed"
+      expect(default.items.pluck(:type_id)).to match_array(before_ids)
+    end
+
     it "rejects a scheme without a default type" do
       body = { name: "Bad", typeItems: [{ _links: { type: { href: api_v3_paths.type(bug.id) } }, position: 1 }] }
       post api_v3_paths.type_schemes, body.to_json, headers
@@ -229,6 +325,21 @@ RSpec.describe "API v3 type schemes" do
       login_as(create(:user, member_with_permissions: { project => %i[assign_type_scheme] }))
       get api_v3_paths.project_available_types(project.id)
       expect(last_response).to have_http_status(:forbidden)
+    end
+
+    it "warns via header when no scheme type is enabled in the project" do
+      other = create(:type_scheme, name: "Disjoint", types: [create(:type)])
+      TypeSchemes::SchemeService.assign(project, other)
+
+      get api_v3_paths.project_available_types(project.id)
+      expect(last_response.headers["X-Type-Scheme-Warning"]).to eq "no_enabled_types"
+      expect(json["_embedded"]["elements"].pluck("id")).to match_array([epic.id, story.id, bug.id])
+    end
+
+    it "sends no warning header when the scheme intersects" do
+      TypeSchemes::SchemeService.assign(project, scheme)
+      get api_v3_paths.project_available_types(project.id)
+      expect(last_response.headers).not_to have_key("X-Type-Scheme-Warning")
     end
 
     it "returns all enabled types without a scheme" do

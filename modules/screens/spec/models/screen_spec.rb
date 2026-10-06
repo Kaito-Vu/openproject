@@ -72,4 +72,13 @@ RSpec.describe Screen, type: :model do
     expect(::Screens::Resolver).to receive(:reset_cache).once
     section.destroy
   end
+
+  it "resets the resolver cache again when the saving transaction rolls back" do
+    screen = create(:screen)
+    expect(::Screens::Resolver).to receive(:reset_cache).at_least(:once)
+    Screen.transaction do
+      screen.update!(name: "Rolled back")
+      raise ActiveRecord::Rollback
+    end
+  end
 end

@@ -29,6 +29,10 @@
   </div>
 <% end %>
 
+<% if ::TypeSchemes::Resolver.disjoint?(@project) %>
+  <%= render Primer::Beta::Flash.new(scheme: :warning, mt: 3, mb: 3) { t("type_schemes.project_settings.no_enabled_types") } %>
+<% end %>
+
 <% if missing.any? %>
   <%= render Primer::Beta::Flash.new(scheme: :warning, mt: 3, mb: 3) do %>
     <%= t("type_schemes.project_settings.missing_types", types: missing.map(&:name).to_sentence) %>

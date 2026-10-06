@@ -41,6 +41,8 @@ class ScreenItem < ApplicationRecord
   validates :width, inclusion: { in: WIDTHS }
   validates :position, numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than: 100_000 }
 
-  after_save { ::Screens::Resolver.reset_cache }
-  after_destroy { ::Screens::Resolver.reset_cache }
+  # after_commit so a concurrent request cannot cache pre-commit data; rollback drops what was
+  # cached from inside the aborted transaction.
+  after_commit { ::Screens::Resolver.reset_cache }
+  after_rollback { ::Screens::Resolver.reset_cache }
 end

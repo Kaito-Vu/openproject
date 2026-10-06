@@ -7,7 +7,12 @@ get:
     - Type Schemes
   description: |-
     Types that can be chosen when creating a work package, in the order defined by the project's type scheme
-    (default type first). Without a scheme these are the types enabled in the project.
+    (default type first). Without a scheme these are the types enabled in the project: a project that
+    has no assignment is not filtered when the setting `type_scheme_auto_assign_default` is off.
+
+    If the scheme of the project has types but none of them is enabled in the project, the scheme is not
+    applied (fail-open): the response lists the types enabled in the project and carries the header
+    `X-Type-Scheme-Warning: no_enabled_types`.
 
     **Required permission:** view work packages
   parameters:
@@ -23,6 +28,13 @@ get:
         application/hal+json:
           schema:
             $ref: '../components/schemas/collection_model.yml'
+      headers:
+        X-Type-Scheme-Warning:
+          description: Set to `no_enabled_types` when the scheme of the project is not applied because none of its types is enabled in the project.
+          schema:
+            type: string
+            enum:
+              - no_enabled_types
     '403':
       description: Returned if the user may not view work packages in the project.
     '404':

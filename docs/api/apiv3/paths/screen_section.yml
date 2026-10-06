@@ -1,0 +1,82 @@
+# /api/v3/screens/{id}/sections/{sid}
+---
+patch:
+  summary: Rename or move a section
+  operationId: update_screen_section
+  tags:
+    - Screens
+  description: |-
+    Updates `name` and/or `position`. Without `position` the order is left unchanged. `position` is
+    1-based; values below 1 (including `0`) mean first and values above the section count mean
+    last. The other sections are renumbered.
+
+    The response is the whole screen, including the non-blocking `warnings` list.
+
+    **Required permission:** administrator
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+    - name: sid
+      in: path
+      required: true
+      schema:
+        type: integer
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+            position:
+              type: integer
+  responses:
+    '200':
+      description: OK
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../components/schemas/screen_model.yml'
+    '401':
+      description: Returned if the client is not authenticated.
+    '403':
+      description: Returned if the user is not an administrator.
+    '404':
+      description: Returned if the screen or the section does not exist.
+    '422':
+      description: Returned if the name is invalid or the change fails the create-screen coverage check (`required_not_placed`).
+delete:
+  summary: Remove a section
+  operationId: delete_screen_section
+  tags:
+    - Screens
+  description: |-
+    Removes the section with all its items and renumbers the remaining sections.
+
+    **Required permission:** administrator
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+    - name: sid
+      in: path
+      required: true
+      schema:
+        type: integer
+  responses:
+    '204':
+      description: No Content
+    '401':
+      description: Returned if the client is not authenticated.
+    '403':
+      description: Returned if the user is not an administrator.
+    '404':
+      description: Returned if the screen or the section does not exist.
+    '422':
+      description: Returned if the removal leaves an in-use create screen without the required fields (`required_not_placed`).

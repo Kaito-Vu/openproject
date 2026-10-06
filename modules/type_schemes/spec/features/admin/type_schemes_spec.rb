@@ -43,6 +43,16 @@ RSpec.describe "Type schemes administration" do
 
   current_user { admin }
 
+  it "toggles auto-assignment of the default scheme to new projects" do
+    visit admin_type_schemes_path
+    expect(page).to have_checked_field("auto_assign_default")
+
+    uncheck "auto_assign_default"
+    click_button "Save"
+    expect(page).to have_text("Successful update.")
+    expect(Setting.type_scheme_auto_assign_default?).to be false
+  end
+
   it "creates a scheme with three types and a default and lists it" do
     visit new_admin_type_scheme_path
     fill_in "type_scheme_name", with: "Software"

@@ -50,15 +50,21 @@ module Screens
       # A field can be placed globally but be unavailable for a specific project/type, e.g. a
       # custom field that is not activated in that project. A missing variant fails open.
       def available?(key, project:, type:)
-        variant = variant_of(project, type)
-        return true if variant.nil?
+        availability([key], project:, type:)[key.to_s]
+      end
 
-        key = key.to_s
-        return variant.active_custom_field_attributes.include?(key) if custom_field_key?(key)
+      # { key => available } for many keys; loads the variant and its custom fields once, not per key.
+      def availability(keys, project:, type:)
+        keys = keys.map(&:to_s).uniq
+        Resolver.fail_open("field availability", keys.index_with { true }, project_id: project&.id, type_id: type&.id) do
+          variant = variant_of(project, type)
+          next keys.index_with { true } if variant.nil?
 
-        variant.passes_attribute_constraint?(key, project:)
-      rescue StandardError
-        true
+          active = variant.active_custom_field_attributes if keys.any? { |key| custom_field_key?(key) }
+          keys.index_with do |key|
+            custom_field_key?(key) ? active.include?(key) : variant.passes_attribute_constraint?(key, project:)
+          end
+        end
       end
 
       def label(key)
@@ -81,8 +87,8 @@ module Screens
 
       def reset_registry!
         @registry = {}
-        RequestStore.store.delete(NATIVE_KEYS_CACHE) if defined?(RequestStore)
-        RequestStore.store.delete(LABELS_CACHE) if defined?(RequestStore)
+        RequestStore.store.delete(NATIVE_KEYS_CACHE)
+        RequestStore.store.delete(LABELS_CACHE)
       end
 
       def custom_field_id(key)
@@ -94,11 +100,7 @@ module Screens
       end
 
       def native_keys
-        if defined?(RequestStore)
-          RequestStore.store[NATIVE_KEYS_CACHE] ||= compute_native_keys
-        else
-          @native_keys ||= compute_native_keys
-        end
+        RequestStore.store[NATIVE_KEYS_CACHE] ||= compute_native_keys
       end
 
       def native_labels
@@ -118,11 +120,7 @@ module Screens
       end
 
       def labels
-        if defined?(RequestStore)
-          RequestStore.store[LABELS_CACHE] ||= compute_labels
-        else
-          @labels ||= compute_labels
-        end
+        RequestStore.store[LABELS_CACHE] ||= compute_labels
       end
 
       def compute_labels

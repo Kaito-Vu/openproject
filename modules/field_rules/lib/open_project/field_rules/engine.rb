@@ -101,5 +101,11 @@ module OpenProject::FieldRules
       ::API::V3::WorkPackages::Schema::WorkPackageSchemaRepresenter.prepend(OpenProject::FieldRules::SchemaPatch)
       OpenProject::FieldRules::Constraints.install
     end
+
+    # Re-install after every engine has registered its own constraints (install is idempotent), then verify.
+    config.after_initialize do
+      OpenProject::FieldRules::Constraints.install
+      OpenProject::FieldRules::Constraints.verify!
+    end
   end
 end

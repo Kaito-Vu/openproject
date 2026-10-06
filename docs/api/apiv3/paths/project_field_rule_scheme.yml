@@ -8,6 +8,8 @@ put:
   description: |-
     Assigns the active scheme with the given `scheme_id`. An empty `scheme_id` removes the assignment, so the project uses the native behaviour.
 
+    This resource only supports `PUT`; there is no `GET`. The effective rules of a project are read with `GET /api/v3/projects/{id}/types/{type_id}/field_rules`.
+
     **Required permission:** assign field rule scheme (in the project)
   parameters:
     - name: id
@@ -28,6 +30,8 @@ put:
   responses:
     '204':
       description: No Content
+    '401':
+      description: Returned if the client is not authenticated.
     '403':
       description: Returned if the user lacks the permission.
     '404':

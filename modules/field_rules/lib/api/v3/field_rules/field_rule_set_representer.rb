@@ -49,6 +49,7 @@ module API
         end
 
         def rules
+          unavailable = ::FieldRules::Fields.unavailable_project_counts(represented.rules.map(&:field_key))
           represented.rules.map do |rule|
             { fieldKey: rule.field_key,
               hidden: rule.hidden,
@@ -56,7 +57,8 @@ module API
               readOnly: rule.read_only,
               enforceOnUpdate: rule.enforce_on_update,
               defaultValue: rule.default_value,
-              position: rule.position }
+              position: rule.position,
+              unavailableInProjects: unavailable.fetch(rule.field_key, 0) }
           end
         end
       end

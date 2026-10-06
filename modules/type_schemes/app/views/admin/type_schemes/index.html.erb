@@ -24,6 +24,18 @@
   end
 %>
 
+<%= form_tag settings_admin_type_schemes_path, method: :patch, class: "form" do %>
+  <div class="form--field -wide-label">
+    <%= label_tag :auto_assign_default, t("type_schemes.index.auto_assign_default"), class: "form--label" %>
+    <span class="form--field-container">
+      <%= hidden_field_tag :auto_assign_default, "0", id: nil %>
+      <%= check_box_tag :auto_assign_default, "1", Setting.type_scheme_auto_assign_default?, class: "form--check-box" %>
+    </span>
+    <div class="form--field-instructions"><%= t("type_schemes.index.auto_assign_default_hint") %></div>
+  </div>
+  <%= render(Primer::Beta::Button.new(type: :submit, mb: 3)) { t(:button_save) } %>
+<% end %>
+
 <% if @schemes.empty? %>
   <%=
     render Primer::Beta::Blankslate.new(border: true) do |blankslate|

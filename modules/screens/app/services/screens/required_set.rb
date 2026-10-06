@@ -38,6 +38,11 @@ module Screens
 
     module_function
 
+    # F02 can be removed from Gemfile.modules; every F02 touchpoint guards on this one predicate.
+    def field_rules?
+      defined?(::FieldRules::Resolver) ? true : false
+    end
+
     def for(project, type)
       return [] if type.nil?
 
@@ -69,14 +74,23 @@ module Screens
                    .to_set
     end
 
-    def for_scheme_type(scheme, type)
-      project_ids = ProjectScreenScheme.where(scheme_id: scheme.id).pluck(:project_id)
+    # project_ids defaults to the projects currently using the scheme; pass the project being
+    # assigned to check it before the assignment exists.
+    def for_scheme_type(scheme, type, project_ids: nil)
+      project_ids ||= ProjectScreenScheme.where(scheme_id: scheme.id).pluck(:project_id)
       return {} if project_ids.empty?
       return :skipped if project_ids.size > MAX_PROJECTS
       return {} if type.nil?
 
       project_ids.each_slice(BATCH_SIZE).reduce({}) do |acc, batch|
         acc.merge(batch_required(batch, type))
+      end
+    end
+
+    # Fields F02 hides per project for the type: { project_id => [field_key] }.
+    def hidden_for_scheme_type(project_ids, type)
+      field_rules_many(project_ids, type).to_h do |(project_id, _type_id), config|
+        [project_id, config.select(&:hidden).map(&:key)]
       end
     end
 
@@ -97,12 +111,12 @@ module Screens
     end
 
     def field_rules_for(project, type)
-      return [[], []] unless defined?(::FieldRules::Resolver)
+      return [[], []] unless field_rules?
 
-      config = ::FieldRules::Resolver.for(project, type)
-      [config, config.select { |field| field.default_value.present? }.map(&:key)]
-    rescue StandardError
-      [[], []]
+      Resolver.fail_open("field rules for required set", [[], []], project_id: project&.id, type_id: type&.id) do
+        config = ::FieldRules::Resolver.for(project, type)
+        [config, config.select { |field| field.default_value.present? }.map(&:key)]
+      end
     end
 
     def batch_required(project_ids, type)
@@ -140,11 +154,11 @@ module Screens
     end
 
     def field_rules_many(project_ids, type)
-      return {} unless defined?(::FieldRules::Resolver)
+      return {} unless field_rules?
 
-      ::FieldRules::Resolver.for_many(project_ids, [type.id])
-    rescue StandardError
-      {}
+      Resolver.fail_open("field rules for_many", {}, type_id: type.id) do
+        ::FieldRules::Resolver.for_many(project_ids, [type.id])
+      end
     end
   end
 end

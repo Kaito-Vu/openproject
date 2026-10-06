@@ -5,6 +5,39 @@ get:
   operationId: list_screens
   tags:
     - Screens
+  description: |-
+    Administrators can read every screen. Other users can read a screen only if it is used by a screen scheme assigned to a
+    project where they have the view work packages permission; otherwise 404 is returned. Anonymous access is not allowed.
+
+    **Required permission:** logged-in user
+  parameters:
+    - name: screenType
+      in: query
+      required: false
+      schema:
+        type: string
+        enum: [create, edit, view, transition]
+    - name: active
+      in: query
+      required: false
+      schema:
+        type: boolean
+    - name: name
+      in: query
+      required: false
+      description: Case-insensitive substring match.
+      schema:
+        type: string
+    - name: pageSize
+      in: query
+      required: false
+      schema:
+        type: integer
+    - name: offset
+      in: query
+      required: false
+      schema:
+        type: integer
   responses:
     '200':
       description: OK
@@ -35,6 +68,8 @@ post:
         application/hal+json:
           schema:
             $ref: '../components/schemas/screen_model.yml'
+    '401':
+      description: Returned if the client is not authenticated.
     '403':
       description: Returned if the user is not an administrator.
     '422':

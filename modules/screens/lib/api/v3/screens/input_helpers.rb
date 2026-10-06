@@ -35,6 +35,28 @@ module API
         TRUE_VALUES = [true, "true", "1", 1].freeze
         FALSE_VALUES = [false, "false", "0", 0, "", nil].freeze
 
+        # Reading screens and schemes needs a logged-in user (no anonymous access); what they may see
+        # is limited by visible_screen_schemes / visible_screens.
+        def authorize_screens_read!
+          authorize_logged_in
+        end
+
+        # Admins see all; others only schemes assigned to a project where they may view work packages.
+        def visible_screen_schemes
+          return ScreenScheme.all if current_user.admin?
+
+          projects = Project.allowed_to(current_user, :view_work_packages)
+          ScreenScheme.where(id: ProjectScreenScheme.where(project_id: projects.select(:id)).select(:scheme_id))
+        end
+
+        # Screens used by one of the visible schemes.
+        def visible_screens
+          return Screen.all if current_user.admin?
+
+          items = ScreenSchemeItem.where(scheme_id: visible_screen_schemes.select(:id))
+          ScreenScheme::SLOTS.values.map { |slot| Screen.where(id: items.select(:"#{slot}_id")) }.reduce(:or)
+        end
+
         def safe_id(value)
           return 0 unless value.is_a?(String) || value.is_a?(Integer)
 

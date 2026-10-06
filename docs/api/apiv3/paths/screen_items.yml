@@ -1,0 +1,59 @@
+# /api/v3/screens/{id}/items
+---
+post:
+  summary: Place a field on a screen
+  operationId: create_screen_item
+  tags:
+    - Screens
+  description: |-
+    Appends a field at the end of the section `sectionId`. A field can be placed once per screen.
+    At most 100 items are allowed per screen.
+
+    The response is the whole screen, including the non-blocking `warnings` list.
+
+    **Required permission:** administrator
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - fieldKey
+            - sectionId
+          properties:
+            fieldKey:
+              type: string
+              description: A placeable native or custom field key.
+            sectionId:
+              type: integer
+            width:
+              type: string
+              enum: [full, half]
+              default: full
+            visible:
+              type: boolean
+              default: true
+  responses:
+    '200':
+      description: OK
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../components/schemas/screen_model.yml'
+    '401':
+      description: Returned if the client is not authenticated.
+    '403':
+      description: Returned if the user is not an administrator.
+    '404':
+      description: Returned if the screen or the section does not exist.
+    '422':
+      description: |-
+        Returned if the field is unknown or already placed, the width is invalid, the item limit is
+        reached, or the change leaves an in-use create screen without the required fields
+        (`required_not_placed`).

@@ -5,6 +5,11 @@ get:
   operationId: list_field_rule_schemes
   tags:
     - Field Rules
+  description: |-
+    Administrators see all schemes. Other users see only those assigned to a project where they have the
+    view work packages permission. Anonymous access is not allowed.
+
+    **Required permission:** logged-in user
   responses:
     '200':
       description: OK
@@ -12,6 +17,8 @@ get:
         application/hal+json:
           schema:
             $ref: '../components/schemas/field_rule_scheme_collection_model.yml'
+    '401':
+      description: Returned if the client is not authenticated.
 post:
   summary: Create a field rule scheme
   operationId: create_field_rule_scheme

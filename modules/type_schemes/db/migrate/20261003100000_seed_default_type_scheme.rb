@@ -33,5 +33,16 @@ class SeedDefaultTypeScheme < ActiveRecord::Migration[8.1]
     TypeSchemes::DefaultMigration.call(mode: "auto")
   end
 
-  def down; end
+  # Removes only what #up seeded: the untouched-name default scheme (items cascade) and its project assignments.
+  # Types, projects and work packages are never touched.
+  def down
+    return unless table_exists?(:type_schemes)
+
+    ids = select_values("SELECT id FROM type_schemes WHERE is_default AND name = 'Default Scheme'")
+    return if ids.empty?
+
+    list = ids.map(&:to_i).join(",")
+    execute("DELETE FROM project_type_schemes WHERE scheme_id IN (#{list})")
+    execute("DELETE FROM type_schemes WHERE id IN (#{list})")
+  end
 end

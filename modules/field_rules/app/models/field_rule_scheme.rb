@@ -42,8 +42,11 @@ class FieldRuleScheme < ApplicationRecord
   validate :types_unique_and_bounded
 
   before_destroy :prevent_destroy
+  # Also after commit/rollback: a rolled back transaction must not leave a cache built from uncommitted rows.
   after_save { ::FieldRules::Resolver.reset_cache }
   after_destroy { ::FieldRules::Resolver.reset_cache }
+  after_commit { ::FieldRules::Resolver.reset_cache }
+  after_rollback { ::FieldRules::Resolver.reset_cache }
 
   scope :active, -> { where(active: true) }
 

@@ -148,3 +148,34 @@ Thay thế các điểm tương ứng ở §3, §5, §7, §8.
 - Form admin: mỗi dòng type có cột **Color** với hai chế độ (Stimulus `type-schemes--color`): **Choose from list** = `opce-colors-autocompleter` (dropdown có swatch, cùng component với form Type) kèm swatch xem trước; **Custom color** = color picker (hex). Picker map hexcode về `Color`: tái dùng theo hexcode (không phân biệt hoa/thường), chưa có thì tạo mới.
 - Type tạo qua "Add new types" bắt đầu **chưa có màu**; đặt màu ở cột Color sau khi dòng xuất hiện.
 - API v3: `typeItems[].colorId` (palette) / `typeItems[].colorHex` (custom) khi ghi; `typeItems[].color` dạng object `{id,name,hexcode}` khi đọc. Không còn `color` ở cấp scheme.
+
+## 15. Cập nhật sau review hội đồng (2026-10-06)
+
+### Quyền đọc (D1)
+
+* `GET /api/v3/type_schemes` và `/:id`: phải đăng nhập (ẩn danh ⇒ 401). Admin thấy tất cả; người khác chỉ thấy scheme gắn với project có `view_work_packages` (cộng scheme Default cho project chưa gán khi toggle bên dưới bật). Ngoài tập này ⇒ 404.
+* `GET /api/v3/projects/:id/available_types` (`view_work_packages`) trả header `X-Type-Scheme-Warning: no_enabled_types` khi scheme không có type nào bật trong project (fail-open, trả type đang bật).
+* `/api/v3/projects/:id/type_scheme` chỉ có `PUT` (quyền `assign_type_scheme`); không có `GET` trên resource này.
+
+### Rollout / feature flag
+
+* Setting `type_scheme_auto_assign_default` (mặc định bật; `Administration → Work packages → Type schemes`). Bật: project mới được gán scheme Default và project chưa gán dùng Default. Tắt: project mới không có assignment và **không bị lọc Type** (hành vi native, không fallback về Default). Project đã có dòng assignment không đổi.
+* Bật/tắt không sửa work package hiện có.
+
+### Bảng mã lỗi chuẩn hoá (dùng chung F01/F02/F03)
+
+| Mã | Nơi dùng | Ý nghĩa |
+|---|---|---|
+| `not_in_scheme` | F01, lỗi `type_id` của work package | Type không được type scheme của project cho phép. |
+| `required_not_placed` | F03 | Screen create đang dùng không đặt field bắt buộc (hiện tại: `subject` hiển thị); cũng có ở scheme item (kèm field/project). |
+| `hidden_and_required` | F03 (scheme item/gán project) | Field vừa bị F02 ẩn vừa bắt buộc. |
+| `context_mismatch` | F03 | Screen gán vào slot của một context khác loại. |
+| `in_use` | (dự phòng) | Chưa được code phát ra (đã gỡ khoá i18n); giữ chỗ cho việc chặn sửa screen đang dùng. |
+| `invalid_context` | F03 resolver | `context` ngoài `create/edit/view/transition` ⇒ 422. |
+
+Các lỗi trên trả về trong body lỗi 422 của API v3 (validation), trừ khi ghi chú khác.
+
+### 404 và 403 thống nhất
+
+* Đọc (GET) cấu hình của cả ba module cần đăng nhập (ẩn danh ⇒ 401). Admin thấy tất cả; người khác chỉ thấy bản ghi gắn với project mà họ có `view_work_packages`. Bản ghi ngoài tập đó trả **404** (không lộ sự tồn tại). 403 chỉ dùng khi đã biết resource nhưng thiếu quyền (ghi cần admin, endpoint theo project thiếu quyền).
+* Endpoint theo project (resolver, `field_rules`, `available_types`) giữ quyền `view_work_packages` ở project đó; type không bật trong project ⇒ 404.

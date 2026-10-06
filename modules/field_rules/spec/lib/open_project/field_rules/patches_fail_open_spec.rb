@@ -67,8 +67,25 @@ RSpec.describe "Field rule patches fail open" do # rubocop:disable RSpec/Describ
     it "returns the native schema when adjusting it fails" do
       allow(FieldRules::Resolver).to receive(:for).and_return(configuration(rule("description", required: true)))
       allow(FieldRules::Fields).to receive(:schema_key).and_raise(StandardError, "boom")
+      allow(Rails.logger).to receive(:error)
 
       expect(representer.to_json).to equal(json)
+      expect(Rails.logger).to have_received(:error).with(/adjusting schema failed, failing open: StandardError: boom/)
+    end
+
+    it "keeps the native cache key dependencies and logs when computing the key fails" do
+      native = Class.new do
+        define_method(:json_key_dependencies) { :native_key }
+        attr_reader :represented
+
+        define_method(:initialize) { |represented| @represented = represented }
+        prepend OpenProject::FieldRules::SchemaPatch
+      end.new(represented)
+      allow(FieldRules::Resolver).to receive(:for).and_raise(StandardError, "boom")
+      allow(Rails.logger).to receive(:error)
+
+      expect(native.send(:json_key_dependencies)).to eq :native_key
+      expect(Rails.logger).to have_received(:error).with(/schema cache key failed, failing open: StandardError: boom/)
     end
 
     it "returns the native schema when the core produced something that is not JSON" do
@@ -133,8 +150,14 @@ RSpec.describe "Field rule patches fail open" do # rubocop:disable RSpec/Describ
 
     it "shows the field when resolving fails" do
       allow(FieldRules::Resolver).to receive(:for).and_raise(StandardError, "boom")
+      allow(Rails.logger).to receive(:error)
+      allow(Rails.error).to receive(:report)
 
       expect(described_class.wrap("priority", nil).call(variant, project:)).to be true
+      expect(Rails.logger).to have_received(:error)
+        .with(/hidden check failed, failing open: StandardError: boom.*field="priority".*type_id=42/)
+      expect(Rails.error).to have_received(:report)
+        .with(an_instance_of(StandardError), hash_including(handled: true, context: hash_including(where: "hidden check")))
     end
 
     describe ".install" do
@@ -164,6 +187,58 @@ RSpec.describe "Field rule patches fail open" do # rubocop:disable RSpec/Describ
 
         expect(TypeVariant.attribute_constraints[:category].call(variant, project:)).to be true
       end
+
+      it "hides again after another module overwrote the wrapper and install runs once more" do
+        described_class.install
+        TypeVariant.add_constraint(:category, ->(_variant, project: nil) { true })
+        allow(FieldRules::Resolver).to receive(:for)
+          .and_return(configuration(rule("category", hidden: true)))
+
+        described_class.install
+
+        expect(TypeVariant.attribute_constraints[:category].call(variant, project:)).to be false
+      end
+
+      it "marks its wrapper and does not nest it when installed twice" do
+        2.times { described_class.install }
+
+        expect(described_class.wrapped?(TypeVariant.attribute_constraints[:category])).to be true
+      end
+
+      it "logs an error for every attribute whose wrapper was overwritten" do
+        described_class.install
+        TypeVariant.add_constraint(:category, ->(_variant, project: nil) { true })
+        allow(Rails.logger).to receive(:error)
+
+        described_class.verify!
+
+        expect(Rails.logger).to have_received(:error).with(/hidden constraint missing for category/).once
+      end
+    end
+  end
+
+  describe "OpenProject::FieldRules.fail_open" do
+    it "returns the block value when nothing fails" do
+      expect(OpenProject::FieldRules.fail_open("x", :fallback) { :ok }).to eq :ok
+    end
+
+    it "returns the fallback, logs class, message and context and reports the error" do
+      allow(Rails.logger).to receive(:error)
+      allow(Rails.error).to receive(:report)
+
+      result = OpenProject::FieldRules.fail_open("probing", :fallback, project_id: 7) { raise ArgumentError, "bad" }
+
+      expect(result).to eq :fallback
+      expect(Rails.logger).to have_received(:error).with(/probing failed, failing open: ArgumentError: bad project_id=7/)
+      expect(Rails.error).to have_received(:report)
+        .with(an_instance_of(ArgumentError), handled: true, context: { project_id: 7, where: "probing" })
+    end
+
+    it "still fails open when error reporting itself raises" do
+      allow(Rails.logger).to receive(:error)
+      allow(Rails.error).to receive(:report).and_raise("reporter down")
+
+      expect(OpenProject::FieldRules.fail_open("x", :fallback) { raise "boom" }).to eq :fallback
     end
   end
 
@@ -183,6 +258,22 @@ RSpec.describe "Field rule patches fail open" do # rubocop:disable RSpec/Describ
       expect { described_class.assert_patch_targets! }.not_to raise_error
     end
 
+    it "logs an error, but does not raise, when the arity of a patched core method changed" do
+      stub_const("OpenProject::FieldRules::PATCH_ARITIES", { writable_attributes: 3 }.freeze)
+      allow(Rails.logger).to receive(:error)
+
+      expect { described_class.assert_patch_targets! }.not_to raise_error
+      expect(Rails.logger).to have_received(:error).with(/writable_attributes has arity 0, expected 3/)
+    end
+
+    it "accepts the real core signatures" do
+      allow(Rails.logger).to receive(:error)
+
+      described_class.assert_patch_targets!
+
+      expect(Rails.logger).not_to have_received(:error).with(/arity/)
+    end
+
     it "prepends every patch exactly once, also after code reloading in development" do
       {
         WorkPackages::BaseContract => OpenProject::FieldRules::ContractPatch,
@@ -195,7 +286,6 @@ RSpec.describe "Field rule patches fail open" do # rubocop:disable RSpec/Describ
     end
 
     it "lists every core method a patch overrides in the boot guard" do
-      pending "KNOWN GAP (safety review #12): SchemaPatch#json_key_dependencies overrides core but is not guarded"
       {
         "WorkPackages::BaseContract" => OpenProject::FieldRules::ContractPatch,
         "WorkPackages::SetAttributesService" => OpenProject::FieldRules::SetAttributesServicePatch,

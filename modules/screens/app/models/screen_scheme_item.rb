@@ -44,8 +44,10 @@ class ScreenSchemeItem < ApplicationRecord
   validate :at_least_one_screen
   validate :slots_match_screen_types
 
-  after_save { ::Screens::Resolver.reset_cache }
-  after_destroy { ::Screens::Resolver.reset_cache }
+  # after_commit so a concurrent request cannot cache pre-commit data; rollback drops what was
+  # cached from inside the aborted transaction.
+  after_commit { ::Screens::Resolver.reset_cache }
+  after_rollback { ::Screens::Resolver.reset_cache }
 
   def screen_for(context)
     public_send(ScreenScheme::SLOTS.fetch(context.to_sym))

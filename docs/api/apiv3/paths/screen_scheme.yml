@@ -5,6 +5,11 @@ get:
   operationId: get_screen_scheme
   tags:
     - Screens
+  description: |-
+    Administrators can read every screen scheme. Other users can read a scheme only if it is assigned to a project
+    where they have the view work packages permission; otherwise 404 is returned. Anonymous access is not allowed.
+
+    **Required permission:** logged-in user
   responses:
     '200':
       description: OK
@@ -12,8 +17,10 @@ get:
         application/hal+json:
           schema:
             $ref: '../components/schemas/screen_scheme_model.yml'
+    '401':
+      description: Returned if the client is not authenticated.
     '404':
-      description: Returned if the scheme does not exist.
+      description: Returned if the scheme does not exist or is not visible to the user.
 patch:
   summary: Update a screen scheme
   operationId: update_screen_scheme
@@ -35,7 +42,11 @@ patch:
         application/hal+json:
           schema:
             $ref: '../components/schemas/screen_scheme_model.yml'
+    '401':
+      description: Returned if the client is not authenticated.
     '403':
       description: Returned if the user is not an administrator.
+    '404':
+      description: Returned if the scheme does not exist.
     '422':
       description: Returned if the update is invalid.

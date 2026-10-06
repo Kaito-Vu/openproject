@@ -7,6 +7,20 @@ description: |-
   Rules never add data and never delete existing values. Hidden fields keep their stored value (still returned in work
   package payloads) but cannot be written. Rule sets and schemes cannot be deleted, only deactivated.
 
+  ## Reading and permissions
+
+  Reading rule sets and schemes needs a logged-in user (anonymous requests get 401). Administrators see all of them;
+  other users only see those tied to projects where they have the view work packages permission, everything else
+  returns 404 (never 403, so existence is not revealed). Writing needs an administrator (there is no separate
+  `manage_field_rules` permission). The resolved rules of one project and type are readable with the view work
+  packages permission in that project.
+
+  ## Grandfather warning
+
+  The work package schema marks a property with `requiredButEmpty: true` when an existing work package has no value
+  for a field that is now required by a rule. It never blocks saving; it lets a form show that the field is required
+  but empty.
+
   ## Local Properties of a rule set
 
   | Property    | Description                                              | Type   | Supported operations |

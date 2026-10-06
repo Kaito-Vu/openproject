@@ -34,6 +34,9 @@ class FieldRuleSchemeItem < ApplicationRecord
   belongs_to :type
   belongs_to :rule_set, class_name: "FieldRuleSet", inverse_of: :scheme_items
 
+  # Also after commit/rollback: a rolled back transaction must not leave a cache built from uncommitted rows.
   after_save { ::FieldRules::Resolver.reset_cache }
   after_destroy { ::FieldRules::Resolver.reset_cache }
+  after_commit { ::FieldRules::Resolver.reset_cache }
+  after_rollback { ::FieldRules::Resolver.reset_cache }
 end

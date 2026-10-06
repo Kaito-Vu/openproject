@@ -42,8 +42,11 @@ class FieldRule < ApplicationRecord
 
   before_validation :normalize_state
   before_validation { @configurable = nil }
+  # Also after commit/rollback: a rolled back transaction must not leave a cache built from uncommitted rows.
   after_save { ::FieldRules::Resolver.reset_cache }
   after_destroy { ::FieldRules::Resolver.reset_cache }
+  after_commit { ::FieldRules::Resolver.reset_cache }
+  after_rollback { ::FieldRules::Resolver.reset_cache }
 
   def default_present? = default_value.present?
 

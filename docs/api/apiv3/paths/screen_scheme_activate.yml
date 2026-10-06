@@ -1,0 +1,26 @@
+# /api/v3/screen_schemes/{id}/activate
+---
+post:
+  summary: Activate a screen scheme
+  operationId: activate_screen_scheme
+  tags:
+    - Screens
+  description: |-
+    Inactive schemes are ignored by the resolver and projects fall back to the native layout.
+
+    **Required permission:** administrator
+  responses:
+    '200':
+      description: OK
+      content:
+        application/hal+json:
+          schema:
+            $ref: '../components/schemas/screen_scheme_model.yml'
+    '401':
+      description: Returned if the client is not authenticated.
+    '403':
+      description: Returned if the user is not an administrator.
+    '404':
+      description: Returned if the screen scheme does not exist.
+    '422':
+      description: Returned if the change is rejected.

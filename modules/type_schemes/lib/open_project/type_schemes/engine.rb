@@ -87,6 +87,10 @@ module OpenProject::TypeSchemes
       "#{project(project_id)}/available_types"
     end
 
+    initializer "type_schemes.settings" do
+      ::Settings::Definition.add "type_scheme_auto_assign_default", default: true, format: :boolean
+    end
+
     config.after_initialize do
       OpenProject::Notifications.subscribe(OpenProject::Events::PROJECT_CREATED) do |payload|
         OpenProject::TypeSchemes::ProjectCreatedListener.call(payload)
@@ -94,8 +98,12 @@ module OpenProject::TypeSchemes
     end
 
     config.to_prepare do
-      ::Type.after_create_commit { ::TypeSchemes::DefaultScheme.add_type(self) }
-      ::Type.after_destroy_commit { ::TypeSchemes::DefaultScheme.heal_after_type_removed }
+      # to_prepare runs on every code reload; register the callbacks once per (re)loaded Type class.
+      unless ::Type.instance_variable_get(:@type_schemes_callbacks_registered)
+        ::Type.after_create_commit { ::TypeSchemes::DefaultScheme.add_type(self) }
+        ::Type.after_destroy_commit { ::TypeSchemes::DefaultScheme.heal_after_type_removed }
+        ::Type.instance_variable_set(:@type_schemes_callbacks_registered, true)
+      end
 
       OpenProject::TypeSchemes.assert_patch_targets!
       ::WorkPackages::BaseContract.prepend(OpenProject::TypeSchemes::ContractPatch)

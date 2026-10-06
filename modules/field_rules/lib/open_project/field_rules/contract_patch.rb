@@ -32,6 +32,8 @@ module OpenProject::FieldRules
     def writable_attributes
       attributes = super
       @field_rules_core_writable = attributes
+      # Copying a whole project deliberately bypasses the rules: values hidden or read-only under the rules of the
+      # source project must survive the copy (documented in docs/api project_type_field_rules and the module specs).
       return attributes if is_a?(::WorkPackages::CopyProjectContract)
 
       configuration = field_rules_configuration
@@ -42,6 +44,8 @@ module OpenProject::FieldRules
 
     private
 
+    # Also overridden by openproject-type_schemes. Both patches call +super+ first and only add their own
+    # errors afterwards, so the prepend order does not matter and both checks stay in effect.
     def validate_enabled_type
       super
       add_field_rule_errors
@@ -54,22 +58,22 @@ module OpenProject::FieldRules
     def field_rules_configuration
       return ::FieldRules::EffectiveConfiguration.empty if ::FieldRules::Resolver.system_actor?(@user)
 
-      ::FieldRules::Resolver.for(model.project_id, model.type_id)
-    rescue StandardError => e
-      Rails.logger.error("[field_rules] resolving rules failed, using native behaviour: #{e.class}: #{e.message}")
-      ::FieldRules::EffectiveConfiguration.empty
+      OpenProject::FieldRules.fail_open("resolving rules", ::FieldRules::EffectiveConfiguration.empty,
+                                        project_id: model.project_id, type_id: model.type_id) do
+        ::FieldRules::Resolver.for(model.project_id, model.type_id)
+      end
     end
 
     def add_field_rule_errors
-      writable_attributes
-      ::FieldRules::Validator.violations(model, user: @user).each do |violation|
-        next unless writable_by_user?(violation.field)
+      OpenProject::FieldRules.fail_open("required check", nil, project_id: model.project_id, type_id: model.type_id) do
+        writable_attributes
+        ::FieldRules::Validator.violations(model, user: @user).each do |violation|
+          next unless writable_by_user?(violation.field)
 
-        errors.add(violation.attribute.delete_suffix("_id").to_sym, :required_by_field_rules, type: model.type&.name)
+          errors.add(violation.attribute.delete_suffix("_id").to_sym, :required_by_field_rules, type: model.type&.name)
+        end
+        add_restricted_target_versions_error
       end
-      add_restricted_target_versions_error
-    rescue StandardError => e
-      Rails.logger.error("[field_rules] required check failed, skipping: #{e.class}: #{e.message}")
     end
 
     # Version assignments bypass the changed attributes the readonly check looks at.

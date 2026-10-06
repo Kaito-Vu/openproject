@@ -54,9 +54,9 @@ module OpenProject::FieldRules
     end
 
     def apply_field_rule_default(field)
-      ::FieldRules::Fields.apply_default(work_package, field.key, field.default_value)
-    rescue StandardError => e
-      Rails.logger.error("[field_rules] applying default for #{field.key} failed, skipping: #{e.class}: #{e.message}")
+      OpenProject::FieldRules.fail_open("applying default", nil, field: field.key) do
+        ::FieldRules::Fields.apply_default(work_package, field.key, field.default_value)
+      end
     end
   end
 end

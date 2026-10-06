@@ -33,6 +33,9 @@ class TypeScheme < ApplicationRecord
 
   after_save { ::TypeSchemes::Resolver.reset_cache }
   after_destroy { ::TypeSchemes::Resolver.reset_cache }
+  # Also reset once the transaction ends, so bulk writes and rollbacks cannot leave a stale request cache.
+  after_commit { ::TypeSchemes::Resolver.reset_cache }
+  after_rollback { ::TypeSchemes::Resolver.reset_cache }
 
   has_many :items, -> { order(:position) }, class_name: "TypeSchemeItem",
            foreign_key: :scheme_id, inverse_of: :scheme, dependent: :destroy, autosave: true

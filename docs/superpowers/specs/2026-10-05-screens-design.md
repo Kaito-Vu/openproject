@@ -295,3 +295,34 @@ Acceptance: idea-03 §16–§17, cộng: `source = native` + `reason` đúng cho
 3. **Context sai:** 422 `invalid_context` (theo idea) thay vì 404/400 kiểu API v3.
 4. **Field "mồ côi":** dọn bằng `screens:repair` nếu không có hook sạch cho việc xoá custom field.
 5. Q-A (đính kèm `state`), Q-B (fallback `view → edit`), Q-D (không ghi native): giữ mặc định của idea.
+
+## 14. Cập nhật sau review hội đồng (2026-10-06)
+
+* **Quyền đọc (D1):** list/get screen và screen scheme cần đăng nhập (ẩn danh ⇒ 401). Admin thấy tất cả; người khác chỉ thấy scheme gắn với project có `view_work_packages` và screen được các scheme đó dùng; ngoài tập đó ⇒ 404.
+* **API sections/items:** `POST /screens/:id/sections`, `PATCH|DELETE /screens/:id/sections/:sid`, `POST /screens/:id/items`, `PATCH|DELETE /screens/:id/items/:iid` (admin). Chạy dưới lock của screen, cập nhật `updated_at` (ETag của `PUT .../layout`). DELETE trả 204.
+* **Position:** PATCH item/section không gửi `position` ⇒ giữ nguyên thứ tự (item chuyển section thì thêm vào cuối section đích). `position` rõ ràng được kẹp vào `1..n`; `0` nghĩa là đầu tiên.
+* **`warnings`:** chỉ có ở API (response của `PUT .../layout` và các endpoint sửa section/item); mã `empty_create_screen`, `required_not_placed`, `hidden_but_placed` (kèm `fields`). Admin UI không hiển thị.
+* **ETag:** `GET /screens/:id` và `PUT .../layout` trả header `ETag`; `PUT` thiếu `If-Match` ⇒ 428, sai ⇒ 409. Race `RecordNotUnique` ⇒ 422 (`conflict`), không 500.
+* Activate/deactivate: `POST /screens/:id/(de)activate` và `POST /screen_schemes/:id/(de)activate` (admin); type scheme và field rule dùng `PATCH` với `active`.
+
+### Rollout / feature flag
+
+Không có flag riêng: screen chỉ có hiệu lực khi scheme active được gán cho project; chưa gán hoặc scheme inactive ⇒ layout native. Bật bằng gán scheme (Project Settings hoặc `PUT /projects/:id/screen_scheme`), tắt bằng bỏ gán (`schemeId: null`) hoặc deactivate. Resolver lỗi ⇒ fail-open về native (có log).
+
+### Bảng mã lỗi chuẩn hoá (dùng chung F01/F02/F03)
+
+| Mã | Nơi dùng | Ý nghĩa |
+|---|---|---|
+| `not_in_scheme` | F01, lỗi `type_id` của work package | Type không được type scheme của project cho phép. |
+| `required_not_placed` | F03 | Screen create đang dùng không đặt field bắt buộc (hiện tại: `subject` hiển thị); cũng có ở scheme item (kèm field/project). |
+| `hidden_and_required` | F03 (scheme item/gán project) | Field vừa bị F02 ẩn vừa bắt buộc. |
+| `context_mismatch` | F03 | Screen gán vào slot của một context khác loại. |
+| `in_use` | (dự phòng) | Chưa được code phát ra (đã gỡ khoá i18n); giữ chỗ cho việc chặn sửa screen đang dùng. |
+| `invalid_context` | F03 resolver | `context` ngoài `create/edit/view/transition` ⇒ 422. |
+
+Các lỗi trên trả về trong body lỗi 422 của API v3 (validation), trừ khi ghi chú khác.
+
+### 404 và 403 thống nhất
+
+* Đọc (GET) cấu hình của cả ba module cần đăng nhập (ẩn danh ⇒ 401). Admin thấy tất cả; người khác chỉ thấy bản ghi gắn với project mà họ có `view_work_packages`. Bản ghi ngoài tập đó trả **404** (không lộ sự tồn tại). 403 chỉ dùng khi đã biết resource nhưng thiếu quyền (ghi cần admin, endpoint theo project thiếu quyền).
+* Endpoint theo project (resolver, `field_rules`, `available_types`) giữ quyền `view_work_packages` ở project đó; type không bật trong project ⇒ 404.

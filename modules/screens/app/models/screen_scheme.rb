@@ -45,8 +45,10 @@ class ScreenScheme < ApplicationRecord
   validate :types_unique_and_bounded
 
   before_destroy :prevent_destroy
-  after_save { ::Screens::Resolver.reset_cache }
-  after_destroy { ::Screens::Resolver.reset_cache }
+  # after_commit so a concurrent request cannot cache pre-commit data; rollback drops what was
+  # cached from inside the aborted transaction.
+  after_commit { ::Screens::Resolver.reset_cache }
+  after_rollback { ::Screens::Resolver.reset_cache }
 
   scope :active, -> { where(active: true) }
 

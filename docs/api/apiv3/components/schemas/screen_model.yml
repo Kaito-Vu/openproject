@@ -1,6 +1,24 @@
 # Screen model
 ---
 type: object
+properties:
+  warnings:
+    type: array
+    readOnly: true
+    description: |-
+      Non-blocking editor warnings. Only rendered by `PUT /screens/{id}/layout` and by the section and item
+      edit endpoints; absent elsewhere. Codes: `empty_create_screen`, `required_not_placed`, and
+      `hidden_but_placed` (with `fields`, the keys hidden by field rules). The list is API-only; the
+      admin UI does not show it.
+    items:
+      type: object
+      properties:
+        code:
+          type: string
+        fields:
+          type: array
+          items:
+            type: string
 example:
   _type: Screen
   id: 1

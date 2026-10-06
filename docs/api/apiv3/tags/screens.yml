@@ -1,0 +1,13 @@
+---
+description: |-
+  A **screen** decides which fields appear in which section and order for one context (`create`, `edit`, `view`,
+  `transition`). A **screen scheme** maps a screen to each context of a work package type, and a scheme is assigned
+  to projects. Screens and schemes cannot be deleted, only deactivated.
+
+  Reading screens and schemes needs a logged-in user (anonymous requests get 401). Administrators see all of them;
+  other users only see those tied to projects where they have the view work packages permission, everything else
+  returns 404. Writing needs an administrator. Assigning a scheme to a project needs `assign_screen_scheme` in it.
+
+  The editor endpoints return non-blocking `warnings` (API only, no admin UI). `PUT .../layout` needs an `If-Match`
+  header with the ETag of the screen (409 on mismatch, 428 if missing).
+name: Screens
