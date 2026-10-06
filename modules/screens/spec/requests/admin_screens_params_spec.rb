@@ -38,18 +38,26 @@ RSpec.describe "Admin screens strong parameters" do # rubocop:disable RSpec/Desc
   shared_let(:other_screen) { create(:create_screen, name: "Other") }
   shared_let(:other_section) { create(:screen_section, screen: other_screen, name: "Foreign") }
 
-  before { login_as(admin) }
+  before do
+    ActionController::Base.allow_forgery_protection = false
+    login_as(admin)
+  end
+
+  after { ActionController::Base.allow_forgery_protection = true }
 
   it "ignores screen_type on update" do
-    patch admin_screen_path(screen), screen: { name: "Renamed", screen_type: "edit" }
+    patch admin_screen_path(screen), { screen: { name: "Renamed", screen_type: "edit" } }
+    expect(last_response).to have_http_status(:see_other)
     expect(screen.reload.screen_type).to eq("create")
     expect(screen.name).to eq("Renamed")
   end
 
   it "ignores a foreign section id instead of moving the other screen's section" do
-    patch admin_screen_path(screen), screen: {
-      sections: { "0" => { "id" => other_section.id, "name" => "Injected",
-                           "position" => "1", "items" => {} } }
+    patch admin_screen_path(screen), {
+      screen: {
+        sections: { "0" => { "id" => other_section.id, "name" => "Injected",
+                             "position" => "1", "items" => {} } }
+      }
     }
 
     expect(other_section.reload.screen_id).to eq(other_screen.id)

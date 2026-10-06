@@ -53,7 +53,10 @@ module Screens
         variant = variant_of(project, type)
         return true if variant.nil?
 
-        variant.passes_attribute_constraint?(key.to_s, project:)
+        key = key.to_s
+        return variant.active_custom_field_attributes.include?(key) if custom_field_key?(key)
+
+        variant.passes_attribute_constraint?(key, project:)
       rescue StandardError
         true
       end

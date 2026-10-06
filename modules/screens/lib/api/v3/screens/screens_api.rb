@@ -51,7 +51,7 @@ module API
           end
 
           def enforce_if_match!(screen)
-            supplied = headers["If-Match"]
+            supplied = headers["If-Match"] || headers["HTTP_IF_MATCH"]
             error!("The If-Match header is required.", 428) if supplied.blank?
 
             value = supplied.sub(/\AW\//, "").delete('"')

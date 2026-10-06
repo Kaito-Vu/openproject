@@ -45,14 +45,28 @@ module Screens
       variant = project&.type_variant(type)
       keys.merge(Array(variant&.required_attributes).map(&:to_s))
 
-      custom_fields = project ? project.all_work_package_custom_fields.to_a : []
+      custom_fields = custom_fields_for(variant)
       keys.merge(custom_fields.select(&:is_required).map { |field| "custom_field_#{field.id}" })
 
       config, f02_defaults = field_rules_for(project, type)
       keys.merge(config.select(&:required).map(&:key))
-      defaults = native_defaults | Array(f02_defaults)
+      defaults = native_defaults | Array(f02_defaults) | custom_field_defaults(custom_fields)
 
       (keys - defaults).to_a
+    end
+
+    # Custom fields activated for the variant (project + type), i.e. the ones the form shows.
+    def custom_fields_for(variant)
+      ids = Array(variant&.custom_field_ids)
+      return [] if ids.empty?
+
+      WorkPackageCustomField.where(id: ids).to_a
+    end
+
+    def custom_field_defaults(custom_fields)
+      custom_fields.select { |field| field.default_value.present? }
+                   .map { |field| "custom_field_#{field.id}" }
+                   .to_set
     end
 
     def for_scheme_type(scheme, type)
@@ -99,15 +113,19 @@ module Screens
       variant_ids = (pt_variant.values.compact + [default_variant.id]).uniq
       variants = TypeVariant.where(id: variant_ids).index_by(&:id)
       variant_required = variants.transform_values { |variant| Array(variant.required_attributes).map(&:to_s) }
+      variant_custom_field_ids = variants.transform_values { |variant| Array(variant.custom_field_ids) }
 
-      custom_fields = active_custom_fields(project_ids)
+      custom_fields = WorkPackageCustomField
+                      .where(id: variant_custom_field_ids.values.flatten.uniq)
+                      .index_by(&:id)
       f02 = field_rules_many(project_ids, type)
 
       project_ids.index_with do |project_id|
         variant = variants[pt_variant[project_id] || default_variant.id] || default_variant
+        activated = (variant_custom_field_ids[variant.id] || []).filter_map { |id| custom_fields[id] }
         keys = Set.new(["subject"])
         keys.merge(variant_required[variant.id] || [])
-        keys.merge(custom_fields.fetch(project_id, {}).filter_map { |id, meta| "custom_field_#{id}" if meta[:required] })
+        keys.merge(activated.select(&:is_required).map { |field| "custom_field_#{field.id}" })
 
         config = f02[[project_id, type.id]]
         defaults = native_defaults.dup
@@ -115,19 +133,9 @@ module Screens
           keys.merge(config.select(&:required).map(&:key))
           defaults.merge(config.filter_map { |field| field.key if field.default_value.present? })
         end
-        defaults.merge(custom_fields.fetch(project_id, {}).filter_map { |id, meta| "custom_field_#{id}" if meta[:default] })
+        defaults.merge(custom_field_defaults(activated))
 
         (keys - defaults).to_a
-      end
-    end
-
-    def active_custom_fields(project_ids)
-      rows = WorkPackageCustomField
-             .joins(:projects)
-             .where(projects: { id: project_ids })
-             .pluck("projects.id", :id, :is_required, :default_value)
-      rows.each_with_object(Hash.new { |hash, key| hash[key] = {} }) do |(project_id, id, required, default_value), acc|
-        acc[project_id][id] = { required:, default: default_value.present? }
       end
     end
 

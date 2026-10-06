@@ -41,7 +41,8 @@ RSpec.describe "API v3 project screen scheme" do # rubocop:disable RSpec/Describ
   shared_let(:viewer) { create(:user, member_with_permissions: { project => %i[view_work_packages] }) }
   shared_let(:assigner) { create(:user, member_with_permissions: { project => %i[view_work_packages assign_screen_scheme] }) }
 
-  let(:json) { JSON.parse(last_response.body) }
+  def json = JSON.parse(last_response.body)
+
   let(:headers) { { "CONTENT_TYPE" => "application/json" } }
 
   describe "GET /projects/:id/screen_scheme" do

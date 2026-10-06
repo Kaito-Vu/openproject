@@ -45,16 +45,14 @@ RSpec.describe ::Screens::RequiredSet do
 
     it "includes required custom fields active in the project" do
       custom_field = create(:work_package_custom_field, is_required: true)
-      project.work_package_custom_field_ids = [custom_field.id]
-      project.save!
+      project.type_variant(type).update!(custom_field_ids: [custom_field.id])
 
       expect(described_class.for(project.reload, type)).to include("custom_field_#{custom_field.id}")
     end
 
     it "excludes required custom fields that have a default" do
       custom_field = create(:work_package_custom_field, is_required: true, default_value: "value")
-      project.work_package_custom_field_ids = [custom_field.id]
-      project.save!
+      project.type_variant(type).update!(custom_field_ids: [custom_field.id])
 
       expect(described_class.for(project.reload, type)).not_to include("custom_field_#{custom_field.id}")
     end

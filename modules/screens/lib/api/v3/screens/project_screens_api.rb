@@ -49,7 +49,7 @@ module API
           put do
             authorize_in_project(:assign_screen_scheme, project: @project)
             body = body_hash!
-            scheme_id = body[:scheme_id] || id_from_link(body, :screenScheme, "screen_schemes")
+            scheme_id = body[:scheme_id] || body[:schemeId] || id_from_link(body, :screenScheme, "screen_schemes")
 
             if scheme_id.blank?
               ::Screens::SchemeService.unassign(@project)

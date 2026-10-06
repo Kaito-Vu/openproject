@@ -38,7 +38,8 @@ RSpec.describe "API v3 screens" do # rubocop:disable RSpec/DescribeClass
   shared_let(:user) { create(:user) }
   shared_let(:screen) { create(:create_screen, name: "Bug create") }
 
-  let(:json) { JSON.parse(last_response.body) }
+  def json = JSON.parse(last_response.body)
+
   let(:headers) { { "CONTENT_TYPE" => "application/json" } }
 
   describe "read" do
@@ -93,7 +94,8 @@ RSpec.describe "API v3 screens" do # rubocop:disable RSpec/DescribeClass
 
     it "rejects a stale If-Match with UpdateConflict" do
       login_as(admin)
-      put api_v3_paths.screen_layout(screen.id), { sections: [] }.to_json, headers.merge("If-Match" => "stale")
+      header "If-Match", "stale"
+      put api_v3_paths.screen_layout(screen.id), { sections: [] }.to_json, headers
       expect(last_response).to have_http_status(:conflict)
     end
   end
