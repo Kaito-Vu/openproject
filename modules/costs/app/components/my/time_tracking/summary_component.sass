@@ -1,0 +1,113 @@
+.my-tt-summary
+  display: flex
+  flex-direction: column
+  gap: var(--base-size-12)
+  margin-bottom: var(--base-size-16)
+
+.my-tt-summary--cards
+  display: grid
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr))
+  gap: var(--base-size-12)
+
+.my-tt-card
+  display: flex
+  flex-direction: column
+  gap: var(--base-size-4)
+  padding: var(--base-size-16)
+  background: var(--bgColor-default)
+  border: var(--borderWidth-thin) solid var(--borderColor-default)
+  border-radius: var(--borderRadius-large)
+  box-shadow: var(--shadow-resting-small)
+  min-width: 0
+
+.my-tt-card-primary
+  background: linear-gradient(135deg, var(--bgColor-accent-muted), var(--bgColor-default))
+  border-color: var(--borderColor-accent-muted)
+
+.my-tt-card-live
+  background: var(--bgColor-success-muted)
+  border-color: var(--borderColor-success-muted)
+
+.my-tt-card--label
+  color: var(--fgColor-muted)
+  font-size: var(--text-body-size-small)
+  font-weight: var(--base-text-weight-semibold)
+  text-transform: uppercase
+  letter-spacing: .04em
+
+.my-tt-card--value
+  display: flex
+  align-items: center
+  gap: var(--base-size-8)
+  font-size: var(--text-title-size-large)
+  font-weight: var(--base-text-weight-semibold)
+  line-height: 1.2
+
+.my-tt-card--hint
+  color: var(--fgColor-muted)
+  font-size: var(--text-body-size-small)
+  overflow: hidden
+  text-overflow: ellipsis
+  white-space: nowrap
+
+.my-tt-ok
+  color: var(--fgColor-success)
+
+.my-tt-warn
+  color: var(--fgColor-attention)
+
+.my-tt-muted
+  color: var(--fgColor-muted)
+
+.my-tt-progress
+  height: 6px
+  margin-top: var(--base-size-8)
+  background: var(--bgColor-neutral-muted)
+  border-radius: 3px
+  overflow: hidden
+
+  span
+    display: block
+    height: 100%
+    background: var(--bgColor-accent-emphasis)
+    border-radius: 3px
+
+.my-tt-dot
+  width: 10px
+  height: 10px
+  border-radius: 50%
+  background: var(--bgColor-success-emphasis)
+  animation: my-tt-pulse 1.5s infinite
+
+@keyframes my-tt-pulse
+  50%
+    opacity: .3
+
+.my-tt-breakdown--bar
+  display: flex
+  height: 8px
+  border-radius: 4px
+  overflow: hidden
+  background: var(--bgColor-neutral-muted)
+
+.my-tt-breakdown--legend
+  display: flex
+  flex-wrap: wrap
+  gap: var(--base-size-8) var(--base-size-16)
+  margin: var(--base-size-8) 0 0
+  padding: 0
+  list-style: none
+  font-size: var(--text-body-size-small)
+
+  li
+    display: flex
+    align-items: center
+    gap: var(--base-size-6)
+
+.my-tt-breakdown--swatch
+  width: 10px
+  height: 10px
+  border-radius: 2px
+
+.my-tt-breakdown--name
+  font-weight: var(--base-text-weight-semibold)

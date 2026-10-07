@@ -1,0 +1,53 @@
+#-- copyright
+# OpenProject is an open source project management software.
+# Copyright (C) the OpenProject GmbH
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License version 3.
+#
+# OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+# Copyright (C) 2006-2013 Jean-Philippe Lang
+# Copyright (C) 2010-2013 the ChiliProject Team
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+# See COPYRIGHT and LICENSE files for more details.
+#++
+# frozen_string_literal: true
+
+module IssueView
+  class Counts
+    def self.call(work_package, user)
+      project = work_package.project
+      counts = { comments: comments(work_package),
+                 children: WorkPackage.visible(user).where(parent_id: work_package.id).count,
+                 relations: work_package.relations.visible(user).count }
+      counts[:attachments] = work_package.attachments.count unless project.deactivate_work_package_attachments?
+      counts[:watchers] = work_package.watchers.count if user.allowed_in_project?(:view_work_package_watchers, project)
+      counts
+    end
+
+    def self.parent(work_package, user)
+      parent = WorkPackage.visible(user).find_by(id: work_package.parent_id)
+      return unless parent
+
+      { id: parent.id, identifier: parent.display_id, subject: parent.subject }
+    end
+
+    def self.comments(work_package)
+      work_package.journals.internal_visible.meeting_cause_visible.where.not(notes: [nil, ""]).count
+    end
+  end
+end

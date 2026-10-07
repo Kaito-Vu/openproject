@@ -3,6 +3,7 @@
   <%= component_wrapper(tag: "div", data: wrapper_data) do %>
     <%= render(My::TimeTracking::HeaderComponent.new(mode:, date:, view_mode: :list)) %>
     <%= render(My::TimeTracking::SubHeaderComponent.new(mode:, date:, view_mode: :list)) %>
+    <%= render(My::TimeTracking::SummaryComponent.new(time_entries:, date:, mode:)) %>
 
     <%= flex_layout(classes: ["my-time-tracking-list-view"]) do |flex| %>
       <% range.each do |date| %>

@@ -33,6 +33,7 @@ group :opf_plugins do
   gem 'openproject-type_schemes',              path: 'modules/type_schemes'
   gem 'openproject-field_rules',               path: 'modules/field_rules'
   gem 'openproject-screens',                   path: 'modules/screens'
+  gem 'openproject-issue_view',                path: 'modules/issue_view'
 
   gem 'grids',                                 path: 'modules/grids'
   gem 'my_page',                               path: 'modules/my_page'

@@ -1,0 +1,80 @@
+# /api/v3/work_packages/{id}/issue_view
+---
+get:
+  summary: Get the issue view of a work package
+  operationId: get_work_package_issue_view
+  tags:
+    - Issue View
+  description: |-
+    Read-only aggregate for rendering an issue page: header, layout (from Screens when assigned, otherwise the
+    native form layout), field values with editability hints, permissions and counts.
+
+    `permissions` and `editable` are hints for the UI only; all writes go through the native work package API
+    and are authorized there. `diagnostics` is returned to administrators only. The response is private
+    (`Cache-Control: private, no-cache`) and carries no `ETag`.
+
+    **Required permission:** view work packages in the project (otherwise 404).
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: Work package id or semantic identifier (for example `PROJ-42`).
+      schema:
+        type: string
+  responses:
+    '200':
+      description: OK
+      content:
+        application/hal+json:
+          schema:
+            type: object
+            example:
+              _type: IssueView
+              id: 12345
+              identifier: PROJ-123
+              subject: Login fails on mobile
+              source: screen
+              reason: null
+              header:
+                type: { id: 7, name: Bug, _links: { self: { href: /api/v3/types/7 } } }
+                status: { id: 1, name: Open, isClosed: false, _links: { self: { href: /api/v3/statuses/1 } } }
+                priority: { id: 4, name: High, _links: { self: { href: /api/v3/priorities/4 } } }
+                assignee: null
+                author: { id: 20, name: An, _links: { self: { href: /api/v3/users/20 } } }
+              sections:
+                - id: '1'
+                  name: Details
+                  position: 1
+                  fields:
+                    - key: priority
+                      label: Priority
+                      dataType: link
+                      position: 1
+                      width: half
+                      value: { raw: 4, display: High }
+                      state: { required: true, readOnly: false, defaultValue: null }
+                      editable: true
+                      editableReason: null
+              permissions:
+                view: true
+                edit: true
+                delete: false
+                comment: true
+                transition: true
+                addRelation: true
+                manageWatchers: false
+                addAttachment: true
+                logTime: false
+              counts: { comments: 3, children: 3, relations: 2, attachments: 1, watchers: 4 }
+              parent: { id: 12, identifier: EPIC-12, subject: Login Improvements }
+              lockVersion: 5
+              _links:
+                self: { href: /api/v3/work_packages/12345/issue_view }
+                workPackage: { href: /api/v3/work_packages/12345 }
+                activities: { href: /api/v3/work_packages/12345/issue_view/activities }
+                updateImmediately: { href: /api/v3/work_packages/12345, method: patch }
+                addComment: { href: /api/v3/work_packages/12345/activities, method: post }
+    '401':
+      description: Returned if login is required and the user is not authenticated.
+    '404':
+      description: Returned if the work package does not exist or the user may not see it (never 403).

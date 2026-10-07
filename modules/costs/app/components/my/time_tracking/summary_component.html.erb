@@ -1,0 +1,59 @@
+<section class="my-tt-summary" aria-label="<%= t(:label_my_time_tracking) %>" data-test-selector="time-tracking-summary">
+  <div class="my-tt-summary--cards">
+    <div class="my-tt-card my-tt-card-primary">
+      <span class="my-tt-card--label"><%= period_label %></span>
+      <span class="my-tt-card--value"><%= fmt(logged) %></span>
+      <span class="my-tt-card--hint"><%= t(:label_logged_time) %></span>
+    </div>
+
+    <div class="my-tt-card">
+      <span class="my-tt-card--label"><%= t(:label_scheduled_time) %></span>
+      <span class="my-tt-card--value"><%= scheduled.zero? ? "—" : fmt(scheduled) %></span>
+      <% if scheduled.positive? %>
+        <span class="my-tt-card--hint my-tt-<%= difference.negative? ? "warn" : "ok" %>">
+          <%= difference.negative? ? "−" : "+" %><%= fmt(difference) %>
+          <%= difference.negative? ? t(:label_remaining_time) : t(:label_overtime) %>
+        </span>
+      <% end %>
+      <div class="my-tt-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="<%= progress %>">
+        <span style="width: <%= progress %>%"></span>
+      </div>
+    </div>
+
+    <div class="my-tt-card">
+      <span class="my-tt-card--label"><%= TimeEntry.model_name.human(count: 2) %></span>
+      <span class="my-tt-card--value"><%= entry_count %></span>
+      <span class="my-tt-card--hint"><%= Project.model_name.human(count: project_count) %>: <%= project_count %></span>
+    </div>
+
+    <div class="my-tt-card <%= "my-tt-card-live" if ongoing %>">
+      <span class="my-tt-card--label"><%= t(:label_timer) %></span>
+      <% if ongoing %>
+        <span class="my-tt-card--value"><span class="my-tt-dot"></span><%= fmt(ongoing.hours_for_calculation) %></span>
+        <span class="my-tt-card--hint"><%= ongoing.entity.try(:subject) || ongoing.project.name %></span>
+      <% else %>
+        <span class="my-tt-card--value my-tt-muted">—</span>
+        <span class="my-tt-card--hint"><%= t(:label_no_active_timer) %></span>
+      <% end %>
+    </div>
+  </div>
+
+  <% if breakdown.any? %>
+    <div class="my-tt-breakdown">
+      <div class="my-tt-breakdown--bar" role="img" aria-label="<%= Project.model_name.human(count: 2) %>">
+        <% breakdown.each do |b| %>
+          <span style="width: <%= b[:pct] %>%; background: <%= b[:color] %>" title="<%= b[:name] %> · <%= fmt(b[:hours]) %>"></span>
+        <% end %>
+      </div>
+      <ul class="my-tt-breakdown--legend">
+        <% breakdown.each do |b| %>
+          <li>
+            <span class="my-tt-breakdown--swatch" style="background: <%= b[:color] %>"></span>
+            <span class="my-tt-breakdown--name"><%= b[:name] %></span>
+            <span class="my-tt-muted"><%= fmt(b[:hours]) %> · <%= b[:pct].round %>%</span>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+</section>

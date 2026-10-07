@@ -3,6 +3,7 @@
   <%= flex_layout(data: wrapper_data, classes: "my-time-tracking-calendar-view") do |calendar_page| %>
     <% calendar_page.with_row { render(My::TimeTracking::HeaderComponent.new(mode:, date:, view_mode: :calendar)) } %>
     <% calendar_page.with_row { render(My::TimeTracking::SubHeaderComponent.new(mode:, date:, view_mode: :calendar)) } %>
+    <% calendar_page.with_row { render(My::TimeTracking::SummaryComponent.new(time_entries:, date:, mode:)) } %>
     <% calendar_page.with_row(classes: "op-fc-wrapper", data: { "my--time-tracking-target" => "calendar" }) %>
 
     <% if mode != :day %>

@@ -663,6 +663,10 @@ paths:
     "$ref": "./paths/work_package.yml"
   "/api/v3/work_packages/{id}/activities":
     "$ref": "./paths/work_package_activities.yml"
+  "/api/v3/work_packages/{id}/issue_view":
+    "$ref": "./paths/work_package_issue_view.yml"
+  "/api/v3/work_packages/{id}/issue_view/activities":
+    "$ref": "./paths/work_package_issue_view_activities.yml"
   "/api/v3/work_packages/{id}/activities_emoji_reactions":
     "$ref": "./paths/work_package_activities_emoji_reactions.yml"
   "/api/v3/work_packages/{id}/ai_text_transform_actions":

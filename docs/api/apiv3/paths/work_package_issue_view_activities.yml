@@ -1,0 +1,91 @@
+# /api/v3/work_packages/{id}/issue_view/activities
+---
+get:
+  summary: List normalized activity events of a work package
+  operationId: list_work_package_issue_view_activities
+  tags:
+    - Issue View
+  description: |-
+    Journals split into typed events (`COMMENT`, `FIELD_CHANGED`, `ATTACHMENT_ADDED`, `ATTACHMENT_REMOVED`,
+    `OTHER`). Pagination is by journal: `pageSize` counts journals and `total` is the number of visible
+    journals; each journal yields zero or more events on the same page. Journals the user may not see
+    (internal comments, hidden meeting causes) are omitted entirely.
+
+    Writes use the native activity endpoints (`POST /work_packages/{id}/activities`,
+    `PATCH /activities/{id}`); comments cannot be deleted.
+
+    **Required permission:** view work packages in the project (otherwise 404).
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+    - name: offset
+      in: query
+      description: Page number, starting at 1. Values below 1 or non-numeric fall back to 1.
+      schema:
+        type: integer
+        default: 1
+    - name: pageSize
+      in: query
+      description: |-
+        Journals per page (default 20). `-1` or anything above `min(100, apiv3_max_page_size)` is clamped to the
+        maximum; `0` returns an empty page with a correct `total`; other negative values are rejected.
+      schema:
+        type: integer
+        default: 20
+    - name: sortBy
+      in: query
+      description: 'JSON, only `[["timestamp","asc"]]` or `[["timestamp","desc"]]`. Default is ascending.'
+      schema:
+        type: string
+    - name: filters
+      in: query
+      description: 'JSON, only `[{"type":{"operator":"=","values":["COMMENT"]}}]` with values from the event type set.'
+      schema:
+        type: string
+  responses:
+    '200':
+      description: OK
+      content:
+        application/hal+json:
+          schema:
+            type: object
+            example:
+              _type: Collection
+              total: 1
+              count: 2
+              pageSize: 20
+              offset: 1
+              _embedded:
+                elements:
+                  - _type: IssueViewEvent
+                    id: '998:comment'
+                    journalId: 998
+                    type: COMMENT
+                    actor: { id: 18, name: Kaito, _links: { self: { href: /api/v3/users/18 } } }
+                    timestamp: '2026-10-06T08:30:00Z'
+                    comment:
+                      id: 998
+                      body: { format: markdown, raw: Fixed in the latest build., html: <p>Fixed in the latest build.</p> }
+                      internal: false
+                      createdAt: '2026-10-06T08:30:00Z'
+                      updatedAt: '2026-10-06T08:30:00Z'
+                  - _type: IssueViewEvent
+                    id: '998:0'
+                    journalId: 998
+                    type: FIELD_CHANGED
+                    actor: { id: 18, name: Kaito, _links: { self: { href: /api/v3/users/18 } } }
+                    timestamp: '2026-10-06T08:30:00Z'
+                    field: status_id
+                    raw: { from: 1, to: 2 }
+                    description: { raw: Status changed from Open to In Progress, html: <strong>Status</strong> changed }
+              _links:
+                self: { href: /api/v3/work_packages/12345/issue_view/activities }
+    '400':
+      description: Returned for an invalid `pageSize`, `sortBy` or `filters` (including malformed JSON).
+    '401':
+      description: Returned if login is required and the user is not authenticated.
+    '404':
+      description: Returned if the work package does not exist or the user may not see it.
