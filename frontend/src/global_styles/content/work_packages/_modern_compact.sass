@@ -22,11 +22,24 @@ html:not([data-density="comfortable"])
 
       .button
         height: 28px
-        line-height: 26px
         font-size: 0.8125rem
         border-radius: var(--borderRadius-medium)
         padding-left: 8px
         padding-right: 8px
+
+        // Center icon, label and caret on one axis
+        display: inline-flex
+        align-items: center
+        justify-content: center
+        gap: 6px
+        line-height: 1
+
+        > *
+          margin: 0
+          vertical-align: baseline
+
+        .button--text
+          margin: 0
 
         .button--icon
           font-size: 13px

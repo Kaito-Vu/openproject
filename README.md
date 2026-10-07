@@ -1,96 +1,116 @@
-# OpenProject
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/opf/openproject)
-![GitHub commit activity](https://img.shields.io/github/commit-activity/m/opf/openproject)
-![GitHub branch checks state](https://img.shields.io/github/checks-status/opf/openproject/dev)
+# OpenProject (bản tùy biến ETC)
+
 [![Github Tests](https://github.com/opf/openproject/actions/workflows/test-core.yml/badge.svg?branch=dev)](https://github.com/opf/openproject/actions/workflows/test-core.yml)
 
-**We empower teams to achieve great things together for the good of society.**
+Đây là bản fork của [OpenProject](https://www.openproject.org) – phần mềm quản lý dự án mã nguồn mở chạy trên nền web, dành cho các nhóm và tổ chức cần sự minh bạch, linh hoạt và quyền kiểm soát dữ liệu. Có thể tự triển khai (self-host) để thay thế các công cụ như Jira, MS Project, Monday, Asana hay YouTrack mà vẫn giữ toàn quyền với dữ liệu và hạ tầng.
 
-OpenProject is a web-based open source project management software for teams and organizations that require transparency, flexibility, and data sovereignty.
-Manage projects, portfolios, products, tasks, bugs, agile workflows, roadmaps, and team collaboration in a single platform. OpenProject can be self-hosted and is designed for organizations looking for an open source enterprise-ready alternative to tools such as Jira, MS Project, Monday, Asana, YouTrack while maintaining full control over their data and infrastructure.
+## Tính năng chính
 
-OpenProject is trusted by organizations worldwide, including enterprises, public institutions, and highly regulated industries.
+- Quản lý dự án và danh mục dự án (portfolio)
+- Bảng Agile: Kanban, Scrum
+- Lập kế hoạch và tiến độ với biểu đồ Gantt, lịch, team planner
+- Quản lý công việc (work package), theo dõi lỗi
+- Chấm công, báo cáo chi phí và ngân sách
+- Wiki, diễn đàn, tin tức, tài liệu, biên bản và chương trình họp
+- Tích hợp: Nextcloud, XWiki, GitHub, GitLab, LDAP, OpenID Connect, SAML…
 
-![Screenshot of OpenProject, showing the GitHub tab on a work package](GitHub-tab-new.png)
+Tài liệu đầy đủ của dự án gốc: <https://www.openproject.org/docs/>.
 
-**OpenProject's key features include:**
+## Điểm khác so với bản gốc
 
-* [Project and portfolio management](https://www.openproject.org/collaboration-software-features/project-portfolio-management/)
-* [Agile boards, Kanban, Scrum, SAFe](https://www.openproject.org/collaboration-software-features/agile-project-management/)
-* [Project planning and scheduling with Gantt charts](https://www.openproject.org/collaboration-software-features/project-planning-scheduling/)
-* [Product and release planning](https://www.openproject.org/collaboration-software-features/product-development/)
-* [Task management and team collaboration](https://www.openproject.org/collaboration-software-features/task-management/)
-* [Time tracking, cost reporting, and budgeting](https://www.openproject.org/collaboration-software-features/time-tracking/)
-* [Bug tracking](https://www.openproject.org/collaboration-software-features/#bug-tracking)
-* [Team collaboration, wikis, forums, news](https://www.openproject.org/collaboration-software-features/team-collaboration/)
-* [Meeting agendas and meeting minutes](https://www.openproject.org/collaboration-software-features/meeting-management/)
-* [Integrations: Nextcloud, XWiki, GitHub, GitLab, and more](https://www.openproject.org/integrations/)
+- **Giao diện gọn, hiện đại, compact:** giảm chiều cao header, sidebar, dòng bảng; thu nhỏ nút, tab, input. Ghi đè CSS nằm ở `frontend/src/global_styles/layout/_compact.sass` và `frontend/src/global_styles/content/work_packages/_modern_compact.sass`.
+- **Công tắc mật độ giao diện** (Compact / Comfortable) trên thanh header, lưu theo từng trình duyệt (`localStorage`).
+- **Trang `/projects/{code}/work_packages`:**
+  - Tooltip xem nhanh khi rê chuột vào dòng, hiển thị theo vị trí con trỏ.
+  - Click chọn dòng, double-click mở chi tiết.
+- **Module bổ sung** trong thư mục `modules/`: `issue_view` (API chỉ đọc cho giao diện xem issue), `screens`, `field_rules`, `type_schemes`, `ldap_departments`, `resource_management`… Thiết kế chi tiết nằm trong `docs/superpowers/specs/`.
+- **Docker gọn theo môi trường:** local, staging, production và CI (xem bên dưới).
 
-More information can be found on our [website](https://www.openproject.org).
+## Cấu trúc thư mục chính
 
-## Start now with OpenProject
+| Thư mục | Nội dung |
+|---|---|
+| `app/`, `lib/`, `config/` | Backend Ruby on Rails |
+| `frontend/` | Giao diện Angular, SASS toàn cục, Stimulus |
+| `modules/` | Các module mở rộng (Gantt, Boards, Costs, Meeting, Storages…) |
+| `extensions/op-blocknote-hocuspocus/` | Máy chủ soạn thảo cộng tác (Hocuspocus) |
+| `tools/deunhealth/` | Dịch vụ phụ khởi động lại container không khỏe (tùy chọn) |
+| `docker/prod/`, `docker/ci/` | Dockerfile cho production/local/staging và CI |
+| `docs/` | Tài liệu, đặc tả API, kế hoạch triển khai |
 
-- **Free Trial**: [Start a 14-days free trial of OpenProject](https://start.openproject.com/).
-- **Community Edition**, free of charge: Download OpenProject and get started with the self-hosted Community edition. If you want to run an instance of OpenProject in production (or for evaluation), refer to our in-depth [installation guides](https://www.openproject.org/download-and-installation/).
-- **Enterprise Edition**: Sign up for the Enterprise version, choose between cloud or on-premises and benefit from comprehensive support and Enterprise add-ons.
-- **Documentation**: Explore our [comprehensive documentation](https://www.openproject.org/docs/) to help you get up and running quickly.
-- **Training**: [Book one of our training or consulting offers](https://www.openproject.org/training-and-consulting/#training-signup) to get your team on board in no time.
+## Chạy bằng Docker
 
-## Report bugs
+Yêu cầu: Docker và Docker Compose v2. Mỗi môi trường có file compose riêng, và đều build từ mã nguồn trong repo bằng `docker/prod/Dockerfile`.
 
-You found a bug? Please [report it](https://www.openproject.org/docs/development/report-a-bug/) to our [OpenProject Community](https://community.openproject.org/projects/openproject). Thank you!
+| Môi trường | File compose | File biến môi trường mẫu |
+|---|---|---|
+| Local (HTTP, `http://localhost:8080`) | `docker-compose.local.yml` | `.env.local.example` |
+| Staging | `docker-compose.staging.yml` | `.env.staging.example` |
+| Production (build từ mã nguồn) | `docker-compose.production.yml` | `.env.production.example` |
+| Production (chỉ kéo image build sẵn) | `docker-compose-run-production.yaml` | `.env.production.example` |
+| CI | `docker-compose.ci.yml` | – |
 
-## Contribute
+### Local
 
-OpenProject is supported by its Community members, both companies and individuals.
+```bash
+cp .env.local.example .env.local
+# chỉnh .env.local nếu cần
+docker compose --env-file .env.local -f docker-compose.local.yml up -d --build
+```
 
-We are always looking for new members to our Community, so if you are interested in improving OpenProject we would be glad to welcome and support you getting into the code. There are guides as well, e.g. a [Quick Start for Developers](https://www.openproject.org/docs/development/development-environment/), but don't hesitate to simply [contact us](https://www.openproject.org/contact) if you have questions.
+Xem log và dừng:
 
-Working on OpenProject comes with the satisfaction of working on a widely used open source application.
+```bash
+docker compose --env-file .env.local -f docker-compose.local.yml logs -f web worker
+docker compose --env-file .env.local -f docker-compose.local.yml down
+```
 
-Also, if you do not want to be limited to working on open source in your free time, OpenProject GmbH, the company contributing to the OpenProject development, [is hiring](https://www.openproject.org/career/).
+### Staging / Production
 
+```bash
+cp .env.production.example .env.production   # staging: .env.staging.example
+# điền SECRET_KEY_BASE, COLLABORATIVE_SERVER_SECRET, mật khẩu DB, tên miền…
+docker compose --env-file .env.production -f docker-compose.production.yml up -d --build
+```
 
-## Stay in contact
+Trên máy chủ chỉ cần kéo image đã build sẵn, dùng script `run-production.sh`:
 
-Here you can find our [contact information](https://www.openproject.org/contact/). As we regularly update OpenProject, we recommend staying in touch – here is where you can find us:
+```bash
+./run-production.sh up        # pull + chạy
+./run-production.sh ps        # trạng thái
+./run-production.sh logs web  # xem log
+./run-production.sh down      # dừng
+```
 
-- [OpenProject Community](https://www.openproject.org/blog/community-instance/) with [forum discussions](https://community.openproject.org/projects/openproject/forums): The open instance where we develop our features – transparent and open for discussions, bug reports or feature requests.
-- [LinkedIn](https://www.linkedin.com/company/18706985)
-- [Reddit](https://www.reddit.com/r/openproject/)
-- [Fosstodon](https://fosstodon.org/@openproject)
-- [Bluesky](https://bsky.app/profile/openproject.bsky.social)
+> Lưu ý: không commit file `.env*` thật và không dùng lại giá trị mẫu ở môi trường công khai. Khi `web` vừa được tạo lại, chờ trạng thái `healthy` (vài chục giây) trước khi truy cập, nếu không proxy sẽ trả `502`.
 
-## Security / responsible disclosure
+## Phát triển giao diện
 
-We take security very seriously at OpenProject. We value any kind of feedback that
-will keep our Community secure. If you happen to come across a security issue we urge
-you to disclose it to us privately to allow our users and Community enough time to
-upgrade. Security issues will always take precedence over anything else in the pipeline.
+Giao diện nằm trong `frontend/`. Sau khi sửa SASS hoặc TypeScript cần build lại frontend (hoặc rebuild image `web`) rồi tải lại trang. Chi tiết môi trường phát triển: [hướng dẫn cho lập trình viên](https://www.openproject.org/docs/development/development-environment/).
 
-For more information on how to disclose a security vulnerability, [please see this page](docs/security-and-privacy/statement-on-security/README.md).
+## Đóng góp và báo lỗi
 
-## License
+- Báo lỗi của OpenProject gốc: <https://www.openproject.org/docs/development/report-a-bug/>.
+- Với thay đổi riêng của bản ETC, hãy tạo issue hoặc merge request trong repo này.
 
-OpenProject is licensed under the terms of the GNU General Public License version 3.
-See [COPYRIGHT](COPYRIGHT) and [LICENSE](LICENSE) files for details.
+## Bảo mật
 
-## Credits
+Nếu phát hiện lỗ hổng bảo mật, vui lòng báo riêng tư thay vì công khai. Xem hướng dẫn tại [docs/security-and-privacy/statement-on-security/README.md](docs/security-and-privacy/statement-on-security/README.md).
 
-### Icons
+## Giấy phép
 
-Thanks to Vincent Le Moign and his fabulous Minicons icons on [webalys.com](http://www.webalys.com/minicons/icons-free-pack.php).
+OpenProject được cấp phép theo GNU General Public License phiên bản 3. Xem chi tiết trong các file [COPYRIGHT](COPYRIGHT) và [LICENSE](LICENSE).
 
-### OpenProject icon font
+## Ghi công
 
-Published and created by the OpenProject Foundation (OPF) under [Creative Commons Attribution 3.0 Unported License](http://creativecommons.org/licenses/by/3.0/)
-with icons from the following sources
-[Minicons Free Vector Icons Pack](http://www.webalys.com/minicons) and
-[User Interface Design framework](http://www.webalys.com/design-interface-application-framework.php) both by webalys
+### Biểu tượng
 
-**Creative Commons License**
+Cảm ơn Vincent Le Moign và bộ biểu tượng Minicons trên [webalys.com](http://www.webalys.com/minicons/icons-free-pack.php).
 
-OpenProject Icon Font by the OpenProject Foundation (OPF) is licensed under Creative Commons Attribution 3.0 Unported License
-and Free for both personal and commercial use. You can copy, adapt, remix, distribute or transmit it.
+### Font biểu tượng OpenProject
 
-Under this condition: provide a mention of the "OpenProject Foundation" and a link back to OpenProject www.openproject.org.
+Được xuất bản bởi OpenProject Foundation (OPF) theo giấy phép [Creative Commons Attribution 3.0 Unported](http://creativecommons.org/licenses/by/3.0/), với biểu tượng từ
+[Minicons Free Vector Icons Pack](http://www.webalys.com/minicons) và
+[User Interface Design framework](http://www.webalys.com/design-interface-application-framework.php) của webalys.
+
+Font được dùng miễn phí cho cả mục đích cá nhân và thương mại; có thể sao chép, chỉnh sửa, phân phối, với điều kiện ghi nhận "OpenProject Foundation" và liên kết về [www.openproject.org](https://www.openproject.org).
