@@ -3,234 +3,234 @@ vi:
   activerecord:
     attributes:
       wikis/page_link:
-        identifier: Identifier
-        provider: Wiki Provider
+        identifier: Mã định danh
+        provider: Nhà cung cấp Wiki
       wikis/provider:
-        name: Name
-        universal_identifier: Universal identifier
+        name: Tên
+        universal_identifier: Mã định danh chung
       wikis/xwiki_provider:
-        authentication_method: Authentication method
+        authentication_method: Phương thức xác thực
         authentication_methods:
-          oauth2_sso: Single-Sign-On through OpenID Connect Identity Provider
-          two_way_oauth2: Two-way OAuth 2.0 authorization code flow
-        token_exchange_scope: XWiki Scope
-        url: Instance URL
-        wiki_audience: XWiki Audience
+          oauth2_sso: Đăng nhập một lần (SSO) qua nhà cung cấp danh tính OpenID Connect
+          two_way_oauth2: Luồng mã ủy quyền OAuth 2.0 hai chiều
+        token_exchange_scope: Phạm vi XWiki
+        url: URL hệ thống
+        wiki_audience: Audience XWiki
     errors:
       models:
         wikis/provider:
           attributes:
             url:
-              already_taken: belongs to the wiki provider that's already known as "%{name}".
-              wiki_provider_unreachable: could not be reached.
+              already_taken: Belongs to the wiki provider that's already known as "%{name}".
+              wiki_provider_unreachable: Could not be reached.
     models:
       wikis/inline_page_link:
-        other: Inline page links
+        other: Liên kết trang nội dòng
       wikis/internal_provider:
-        other: Internal providers
+        other: Nhà cung cấp nội bộ
       wikis/page_link:
-        other: Page links
+        other: Liên kết trang
       wikis/provider:
-        other: Wiki providers
+        other: Nhà cung cấp Wiki
       wikis/relation_page_link:
-        other: Relation page links
+        other: Liên kết trang liên quan
       wikis/xwiki_provider:
-        other: XWiki providers
+        other: Nhà cung cấp XWiki
   menus:
     admin:
-      external_wiki_providers: External wiki providers
-      internal_wiki_provider: Project wikis
-      wikis: Wikis
+      external_wiki_providers: Nhà cung cấp Wiki bên ngoài
+      internal_wiki_provider: Wiki dự án
+      wikis: Wiki
     project_settings:
-      wiki: Project wiki
-  permission_manage_wiki_page_links: Manage wiki page links
+      wiki: Wiki dự án
+  permission_manage_wiki_page_links: Quản lý liên kết trang wiki
   wikis:
     admin:
       destroy_confirmation_dialog_component:
-        description_html: The wiki provider %{wiki_provider} and all the related wiki page links will be deleted. In addition, every inline wiki page link will no longer be accessible. This action is irreversible.
-        heading: Permanently delete this wiki provider?
-        title: Delete wiki provider
+        description_html: Nhà cung cấp wiki %{wiki_provider} và tất cả liên kết trang wiki liên quan sẽ bị xóa. Ngoài ra, mọi liên kết trang wiki nội dòng sẽ không thể truy cập được nữa. Hành động này không thể hoàn tác.
+        heading: Xóa vĩnh viễn nhà cung cấp wiki này?
+        title: Xóa nhà cung cấp wiki
       forms:
         general_info_form_component:
-          provider_description: Please make sure you have administration privileges in your XWiki instance before doing the setup.
+          provider_description: Vui lòng đảm bảo bạn có quyền quản trị trên hệ thống XWiki của mình trước khi thiết lập.
         oauth_application_form_component:
-          application_id: OpenProject OAuth Application ID
-          application_secret: OpenProject OAuth Application secret
+          application_id: ID ứng dụng OAuth của OpenProject
+          application_secret: Secret ứng dụng OAuth của OpenProject
         oauth_client_form_component:
-          client_id: Wiki OAuth Client ID
-          client_secret: Wiki OAuth Client secret
+          client_id: Client ID OAuth của Wiki
+          client_secret: Client secret OAuth của Wiki
       health_status:
         show:
           actions:
-            download_report: Download
-            rerun_checks: Re-run all checks
-            run_checks: Run checks now
-          last_check: 'Last check: %{datetime}'
-          no_health_report: No report available
-          no_health_report_description: Run the checks now for a full health status report for this wiki provider.
-          title: Health Report
+            download_report: Tải xuống
+            rerun_checks: Chạy lại tất cả kiểm tra
+            run_checks: Chạy kiểm tra ngay
+          last_check: 'Lần kiểm tra gần nhất: %{datetime}'
+          no_health_report: Chưa có báo cáo
+          no_health_report_description: Hãy chạy kiểm tra ngay để có báo cáo tình trạng đầy đủ cho nhà cung cấp wiki này.
+          title: Báo cáo tình trạng
       internal_provider_form:
-        checkbox_caption: Allow projects to use project wikis along with external wiki providers
-        checkbox_label: Enable OpenProject project wikis
+        checkbox_caption: Cho phép các dự án dùng wiki dự án cùng với các nhà cung cấp wiki bên ngoài
+        checkbox_label: Bật wiki dự án OpenProject
       internal_wiki_provider:
         show:
-          description: Choose to enable or disable project wikis
+          description: Chọn bật hoặc tắt wiki dự án
       oauth_application_info_component:
-        confirm_replace_oauth_application: This action will reset the current OAuth credentials. After confirming you will have to reenter the credentials in your XWiki instance and all users will have to reauthorize. Are you sure you want to proceed?
+        confirm_replace_oauth_application: Hành động này sẽ đặt lại thông tin xác thực OAuth hiện tại. Sau khi xác nhận, bạn sẽ phải nhập lại thông tin xác thực trong hệ thống XWiki của mình và tất cả người dùng sẽ phải ủy quyền lại. Bạn có chắc muốn tiếp tục không?
         label_oauth_client_id: OAuth Client ID
-        replace_oauth_application: Replace OpenProject OAuth application
+        replace_oauth_application: Thay thế ứng dụng OAuth của OpenProject
       oauth_client_info_component:
-        confirm_replace_oauth_client: This action will reset the current XWiki OAuth credentials. All users will need to reauthorize against XWiki. Are you sure you want to proceed?
+        confirm_replace_oauth_client: Hành động này sẽ đặt lại thông tin xác thực OAuth XWiki hiện tại. Tất cả người dùng sẽ phải ủy quyền lại với XWiki. Bạn có chắc muốn tiếp tục không?
         label_oauth_client_id: OAuth Client ID
-        replace_oauth_client: Replace XWiki OAuth application
+        replace_oauth_client: Thay thế ứng dụng OAuth của XWiki
       redirect_uri_info_component:
-        description: The redirect URI is generated once the wiki OAuth client is configured.
+        description: URI chuyển hướng sẽ được tạo sau khi cấu hình xong OAuth client của wiki.
         label_uri: URI
-        show_redirect_uri: Show redirect URI
+        show_redirect_uri: Hiển thị URI chuyển hướng
       side_panel:
         health_status_component:
-          last_check: 'Last check: %{datetime}'
-          open_report: Open full health report
-          run_checks: Run checks now
-          title: Health status report
+          last_check: 'Lần kiểm tra gần nhất: %{datetime}'
+          open_report: Mở báo cáo tình trạng đầy đủ
+          run_checks: Chạy kiểm tra ngay
+          title: Báo cáo tình trạng
       wiki_provider_list_component:
-        label_creation_time: Created
-        label_name: Name
-        label_provider: Provider
-        no_results_description: Add a wiki provider to see them here.
-        no_results_title: You don't have any wiki providers set up yet.
+        label_creation_time: Ngày tạo
+        label_name: Tên
+        label_provider: Nhà cung cấp
+        no_results_description: Hãy thêm nhà cung cấp wiki để xem chúng tại đây.
+        no_results_title: Bạn chưa thiết lập nhà cung cấp wiki nào.
       wiki_providers:
-        index_description: Add an external wiki service to link gói công việc (work package)s to existing wiki pages or create new ones directly from OpenProject.
-        label_add_new: Add new wiki provider
-        label_edit: Edit XWiki provider
-        label_new_provider: New XWiki provider
-        label_wiki_platform: Wiki provider
-        name_caption: Give your wiki provider a name so that users can differentiate between multiple wiki platforms.
-        name_placeholder: XWiki knowledge base
-        new_provider_html: Read our documentation on [setting up an XWiki integration](docs_url) for more information.
-        successful_setup: Wiki provider configured successfully!
+        index_description: Add an external wiki service to link Work package (work package)s to existing wiki pages or create new ones directly from OpenProject.
+        label_add_new: Thêm nhà cung cấp wiki mới
+        label_edit: Chỉnh sửa nhà cung cấp XWiki
+        label_new_provider: Nhà cung cấp XWiki mới
+        label_wiki_platform: Nhà cung cấp wiki
+        name_caption: Đặt tên cho nhà cung cấp wiki để người dùng phân biệt được giữa nhiều nền tảng wiki.
+        name_placeholder: Cơ sở tri thức XWiki
+        new_provider_html: Xem tài liệu của chúng tôi về [thiết lập tích hợp XWiki](docs_url) để biết thêm thông tin.
+        successful_setup: Đã cấu hình nhà cung cấp wiki thành công!
         oauth:
           openproject_oauth: OpenProject OAuth
-          redirect_uri: Redirect URI
-          redirect_uri_caption: Copy this value into the Redirect URI field of your XWiki OIDC client registration.
+          redirect_uri: URI chuyển hướng
+          redirect_uri_caption: Sao chép giá trị này vào trường Redirect URI trong phần đăng ký OIDC client của XWiki.
         sections:
-          general_information: General information
+          general_information: Thông tin chung
           oauth_configuration: OAuth cấu hình
-        url_caption: The host address of your wiki platform including the https://. It should not be longer than 255 characters.
+        url_caption: Địa chỉ máy chủ của nền tảng wiki, bao gồm cả https://. Không được dài quá 255 ký tự.
         xwiki:
           oauth:
-            openproject_oauth_description: Allow XWiki to access OpenProject data using an OAuth application.
-            provider_oauth: Wiki OAuth
-            provider_oauth_configuration: Copy these values to the [XWiki OIDC Connection client](xwiki_oidc_link).
-            provider_oauth_description: Allow OpenProject to access XWiki data using OAuth.
-          openproject_oauth_description: Allow XWiki to access OpenProject data using an OAuth.
+            openproject_oauth_description: Cho phép XWiki truy cập dữ liệu OpenProject bằng ứng dụng OAuth.
+            provider_oauth: OAuth của Wiki
+            provider_oauth_configuration: Sao chép các giá trị này vào [OIDC Connection client của XWiki](xwiki_oidc_link).
+            provider_oauth_description: Cho phép OpenProject truy cập dữ liệu XWiki bằng OAuth.
+          openproject_oauth_description: Cho phép XWiki truy cập dữ liệu OpenProject bằng OAuth.
           xwiki_oauth: XWiki OAuth
-          xwiki_oauth_description: Allow OpenProject to access XWiki data using an OAuth.
+          xwiki_oauth_description: Cho phép OpenProject truy cập dữ liệu XWiki bằng OAuth.
     buttons:
-      connect_account: Connect %{provider} account
-      done_continue: Done, continue
-      open_wiki: Open wiki
-      save_and_continue: Save and continue
-      wiki_page: Wiki page
+      connect_account: Kết nối tài khoản %{provider}
+      done_continue: Xong, tiếp tục
+      open_wiki: Mở wiki
+      save_and_continue: Lưu và tiếp tục
+      wiki_page: Trang wiki
     create_new_wiki_page_dialog:
-      title: Create new wiki page
+      title: Tạo trang wiki mới
     deferred_inline_page_link_macro_component:
-      loading: Loading…
+      loading: Đang tải…
     delete_relation_page_link_confirmation_dialog:
-      heading: Delete related wiki page link?
-      title: Delete related wiki page link
+      heading: Xóa liên kết trang wiki liên quan?
+      title: Xóa liên kết trang wiki liên quan
     errors:
-      connection_error: Could not connect to the wiki provider.
-      invalid_parent: The selected page is not a valid parent page.
-      invalid_response: The wiki provider responded unexpectedly.
-      missing_token: The user account is not yet connected to the wiki provider.
-      request_failed: The wiki provider experienced an unexpected error.
-      unauthorized: An authorization error occurred.
+      connection_error: Không thể kết nối với nhà cung cấp wiki.
+      invalid_parent: Trang đã chọn không phải là trang cha hợp lệ.
+      invalid_response: Nhà cung cấp wiki phản hồi không như mong đợi.
+      missing_token: Tài khoản người dùng chưa được kết nối với nhà cung cấp wiki.
+      request_failed: Nhà cung cấp wiki gặp lỗi không mong muốn.
+      unauthorized: Đã xảy ra lỗi ủy quyền.
     health_checks:
       authentication:
-        existing_token: User token
-        header: Authentication
-        user_bound_request: User-based request authentication
+        existing_token: Token người dùng
+        header: Xác thực
+        user_bound_request: Xác thực yêu cầu dựa trên người dùng
       base_configuration:
         header: Cấu hình
         provider_configured: Cấu hình complete
-        universal_id_known: Provider recognized
+        universal_id_known: Đã nhận diện nhà cung cấp
       errors:
-        connection_error: OpenProject could not connect to the wiki provider.
+        connection_error: OpenProject không thể kết nối với nhà cung cấp wiki.
         not_configured: The connection could not be validated. Please finish cấu hình first.
-        uid_mismatch: The universal identifier reported by the wiki provider does not match the identifier that OpenProject recorded during setup.
-        xwiki_oauth_connection_error: OpenProject could not connect to the configured XWiki instance.
-        xwiki_oauth_request_error: An unexpected error occurred when trying to communicate with the XWiki instance.
-        xwiki_oauth_token_missing: OpenProject cannot test the user-level communication with XWiki as the user did not yet connect their XWiki account.
-        xwiki_oauth_unauthorized: The user token was not recognized by XWiki.
+        uid_mismatch: Mã định danh chung mà nhà cung cấp wiki báo cáo không khớp với mã định danh OpenProject đã ghi lại trong quá trình thiết lập.
+        xwiki_oauth_connection_error: OpenProject không thể kết nối với hệ thống XWiki đã cấu hình.
+        xwiki_oauth_request_error: Đã xảy ra lỗi không mong muốn khi giao tiếp với hệ thống XWiki.
+        xwiki_oauth_token_missing: OpenProject không thể kiểm tra kết nối ở cấp người dùng với XWiki vì người dùng chưa kết nối tài khoản XWiki của họ.
+        xwiki_oauth_unauthorized: XWiki không nhận diện được token người dùng.
     index:
-      column_last_edited: Last edited
-      column_name: Wiki page
-      column_parent: Parent
-      column_project: Project
-      column_sub_pages: Sub-pages
-      filter_by_name: Filter by page name
-      filter_placeholder: Search by name
+      column_last_edited: Chỉnh sửa lần cuối
+      column_name: Trang wiki
+      column_parent: Trang cha
+      column_project: Dự án
+      column_sub_pages: Trang con
+      filter_by_name: Lọc theo tên trang
+      filter_placeholder: Tìm theo tên
       menu_title: Wiki
-      no_results_description: No wiki pages are available.
-      no_results_title: No wiki pages yet
+      no_results_description: Không có trang wiki nào.
+      no_results_title: Chưa có trang wiki
       queries:
-        all: All wiki pages
-        main: Main wiki pages
+        all: Tất cả trang wiki
+        main: Trang wiki chính
       sub_pages_count:
-        other: "%{count} sub-pages"
+        other: '%{count} trang con'
     inline_wiki_page_dialog:
-      title_add: Add existing wiki page
-      title_create: Create new wiki page
+      title_add: Thêm trang wiki có sẵn
+      title_create: Tạo trang wiki mới
     instructions:
       xwiki:
         integration: XWiki Administration
-        oauth_application_details_html: The client secret value will not be accessible again after you close this window. Please copy these values into the [XWiki OpenProject Integration settings](xwiki_admin_link).
+        oauth_application_details_html: Giá trị client secret sẽ không thể xem lại sau khi bạn đóng cửa sổ này. Vui lòng sao chép các giá trị này vào [cài đặt tích hợp XWiki OpenProject](xwiki_admin_link).
     link_existing_wiki_page_dialog:
-      title: Add existing wiki page
+      title: Thêm trang wiki có sẵn
     oauth_login_component:
-      connect_button: Connect %{provider} account
-      description: Log in to %{provider} to view and manage related wiki pages from this OpenProject instance.
-      heading: Not connected to %{provider}
+      connect_button: Kết nối tài khoản %{provider}
+      description: Đăng nhập vào %{provider} để xem và quản lý các trang wiki liên quan từ hệ thống OpenProject này.
+      heading: Chưa kết nối với %{provider}
     page_link_component:
-      add_to_related_pages: Add to related pages
-      remove: Remove page link
+      add_to_related_pages: Thêm vào trang liên quan
+      remove: Gỡ liên kết trang
     page_link_forms:
       labels:
-        page_title: Title
-        parent: Parent
-        wiki_page: Wiki page
+        page_title: Tiêu đề
+        parent: Trang cha
+        wiki_page: Trang wiki
       search:
-        no_results: No wiki pages found
-        placeholder: Search for a wiki page (or enter its URL)
+        no_results: Không tìm thấy trang wiki
+        placeholder: Tìm trang wiki (hoặc nhập URL của trang)
     page_links:
-      aria_label: A dynamic link to a wiki page placed using a macro.
+      aria_label: Liên kết động đến một trang wiki được chèn bằng macro.
       errors:
-        page_access_forbidden: You do not have permission to access this wiki page
-        page_not_found: Linked wiki page no longer available
-        unexpected: An unexpected error occurred
+        page_access_forbidden: Bạn không có quyền truy cập trang wiki này
+        page_not_found: Trang wiki đã liên kết không còn khả dụng
+        unexpected: Đã xảy ra lỗi không mong muốn
       source:
-        parent: As parent
+        parent: Là trang cha
     project_settings:
       project_internal_wiki_component:
-        blankslate_description: For this instance, project wikis are disabled globally and therefore can’t be enabled per project. Please, ask your administrator to enable the global wikis in the administration settings.
-        blankslate_title: Project wikis are disabled globally
-        caption: This enables native wiki functionality for this project. Members will be able to create and read wiki pages that are stored in OpenProject.
-        enable: Enable the OpenProject wiki for this project
+        blankslate_description: Đối với hệ thống này, wiki dự án bị tắt toàn cục nên không thể bật cho từng dự án. Vui lòng nhờ quản trị viên bật wiki toàn cục trong phần cài đặt quản trị.
+        blankslate_title: Wiki dự án đang bị tắt toàn cục
+        caption: Tùy chọn này bật chức năng wiki tích hợp cho dự án. Các thành viên sẽ có thể tạo và đọc các trang wiki được lưu trữ trong OpenProject.
+        enable: Bật wiki OpenProject cho dự án này
     provider_types:
       internal:
         name: OpenProject
       xwiki:
         name: XWiki
     relation_page_links_component:
-      empty_heading: No related pages
-      empty_text: Add wiki pages that are relevant to this work package.
-      link_existing: Existing wiki page
-      link_new: New wiki page
+      empty_heading: Không có trang liên quan
+      empty_text: Thêm các trang wiki liên quan đến Work package này.
+      link_existing: Trang wiki có sẵn
+      link_new: Trang wiki mới
     upsell:
       xwiki:
-        description: Connect XWiki with OpenProject and keep documentation and work in sync, link pages, track references and manage everything in one place.
-        title: XWiki Integration
+        description: Kết nối XWiki với OpenProject để đồng bộ tài liệu và công việc, liên kết các trang, theo dõi tham chiếu và quản lý mọi thứ ở một nơi.
+        title: Tích hợp XWiki
     work_package_wikis_tab_component:
-      inline_page_links: Mentioned in description
-      referencing_pages: Referenced in
+      inline_page_links: Được nhắc đến trong mô tả
+      referencing_pages: Được tham chiếu trong

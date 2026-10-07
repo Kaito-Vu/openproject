@@ -22,7 +22,7 @@
 ---
 vi:
   js:
-    label_meetings: các cuộc họp
+    label_meetings: Các Meeting
     work_packages:
       tabs:
-        meetings: các cuộc họp
+        meetings: Các Meeting

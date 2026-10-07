@@ -5,7 +5,7 @@ vi:
       add_widget: Thêm tiện ích
       configure: Định cấu hình tiện ích
       remove: Xóa tiện ích
-      widget_menu_label: Show menu options for %{widgetName} widget
+      widget_menu_label: Hiển thị tùy chọn menu cho widget %{widgetName}
       widgets:
         custom_text:
           title: Văn bản tùy chỉnh
@@ -13,16 +13,16 @@ vi:
           no_results: Chưa có tài liệu.
           title: Tài liệu
         members:
-          title: thành viên
+          title: Thành viên
         missing_permission: Bạn không có quyền cần thiết để xem tiện ích này.
         news:
-          title: tin tức
-        not_available: This widget is currently unavailable.
+          title: Tin tức
+        not_available: Widget này hiện không khả dụng.
         project_description:
-          title: mô tả
+          title: Mô tả
         project_favorites:
-          no_results: You currently have no favorite projects. Add one or multiple projects as favorite through their overview or in a project list.
-          title: dự án yêu thích
+          no_results: Bạn hiện chưa có dự án yêu thích nào. Hãy thêm một hoặc nhiều dự án vào mục yêu thích từ trang tổng quan của dự án hoặc trong danh sách dự án.
+          title: Dự án yêu thích
         project_status:
           at_risk: Có nguy cơ
           discontinued: Đã ngừng sản xuất
@@ -31,23 +31,23 @@ vi:
           not_started: Chưa bắt đầu
           off_track: Lạc lối
           on_track: Đang đi đúng hướng
-          title: trạng thái
+          title: Status
         project_timeline:
           accessible_date_range: "%{start} to %{end}"
-          accessible_gate: 'Phase gate %{name}: %{date}'
+          accessible_gate: 'Cổng giai đoạn %{name}: %{date}'
           accessible_milestone: 'Milestone %{name}: %{date}'
-          accessible_phase: 'Phase %{name}: %{date}'
-          accessible_sprint: 'Sprint %{name}: %{date}. Status: %{status}'
+          accessible_phase: 'Giai đoạn %{name}: %{date}'
+          accessible_sprint: 'Sprint %{name}: %{date}. Trạng thái: %{status}'
           sprint_status:
-            active: Active
-            completed: Completed
-            in_planning: In planning
-          tooltip_type_gate: Phase gate
+            active: Đang hoạt động
+            completed: Đã hoàn thành
+            in_planning: Đang lập kế hoạch
+          tooltip_type_gate: Cổng giai đoạn
           tooltip_type_milestone: Milestone
-          tooltip_type_phase: Phase
+          tooltip_type_phase: Giai đoạn
           tooltip_type_sprint: Sprint
         subprojects:
-          title: mục phụ
+          title: Mục phụ
         time_entries_current_user:
           displayed_days: 'Ngày hiển thị trong widget:'
           title: Thời gian hiện tại (My spent time)
@@ -55,20 +55,20 @@ vi:
           no_results: Không có mục thời gian trong 7 ngày qua.
           title: Thời gian đã sử dụng (7 ngày qua)
         work_packages_accountable:
-          title: Gói công việc mà tôi có trách nhiệm
+          title: Work package mà tôi có trách nhiệm
         work_packages_assigned:
           title: Work package được chỉ định cho tôi
         work_packages_calendar:
-          title: lịch
+          title: Lịch
         work_packages_created:
           title: Công việc tạo bởi tôi
         work_packages_graph:
-          summary: Biểu đồ %{chartType} hiển thị các gói công việc %{description}.
-          title: Biểu đồ gói công việc
+          summary: Biểu đồ %{chartType} hiển thị các Work package %{description}.
+          title: Biểu đồ Work package
         work_packages_overview:
           placeholder: Bấm vào để chỉnh sửa...
-          title: Tổng quan về gói công việc
+          title: Tổng quan về Work package
         work_packages_table:
-          title: Bảng gói công việc
+          title: Bảng Work package
         work_packages_watched:
           title: Công việc có liên quan tới tôi

@@ -8,31 +8,31 @@ vi:
         response_code: Thông điệp phản hồi
         url: URL tải trọng
       webhooks/webhook:
-        enabled: đã bật
+        enabled: Đã bật
         events: Sự kiện
         projects: Dự án đã kích hoạt
         secret: Chữ ký bí mật
         url: URL tải trọng
     models:
       webhooks/log:
-        other: Webhook logs
+        other: Nhật ký Webhook
       webhooks/webhook:
-        other: Webhooks
+        other: Webhook
   plugin_openproject_webhooks:
-    description: Cung cấp API plug-in để hỗ trợ webhooks OpenProject để tích hợp bên thứ 3 tốt hơn.
+    description: Cung cấp API plug-in để hỗ trợ webhooks OpenProject để Integration bên thứ 3 tốt hơn.
     name: Webhooks OpenProject
   webhooks:
     outgoing:
       deliveries:
         no_results_table: Không có đợt giao hàng nào được thực hiện cho webhook này trong những ngày qua.
-        time: thời gian giao hàng
+        time: Thời gian giao hàng
         title: Giao hàng gần đây
       events:
-        comment: bình luận
-        created: đã tạo
+        comment: Bình luận
+        created: Đã tạo
         internal_comment: Bình luận nội bộ
-        updated: đã cập nhật
-      explanation_html: 'Upon the occurrence of an event like the creation of a gói công việc (work package) or an update on a project, OpenProject will send a POST request to the configured web endpoints. Oftentimes, the event is sent after the [configured aggregation period](aggregation_path) has passed.
+        updated: Đã cập nhật
+      explanation_html: 'Upon the occurrence of an event like the creation of a Work package (work package) or an update on a project, OpenProject will send a POST request to the configured web endpoints. Oftentimes, the event is sent after the [configured aggregation period](aggregation_path) has passed.
 
         '
       form:
@@ -75,4 +75,4 @@ vi:
     resources:
       time_entry:
         name: Thời gian nhập
-    singular: webhook
+    singular: Webhook

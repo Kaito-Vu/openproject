@@ -7,19 +7,19 @@ vi:
       drop_files: Thả tệp vào đây để tải chúng lên %{name}.
       drop_or_click_files: Thả tệp vào đây hoặc nhấp để tải chúng lên %{name}.
       file_links:
-        already_linked_directory: Thư mục này đã được liên kết với gói công việc này.
-        already_linked_file: Tệp này đã được liên kết với gói công việc này.
+        already_linked_directory: Thư mục này đã được liên kết với Work package này.
+        already_linked_file: Tệp này đã được liên kết với Work package này.
         download: Tải xuống %{fileName}
-        empty: 'Hiện tại không có tệp nào được liên kết với gói công việc này. Bắt đầu liên kết các tệp bằng hành động bên dưới hoặc từ bên trong %{storageType}.
+        empty: 'Hiện tại không có tệp nào được liên kết với Work package này. Bắt đầu liên kết các tệp bằng hành động bên dưới hoặc từ bên trong %{storageType}.
 
           '
-        link_uploaded_file_error: 'Đã xảy ra lỗi khi liên kết tệp được tải lên gần đây ''%{fileName}'' với gói công việc %{workPackageId}.
+        link_uploaded_file_error: 'Đã xảy ra lỗi khi liên kết tệp được tải lên gần đây ''%{fileName}'' với Work package %{workPackageId}.
 
           '
         open: Mở tập tin trên bộ lưu trữ
         open_location: Mở tệp ở vị trí
         remove: Xóa liên kết tập tin
-        remove_confirmation: 'Bạn có chắc chắn muốn hủy liên kết tệp khỏi gói công việc này không? Việc hủy liên kết không ảnh hưởng đến tệp gốc và chỉ xóa kết nối với gói công việc này.
+        remove_confirmation: 'Bạn có chắc chắn muốn hủy liên kết tệp khỏi Work package này không? Việc hủy liên kết không ảnh hưởng đến tệp gốc và chỉ xóa kết nối với Work package này.
 
           '
         remove_short: Xóa liên kết
@@ -48,7 +48,7 @@ vi:
 
             '
           detail:
-            nextcloud: 'Vui lòng kiểm tra xem phiên bản mới nhất của Ứng dụng Nextcloud "Tích hợp OpenProject" đã được cài đặt chưa và liên hệ với quản trị viên của bạn để biết thêm thông tin.
+            nextcloud: 'Vui lòng kiểm tra xem Version mới nhất của Ứng dụng Nextcloud "Integration OpenProject" đã được cài đặt chưa và liên hệ với quản trị viên của bạn để biết thêm thông tin.
 
               '
       files:
@@ -83,8 +83,8 @@ vi:
         live_data_error_description: 'Không thể tìm nạp một số dữ liệu %{storageType}. Vui lòng thử tải lại trang này hoặc liên hệ với quản trị viên %{storageType} của bạn.
 
           '
-        no_file_links: Để liên kết các tập tin với gói công việc này, vui lòng thực hiện thông qua %{storageType}.
-        not_logged_in: 'Để thêm liên kết, xem hoặc tải lên các tệp liên quan đến gói công việc này, vui lòng đăng nhập vào %{storageType}.
+        no_file_links: Để liên kết các tập tin với Work package này, vui lòng thực hiện thông qua %{storageType}.
+        not_logged_in: 'Để thêm liên kết, xem hoặc tải lên các tệp liên quan đến Work package này, vui lòng đăng nhập vào %{storageType}.
 
           '
         suggest_logout: Bạn có thể thử xem việc đăng xuất và đăng nhập lại có khắc phục được sự cố này hay không.

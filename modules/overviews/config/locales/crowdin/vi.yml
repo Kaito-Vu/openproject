@@ -3,8 +3,8 @@ vi:
   activerecord:
     models:
       grids/overview:
-        other: Overviews
+        other: Tổng quan
   overviews:
-    label_dashboard: Trang tổng quan
+    label_dashboard: Dashboard
     label_home: "%{workspace_type} nhà"
-    label_overview: tổng quan
+    label_overview: Tổng quan

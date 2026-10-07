@@ -1,0 +1,220 @@
+# Báo cáo rà soát bản dịch tiếng Việt
+
+- Chuỗi còn nguyên tiếng Anh (chưa dịch): **3076**
+- Nghi dịch máy/lẫn tiếng Anh: **1093**
+- Chuỗi quá dài (>200 ký tự, thường là đoạn dịch máy): **129**
+- Nghi dịch thô/literal: **22**
+
+## 1. Chưa dịch (giữ nguyên tiếng Anh)
+
+- `config/locales/` § `accessibility.macro.aria_label_with_name` — %{name}: %{description}
+- `config/locales/` § `accessibility.macro.resource_links.attachment` — A dynamic link to an attachment placed using a macro.
+- `config/locales/` § `accessibility.macro.resource_links.commit` — A dynamic link to a commit placed using a macro.
+- `config/locales/` § `accessibility.macro.resource_links.document` — A dynamic link to a document placed using a macro.
+- `config/locales/` § `accessibility.macro.resource_links.export` — A dynamic link to a source file export placed using a macro.
+- `config/locales/` § `accessibility.macro.resource_links.group` — A dynamic link to a group placed using a macro.
+- `config/locales/` § `accessibility.macro.resource_links.meeting` — A dynamic link to a meeting placed using a macro.
+- `config/locales/` § `accessibility.macro.resource_links.message` — A dynamic link to a message placed using a macro.
+- `config/locales/` § `accessibility.macro.resource_links.project` — A dynamic link to a project placed using a macro.
+- `config/locales/` § `accessibility.macro.resource_links.revision` — A dynamic link to a revision placed using a macro.
+- `config/locales/` § `accessibility.macro.resource_links.source` — A dynamic link to a source file placed using a macro.
+- `config/locales/` § `accessibility.macro.resource_links.user` — A dynamic link to a user placed using a macro.
+- `config/locales/` § `accessibility.macro.resource_links.version` — A dynamic link to a version placed using a macro.
+- `config/locales/` § `accessibility.macro.resource_links.view` — A dynamic link to a view placed using a macro.
+- `config/locales/` § `accessibility.macro.resource_links.work_package` — A dynamic link to a work package placed using a macro.
+- `config/locales/` § `account.auth_source_login_html` — Please login as <em>%{login}</em> to activate your account.
+- `config/locales/` § `account.deletion_info.title` — Delete %{name}'s account
+- `config/locales/` § `account.omniauth_direct_login_continue` — Continue to sign in
+- `config/locales/` § `account.omniauth_direct_login_redirecting` — Redirecting you to your identity provider…
+- `config/locales/` § `account.signup_title` — Create an account in %{app_title}
+- `config/locales/` § `account.signup_with_external_account` — Sign up with an external account
+- `config/locales/` § `activerecord.attributes.ai/text_transform_action.active` — Active
+- `config/locales/` § `activerecord.attributes.ai/text_transform_action.injects_type_template` — Insert work package type template
+- `config/locales/` § `activerecord.attributes.ai/text_transform_action.label` — Label
+- `config/locales/` § `activerecord.attributes.ai/text_transform_action.prompt` — Prompt
+- `config/locales/` § `activerecord.attributes.ai/text_transform_action.types` — Work package types
+- `config/locales/` § `activerecord.attributes.ai/text_transform_action.usage_scope` — Scope
+- `config/locales/` § `activerecord.attributes.ai/text_transform_run.action` — Action
+- `config/locales/` § `activerecord.attributes.ai/text_transform_run.cancel_requested` — Cancel requested
+- `config/locales/` § `activerecord.attributes.ai/text_transform_run.error_message` — Error message
+- `config/locales/` § `activerecord.attributes.ai/text_transform_run.finished_at` — Finished at
+- `config/locales/` § `activerecord.attributes.ai/text_transform_run.input` — Input
+- `config/locales/` § `activerecord.attributes.ai/text_transform_run.status` — Status
+- `config/locales/` § `activerecord.attributes.ai/text_transform_run.system_prompt` — System prompt
+- `config/locales/` § `activerecord.attributes.ai/text_transform_run.user` — User
+- `config/locales/` § `activerecord.attributes.ai/text_transform_run.uuid` — UUID
+- `config/locales/` § `activerecord.attributes.ai/text_transform_run_event.kind` — Kind
+- `config/locales/` § `activerecord.attributes.ai/text_transform_run_event.payload` — Payload
+- `config/locales/` § `activerecord.attributes.ai/text_transform_run_event.run` — Run
+- `config/locales/` § `activerecord.attributes.ai/text_transform_run_event.seq` — Sequence number
+- `config/locales/` § `activerecord.attributes.attachment.charset` — Character set
+- `config/locales/` § `activerecord.attributes.changeset.repository` — Repository
+- `config/locales/` § `activerecord.attributes.custom_field.has_comment` — Add a comment text field
+- `config/locales/` § `activerecord.attributes.custom_field.max_value` — Maximum value
+- `config/locales/` § `activerecord.attributes.custom_field.min_value` — Minimum value
+- `config/locales/` § `activerecord.attributes.custom_field.semantic_key` — Semantic meaning
+- `config/locales/` § `activerecord.attributes.custom_field.visible_on_user_card` — Show on user card
+- `config/locales/` § `activerecord.attributes.form_configuration.attribute_groups` — Form
+- `config/locales/` § `activerecord.attributes.form_configuration.description` — Description
+- `config/locales/` § `activerecord.attributes.form_configuration.name` — Name
+- `config/locales/` § `activerecord.attributes.form_configuration.type_variants` — Types and variants using this form
+- `config/locales/` § `activerecord.attributes.form_configuration_attribute.attribute_key` — Attribute
+- `config/locales/` § `activerecord.attributes.form_configuration_attribute.custom_field` — Custom field
+- `config/locales/` § `activerecord.attributes.form_configuration_attribute.group` — Group
+- `config/locales/` § `activerecord.attributes.form_configuration_attribute.position` — Position
+- `config/locales/` § `activerecord.attributes.form_configuration_group.default_key` — Default group
+- `config/locales/` § `activerecord.attributes.form_configuration_group.kind` — Kind
+- `config/locales/` § `activerecord.attributes.form_configuration_group.label` — Label
+- `config/locales/` § `activerecord.attributes.form_configuration_group.query` — Query
+- `config/locales/` § `activerecord.attributes.group.group_users` — Group users
+- `config/locales/` § `activerecord.attributes.group.organizational_unit` — Organizational unit
+- `config/locales/` § `activerecord.attributes.group.parent` — Parent group
+- `config/locales/` § `activerecord.attributes.group_detail.organizational_unit` — Organizational unit
+- `config/locales/` § `activerecord.attributes.group_detail.parent` — Parent group
+- `config/locales/` § `activerecord.attributes.import/jira.name` — Jira instance name
+- `config/locales/` § `activerecord.attributes.import/jira.personal_access_token` — Personal access token
+- `config/locales/` § `activerecord.attributes.import/jira.url` — Jira instance URL
+- `config/locales/` § `activerecord.attributes.import/jira_open_project_reference.jira` — Jira
+- `config/locales/` § `activerecord.attributes.import/jira_open_project_reference.jira_import` — Jira Migrator
+- `config/locales/` § `activerecord.attributes.jira_import.projects` — Projects
+- `config/locales/` § `activerecord.attributes.llm_capability_verdict.capability` — Capability
+- `config/locales/` § `activerecord.attributes.llm_capability_verdict.model_id` — Model
+- `config/locales/` § `activerecord.attributes.llm_capability_verdict.state` — State
+- `config/locales/` § `activerecord.attributes.llm_connection.api_format` — API format
+- `config/locales/` § `activerecord.attributes.llm_connection.api_key` — API key
+- `config/locales/` § `activerecord.attributes.llm_connection.base_url` — Host URL
+- `config/locales/` § `activerecord.attributes.llm_connection.default_chat_model` — Default chat model
+- `config/locales/` § `activerecord.attributes.llm_connection.default_embedding_model` — Default embedding model
+- `config/locales/` § `activerecord.attributes.llm_connection.llm_features_enabled` — Enable LLMs for this instance
+- `config/locales/` § `activerecord.attributes.llm_model.admin_context_window` — Context window
+
+## 2. Nghi dịch máy / trộn tiếng Anh giữa câu
+
+- `config/locales/` § `account.deletion_info.data_consequences.other` — Tất cả dữ liệu cụ thể của người dùng sẽ bị xóa. Hoạt động của người dùng trong các View được chia sẻ như Work package và Meeting sẽ không bị xóa mà thay vào đó 
+- `config/locales/` § `account.deletion_info.data_consequences.self` — Tất cả dữ liệu cụ thể của người dùng sẽ bị xóa. Hoạt động của bạn trong các View được chia sẻ như Work package và Meeting sẽ không bị xóa mà thay vào đó sẽ được
+- `config/locales/` § `account.error_inactive_activation_by_mail` — Tài khoản của bạn vẫn chưa được kích hoạt. Để kích hoạt tài khoản của bạn, hãy nhấp vào liên kết được gửi qua email cho bạn. 
+- `config/locales/` § `account.error_inactive_manual_activation` — Tài khoản của bạn đã không được nêu ra được kích hoạt. Xin vui lòng chờ cho người quản trị để kích hoạt tài khoản của bạn. 
+- `config/locales/` § `account.error_self_registration_disabled` — Đăng ký người dùng bị vô hiệu hóa trên hệ thống này. Xin vui lòng hỏi người quản trị để tạo ra một tài khoản cho bạn. 
+- `config/locales/` § `activerecord.attributes.enterprise_token.encoded_token` — Mã thông báo hỗ trợ doanh nghiệp
+- `config/locales/` § `activerecord.attributes.project.project_creation_wizard_status_when_submitted` — Status khi gửi
+- `config/locales/` § `activerecord.attributes.project/phase.start_date_caption` — Tiếp theo giai đoạn trước.
+- `config/locales/` § `activerecord.attributes.query.timeline_visible` — Hiển thị Gantt chart
+- `config/locales/` § `activerecord.attributes.query.timeline_zoom_level` — Mức thu phóng Gantt chart
+- `config/locales/` § `activerecord.attributes.relation.to` — Work package liên quan
+- `config/locales/` § `activerecord.attributes.status.is_closed` — Work package đã đóng
+- `config/locales/` § `activerecord.attributes.status.is_readonly` — Work package chỉ đọc
+- `config/locales/` § `activerecord.attributes.type.is_milestone` — Là Milestone quan trọng
+- `config/locales/` § `activerecord.attributes.user_preference.comments_sorting` — Hiển thị hoạt động Work package được sắp xếp theo
+- `config/locales/` § `activerecord.attributes.user_preference.dismissed_enterprise_banners` — Biểu ngữ doanh nghiệp ẩn
+- `config/locales/` § `activerecord.attributes.user_preference.force_dark_theme_contrast` — Buộc độ tương phản cao khi ở chế độ Tối
+- `config/locales/` § `activerecord.attributes.user_preference.force_light_theme_contrast` — Buộc độ tương phản cao khi ở chế độ Ánh sáng
+- `config/locales/` § `activerecord.attributes.user_preference.increase_contrast_caption` — Bật chế độ tương phản cao cho chế độ màu đã chọn.
+- `config/locales/` § `activerecord.attributes.user_preference.warn_on_leaving_unsaved` — Cảnh báo tôi khi rời khỏi Work package có những thay đổi chưa được lưu
+- `config/locales/` § `activerecord.attributes.wiki_page.text` — Nội dung trang
+- `config/locales/` § `activerecord.attributes.work_package.time_entries` — Thời gian truy cập
+- `config/locales/` § `activerecord.errors.messages.cant_link_a_work_package_with_a_descendant` — Một Work package không thể được liên kết với một trong các nhiệm vụ con của nó.
+- `config/locales/` § `activerecord.errors.messages.error_enterprise_only` — %{action} chỉ có trong Version OpenProject Enterprise.
+- `config/locales/` § `activerecord.errors.models.capability.query.filters.minimum` — Cần bao gồm ít nhất một Filter cho giá trị chính, ngữ cảnh hoặc id bằng toán tử '='.
+- `config/locales/` § `activerecord.errors.models.custom_field.attributes.formula.not_allowed_custom_fields_referenced` — Thuộc tính %{custom_fields} không thể được sử dụng vì nó dẫn đến tham chiếu vòng tròn; một thuộc tính phụ thuộc vào thuộc tính khác.
+- `config/locales/` § `activerecord.errors.models.custom_field.previous_custom_field_recalculation_unprocessed` — Tính toán lại các thay đổi trước đó cho Custom field này chưa được áp dụng, vui lòng thử lại sau vài phút.
+- `config/locales/` § `activerecord.errors.models.doorkeeper/application.attributes.redirect_uri.relative_uri` — Phải là một URI tuyệt đối.
+- `config/locales/` § `activerecord.errors.models.notifications.attributes.mail_reminder_sent.set_on_creation` — Không thể đặt thành true khi tạo thông báo.
+- `config/locales/` § `activerecord.errors.models.notifications.attributes.read_ian.read_on_creation` — Không thể đặt thành true khi tạo thông báo.
+- `config/locales/` § `activerecord.errors.models.project.attributes.base.project_initiation_request_disabled` — Yêu cầu khởi tạo dự án bị vô hiệu hóa. Nó phải được kích hoạt để tạo Work package tạo tác.
+- `config/locales/` § `activerecord.errors.models.project.attributes.types.in_use_by_work_packages` — Work package vẫn được sử dụng: %{types}
+- `config/locales/` § `activerecord.errors.models.project.cannot_be_assigned_to_artifact_work_package` — Người dùng đã chọn không được phép gán cho các Work package.
+- `config/locales/` § `activerecord.errors.models.project.foreign_wps_reference_version` — Các Work package trong các Version tham chiếu không kế thừa của dự án hoặc kế thừa nó.
+- `config/locales/` § `activerecord.errors.models.queries/principals/filters/internal_mentionable_on_work_package_filter.attributes.values.single_value_requirement` — Phải là một Work package duy nhất
+- `config/locales/` § `activerecord.errors.models.query.filters.custom_fields.inexistent` — Không có Custom field cho Filter.
+- `config/locales/` § `activerecord.errors.models.relation.attributes.base.error_not_deletable` — Không thể xóa mối quan hệ này vì bạn không có quyền chỉnh sửa đối với Work package đã chọn.
+- `config/locales/` § `activerecord.errors.models.relation.attributes.base.error_not_editable` — Không thể chỉnh sửa mối quan hệ này vì bạn không có quyền chỉnh sửa đối với Work package đã chọn.
+- `config/locales/` § `activerecord.errors.models.relation.attributes.from_id.error_not_manageable` — Không thể thêm vì bạn không có quyền chỉnh sửa đối với Work package đã chọn.
+- `config/locales/` § `activerecord.errors.models.relation.attributes.from_id.format` — Work package đã chọn %{message}
+- `config/locales/` § `activerecord.errors.models.relation.attributes.to_id.error_not_manageable` — Không thể thêm vì bạn không có quyền chỉnh sửa đối với Work package đã chọn.
+- `config/locales/` § `activerecord.errors.models.relation.attributes.to_id.format` — Work package đã chọn %{message}
+- `config/locales/` § `activerecord.errors.models.repository.invalid_url` — Không phải là đường dẫn hoặc URL Repository hợp lệ.
+- `config/locales/` § `activerecord.errors.models.status.attributes.default_done_ratio.inclusion` — Phải nằm trong khoảng từ 0 đến 100.
+- `config/locales/` § `activerecord.errors.models.user_preference.attributes.notification_settings.email_alerts_global` — Cài đặt thông báo qua email chỉ có thể được đặt trên toàn cầu.
+- `config/locales/` § `activerecord.errors.models.user_preference.attributes.notification_settings.wrong_date` — Giá trị sai cho Ngày bắt đầu, Ngày đến hạn hoặc Quá hạn.
+- `config/locales/` § `activerecord.errors.models.version.undeletable_archived_projects` — Không thể xóa Version này vì nó có các Work package được đính kèm.
+- `config/locales/` § `activerecord.errors.models.version.undeletable_work_packages_attached` — Không thể xóa Version này vì nó có các Work package được đính kèm.
+- `config/locales/` § `activerecord.errors.models.wiki_page.error_conflict` — Trang wiki đã được người khác cập nhật trong khi bạn đang chỉnh sửa nó.
+- `config/locales/` § `activerecord.errors.models.work_package.attributes.category.only_same_project_categories_allowed` — Các thể loại của một work package phải trong dự án tương tự như work package.
+- `config/locales/` § `activerecord.errors.models.work_package.attributes.done_ratio.inclusion` — Phải nằm trong khoảng từ 0 đến 100.
+- `config/locales/` § `activerecord.errors.models.work_package.attributes.duration.not_available_for_milestones` — Không có sẵn cho các Work package được đánh dấu theo mốc quan trọng.
+- `config/locales/` § `activerecord.errors.models.work_package.attributes.id.cannot_add_child_because_of_lack_of_permission` — Không thể thêm con vì bạn không có quyền chỉnh sửa Work package đã chọn.
+- `config/locales/` § `activerecord.errors.models.work_package.attributes.start_date.violates_relationships` — Chỉ có thể được thiếp lập sang %{soonest_start} hoặc mới hơn để không làm vi phạm các mối quan hệ của work package.
+- `config/locales/` § `activerecord.errors.models.work_package.attributes.status_id.status_transition_invalid` — Không hợp lệ vì không tồn tại chuyển đổi hợp lệ từ Status cũ sang Status mới cho Role của người dùng hiện tại.
+- `config/locales/` § `activerecord.errors.models.work_package.attributes.type.cannot_be_milestone_due_to_children` — Không thể là một mốc quan trọng vì work package này có trẻ em.
+- `config/locales/` § `activerecord.errors.models.work_package.is_not_a_valid_target_for_time_entries` — Work package #%{id} không phải là một mục tiêu hợp lệ để gán lại các mục thời gian.
+- `config/locales/` § `activerecord.errors.models.work_package.readonly_status` — Work package ở Status chỉ đọc nên các thuộc tính của nó không thể thay đổi.
+- `config/locales/` § `activerecord.models.enterprise_token.other` — Mã thông báo doanh nghiệp
+- `config/locales/` § `activities.index.no_results_title_text` — Đã không có bất kỳ hoạt động nào cho dự án trong khung thời gian này.
+
+## 3. Dịch thô / literal
+
+- `config/locales/` § `activerecord.attributes.ldap_auth_source.base_dn` — DN cơ sở
+- `config/locales/` § `activerecord.attributes.query.timestamps` — Dấu thời gian cơ sở
+- `config/locales/` § `activerecord.errors.models.work_package.attributes.type.cannot_be_milestone_due_to_children` — Không thể là một mốc quan trọng vì work package này có trẻ em.
+- `config/locales/` § `ee.upsell.benefits.installation_text` — Các kỹ sư phần mềm có kinh nghiệm sẽ hướng dẫn bạn thực hiện quá trình cài đặt và thiết lập hoàn chỉnh trong cơ sở hạ tầng của riêng bạn.
+- `config/locales/` § `error_migrations_are_pending` — Bản cài đặt OpenProject của bạn có quá trình di chuyển cơ sở dữ liệu đang chờ xử lý. Bạn có thể đã bỏ lỡ quá trình di chuyển trong lần nâng cấp gần đây nhất của
+- `config/locales/` § `repositories.checkout.base_url_text` — URL cơ sở dùng để tạo URL thanh toán (ví dụ: https://myserver.example.org/repos/). Lưu ý: URL cơ sở chỉ được sử dụng để viết lại URL thanh toán trong kho được q
+- `config/locales/` § `setting_repository_checkout_base_url` — URL cơ sở thanh toán
+- `config/locales/` § `settings.project_attributes.edit.description` — Những thay đổi đối với thuộc tính dự án này sẽ được phản ánh trong tất cả các dự án được bật. Các thuộc tính bắt buộc không thể bị vô hiệu hóa trên cơ sở từng d
+- `config/locales/` § `settings.project_attributes.new.description` — Những thay đổi đối với thuộc tính dự án này sẽ được phản ánh trong tất cả các dự án được bật. Các thuộc tính bắt buộc không thể bị vô hiệu hóa trên cơ sở từng d
+- `config/locales/js-` § `js.chart.types.doughnut` — Bánh rán
+- `config/locales/js-` § `js.chart.types.radar` — Ra đa
+- `config/locales/js-` § `js.label_value_derived_from_children` — (giá trị bắt nguồn từ trẻ em)
+- `config/locales/js-` § `js.wiki_formatting.ordered_list` — Danh sách đặt hàng
+- `config/locales/js-` § `js.work_packages.filters.baseline_warning` — Chế độ cơ sở đang bật nhưng một số Filter đang hoạt động của bạn không được đưa vào so sánh.
+- `modules/grids/config/locales/` § `grids.widgets.subitems.no_results` — Không có trẻ em có thể nhìn thấy.
+- `modules/ldap_groups/config/locales/` § `activerecord.attributes.ldap_groups/synchronized_filter.base_dn` — Tìm kiếm cơ sở DN
+- `modules/ldap_groups/config/locales/` § `activerecord.errors.models.ldap_groups/synchronized_filter.must_contain_base_dn` — DN cơ sở Filter phải nằm trong DN cơ sở của kết nối LDAP
+- `modules/ldap_groups/config/locales/` § `ldap_groups.synchronized_filters.form.base_dn_text` — Nhập DN cơ sở tìm kiếm để sử dụng cho Filter này. Nó phải ở dưới DN cơ sở của kết nối LDAP đã chọn. Để trống tùy chọn này để sử dụng lại DN cơ sở của kết nối 
+- `modules/reporting/config/locales/` § `load_query_question` — Báo cáo sẽ có %{size} ô bảng và có thể mất chút thời gian để hiển thị. Bạn vẫn muốn thử kết xuất nó chứ?
+- `modules/storages/config/locales/` § `services.attributes.nextcloud_sync_service.ensure_root_folder_permissions` — Đặt quyền thư mục cơ sở:
+- `modules/storages/config/locales/` § `services.attributes.one_drive_sync_service.ensure_root_folder_permissions` — Đặt quyền thư mục cơ sở:
+- `modules/storages/config/locales/` § `services.attributes.sharepoint_sync_service.ensure_root_folder_permissions` — Đặt quyền thư mục cơ sở:
+
+## 4. Chuỗi quá dài
+
+- `config/locales/` § `account.deletion_info.data_consequences.other` — Tất cả dữ liệu cụ thể của người dùng sẽ bị xóa. Hoạt động của người dùng trong các View được chia sẻ như Work package và Meeting sẽ không bị xóa mà thay vào đó 
+- `config/locales/` § `account.deletion_info.data_consequences.self` — Tất cả dữ liệu cụ thể của người dùng sẽ bị xóa. Hoạt động của bạn trong các View được chia sẻ như Work package và Meeting sẽ không bị xóa mà thay vào đó sẽ được
+- `config/locales/` § `account.error_self_registration_limited_provider` — Đăng ký người dùng bị giới hạn đối với nhà cung cấp dịch vụ đăng nhập một lần '%{name}'. Vui lòng yêu cầu quản trị viên kích hoạt tài khoản cho bạn hoặc thay đổ
+- `config/locales/` § `activerecord.errors.models.work_package.attributes.identifier.must_not_be_changed` — Must not be changed manually. Work package identifiers are allocated automatically and resolved through the alias table, so changing them by hand breaks links a
+- `config/locales/` § `admin.jira.run.wizard.import_dialog.description` — Imports change your OpenProject cấu hình. After the import you will have the opportunity to review the changes. While in review, you have an option to revert or
+- `config/locales/` § `admin.scim_clients.form.jwt_sub_description` — Ví dụ: đối với Keycloak, đây là UUID của tài khoản dịch vụ được liên kết với máy khách SCIM. Hãy tham khảo [our documentation](docs_url) để tìm hiểu cách tìm xá
+- `config/locales/` § `backup.reset_token.implications` — Kích hoạt sao lưu sẽ cho phép bất kỳ người dùng nào có quyền và token sao lưu đều có thể tải xuống bản sao lưu có chứa tất cả dữ liệu của trang này. Nó cũng bao
+- `config/locales/` § `backup.reset_token.info` — Bạn sẽ cần phải tạo một token sao lưu để có thể tạo bản sao lưu. Mỗi lần bạn muốn yêu cầu sao lưu, bạn sẽ phải cung cấp mã token này. Bạn có thể xóa mã token sa
+- `config/locales/` § `custom_fields.admin.items.blankslate.root.description` — Bắt đầu bằng cách thêm các mục vào Custom field của hệ thống phân cấp loại. Mỗi mục có thể được sử dụng để tạo một hệ thống phân cấp bên dưới nó. Để điều hướng 
+- `config/locales/` § `custom_fields.admin.items.delete_dialog.description` — Hành động này sẽ xóa mục này và tất cả các mục phụ của nó mà không thể đảo ngược được. Mọi giá trị được chỉ định sẽ bị xóa vĩnh viễn. Nếu trường này là bắt buộc
+- `config/locales/` § `custom_fields.admin.role_assignment.warning` — Tùy thuộc vào Role được chọn bên dưới, người dùng được chỉ định cho thuộc tính dự án này có thể nhận được nhiều quyền hơn đáng kể so với trước đây, bao gồm khả 
+- `config/locales/` § `custom_fields.instructions.is_required.project` — Người dùng cần điền các thuộc tính bắt buộc khi tạo dự án nếu trường đang hoạt động (bộ 'Dành cho tất cả dự án' hoặc sao chép từ một dự án/mẫu trong đó trường đ
+- `config/locales/` § `description_autocomplete` — Trường này sử dụng tính năng tự động hoàn thành. Trong khi nhập tiêu đề của Work package, bạn sẽ nhận được danh sách các ứng viên tiềm năng. Chọn một bằng cách 
+- `config/locales/` § `ee.trial.already_retrieved` — Mã thông báo doanh nghiệp dùng thử của bạn đã được truy xuất. Vui lòng kiểm tra email của bạn để biết mã thông báo được đính kèm. Vui lòng liên hệ với nhóm hỗ t
+- `config/locales/` § `ee.trial.confirmation_info` — Chúng tôi đã gửi cho bạn email theo số %{date} tới %{email} kèm theo tất cả thông tin để bắt đầu dùng thử miễn phí OpenProject Enterprise. Vui lòng kiểm tra hộp
+- `config/locales/` § `ee.upsell.custom_actions.description` — Hành động tùy chỉnh là các phím tắt bằng một cú nhấp chuột tới một tập hợp các hành động được xác định trước mà bạn có thể cung cấp trên các Work package nhất đ
+- `config/locales/` § `ee.upsell.homescreen_description` — Các gói doanh nghiệp mở rộng Version Cộng đồng của OpenProject với [Enterprise add-ons](enterprise_url) bổ sung và hỗ trợ chuyên nghiệp, lý tưởng cho các tổ chứ
+- `config/locales/` § `ee.upsell.placeholder_users.description` — Người dùng giữ chỗ là một cách để gán các Work package cho những người dùng không thuộc dự án của bạn. Chúng có thể hữu ích trong nhiều tình huống khác nhau; ví
+- `config/locales/` § `ee.upsell.scim_api.description` — Tự động hóa việc quản lý người dùng trong OpenProject bằng cách Integration liền mạch các dịch vụ nhận dạng bên ngoài như Microsoft Entra hoặc Keycloak thông qu
+- `config/locales/` § `error_migrations_are_pending` — Bản cài đặt OpenProject của bạn có quá trình di chuyển cơ sở dữ liệu đang chờ xử lý. Bạn có thể đã bỏ lỡ quá trình di chuyển trong lần nâng cấp gần đây nhất của
+- `config/locales/` § `external_link_warning.warning_message` — Bạn sắp rời khỏi OpenProject và truy cập vào một trang web bên ngoài. Xin lưu ý rằng các trang web bên ngoài không nằm dưới sự kiểm soát của chúng tôi và có thể
+- `config/locales/` § `help_texts.views.public` — Xuất bản View này, cho phép người dùng khác truy cập vào View của bạn. Người dùng có quyền 'Quản lý View công khai' có thể sửa đổi hoặc xóa Query công khai. Điề
+- `config/locales/` § `journals.cause_descriptions.system_update.file_links_journal` — Từ giờ trở đi, hoạt động liên quan đến liên kết tệp (tệp được lưu trữ trong bộ nhớ ngoài) sẽ xuất hiện tại đây trong tab Hoạt động. Phần sau đây thể hiện hoạt đ
+- `config/locales/` § `journals.cause_descriptions.system_update.totals_removed_from_childless_work_packages` — Tổng số công việc và tiến độ tự động bị xóa cho các Work package không có cha với <a href="%{href}" target="_blank">cập nhật Version</a>. Đây là một nhiệm vụ bả
+- `config/locales/` § `label_custom_export_font_instructions` — Tải lên và quản lý phông chữ TrueType (.ttf) tùy chỉnh được sử dụng trong bản xuất PDF của bạn. Để có kết quả tốt nhất, hãy sử dụng các tệp phù hợp từ cùng một 
+- `config/locales/` § `label_interface_colors_description` — Những màu này kiểm soát giao diện của ứng dụng. Nếu bạn sửa đổi chúng, chủ đề sẽ tự động được thay đổi thành Chủ đề tùy chỉnh nhưng chúng tôi không thể đảm bảo 
+- `config/locales/` § `ldap_auth_sources.attribute_texts.filter_string` — Thêm Filter RFC4515 tùy chọn để áp dụng cho kết quả trả về cho người dùng được lọc trong LDAP. Điều này có thể được sử dụng để hạn chế nhóm người dùng được Open
+- `config/locales/` § `ldap_auth_sources.attribute_texts.filter_string_concat` — OpenProject sẽ luôn lọc thuộc tính đăng nhập do người dùng cung cấp để xác định bản ghi. Nếu bạn cung cấp Filter ở đây, nó sẽ được nối với AND. Theo mặc định, t
+- `config/locales/` § `ldap_auth_sources.attribute_texts.onthefly_register` — Nếu bạn chọn hộp này, OpenProject sẽ tự động tạo người dùng mới từ các mục LDAP của họ khi họ xác thực lần đầu bằng OpenProject. Bỏ chọn mục này để chỉ cho phép
+- `config/locales/` § `ldap_auth_sources.system_account_legend` — OpenProject yêu cầu quyền truy cập chỉ đọc thông qua tài khoản hệ thống để tra cứu người dùng và nhóm trong cây LDAP của bạn. Vui lòng chỉ định thông tin xác th
+- `config/locales/` § `ldap_auth_sources.tls_options.verify_peer_description_html` — Cho phép xác minh SSL nghiêm ngặt của chuỗi chứng chỉ tin cậy. <br> <strong>Cảnh báo:</strong> Việc bỏ chọn tùy chọn này sẽ tắt xác minh SSL của chứng chỉ máy c
+- `config/locales/` § `ldap_auth_sources.user_settings_legend` — Các trường sau đây liên quan đến cách người dùng được tạo trong OpenProject từ các mục nhập LDAP và thuộc tính LDAP nào được sử dụng để xác định thuộc tính của 
+- `config/locales/` § `mail_body_register_links_html` — Vui lòng duyệt qua kênh youtube của chúng tôi (%{youtube_link}) nơi chúng tôi cung cấp hội thảo trên web (%{webinar_link}) và video “Bắt đầu” (%{get_started_lin
+- `config/locales/` § `my_account.access_tokens.description` — Mã thông báo của nhà cung cấp được OpenProject phát hành, cho phép các ứng dụng khác truy cập vào nó. Mã thông báo của khách hàng được phát hành bởi các ứng dụn
+- `config/locales/` § `oauth.client_credentials_impersonation_html` — Theo mặc định, OpenProject cung cấp ủy quyền OAuth 2.0 thông qua %{authorization_code_flow_link}. Bạn có thể tùy ý bật %{client_credentials_flow_link}, nhưng bạ
+- `config/locales/` § `oauth_client.errors.oauth_state_not_present_explanation` — 'Status' được sử dụng để chỉ ra cho OpenProject nơi tiếp tục sau khi ủy quyền OAuth2 thành công. 'Status' bị thiếu là lỗi nội bộ có thể xuất hiện trong quá trìn
+- `config/locales/` § `placeholder_users.deletion_info.data_consequences` — Tất cả các lần xuất hiện của người dùng giữ chỗ (ví dụ: với tư cách là người được chuyển nhượng, người chịu trách nhiệm hoặc giá trị người dùng khác) sẽ được ch
+- `config/locales/` § `projects.settings.creation_wizard.errors.no_status_when_submitted` — Failed to enable project initiation request because Work package (work package) type %{type} requires at least one status associated with it. Please enable at l
+- `config/locales/` § `projects.settings.creation_wizard.errors.no_work_package_type` — Failed to enable project initiation request because it requires at least one active Work package (work package) type and this project has none. Please add at le
+- `config/locales/` § `projects.settings.life_cycle.header.description_html` — Các giai đoạn hoạt động của dự án xác định chu kỳ sống của dự án và được định nghĩa trong <a href=%{admin_settings_url} target="_blank">cài đặt quản trị</a>. Cá

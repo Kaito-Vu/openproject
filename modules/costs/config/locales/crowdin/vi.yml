@@ -30,11 +30,11 @@ vi:
         logged_by: Đăng nhập bởi
         overridden_costs: Chi phí ghi đè
         spent: Đã chi
-        spent_on: ngày
+        spent_on: Ngày
         work_package: Work Package
       cost_type:
         default: Loại chi phí theo mặc định
-        for_all_projects: For all projects
+        for_all_projects: Cho tất cả dự án
         rates: Tỷ lệ
         unit: Tên đơn vị
         unit_plural: Tên đơn vị đa năng
@@ -42,18 +42,18 @@ vi:
         rate: Tỷ giá
       time_entry:
         activity: Hoạt động
-        comments: bình luận
+        comments: Bình luận
         end_time: Thời gian kết thúc
         entity: Đã đăng nhập
         entity_gid: Đã đăng nhập
         entity_id: Đã đăng nhập
         hours: Giờ
-        project: dự án
+        project: Dự án
         spent_on: Ngày
         start_time: Thời gian bắt đầu
         subject: Chủ đề
-        time: thời gian
-        user: người dùng
+        time: Thời gian
+        user: Người dùng
         work_package: Work Package
       user:
         default_rates: Tỷ lệ mặc định
@@ -66,7 +66,7 @@ vi:
         spent_units: Các đơn vị đã chi
     errors:
       messages:
-        cost_type_in_use_cannot_disable: cannot be disabled because costs have already been logged for it in this project.
+        cost_type_in_use_cannot_disable: Cannot be disabled because costs have already been logged for it in this project.
       models:
         cost_types_project:
           attributes:
@@ -75,75 +75,75 @@ vi:
         rate:
           attributes:
             principal:
-              invalid: must be a user or a placeholder user.
+              invalid: Must be a user or a placeholder user.
         time_entry:
           attributes:
             entity:
-              blank: Logged for can't be blank.
-              cannot_log_for_this_work_package: You don't have permissions to log time for this work package.
+              blank: Mục "Ghi nhận cho" không được để trống.
+              cannot_log_for_this_work_package: Bạn không có quyền ghi nhận thời gian cho Work package này.
               format: "%{message}"
             hours:
-              exceeds_user_working_hours: The logged hours cannot exceed the limit of %{limit} hours available on the user's working day.
+              exceeds_user_working_hours: Số giờ ghi nhận không được vượt quá giới hạn %{limit} giờ trong ngày làm việc của người dùng.
               format: "%{message}"
-              max_hours_per_day_exceeded: The logged hours cannot exceed the limit of %{limit} hours for a single day defined by the administrator.
-              max_hours_per_entry_exceeded: The logged hours cannot exceed the limit of %{limit} hours for a single time entry defined by the administrator.
+              max_hours_per_day_exceeded: Số giờ ghi nhận không được vượt quá giới hạn %{limit} giờ cho một ngày do quản trị viên quy định.
+              max_hours_per_entry_exceeded: Số giờ ghi nhận không được vượt quá giới hạn %{limit} giờ cho một mục thời gian do quản trị viên quy định.
             spent_on:
               format: "%{message}"
-              in_past_month: You can't plan time into a past month. Time entries can only be added, changed or deleted from %{date} onwards.
-              not_a_working_day: The selected day is a non-working day for this user.
+              in_past_month: Bạn không thể lên kế hoạch thời gian cho tháng đã qua. Mục thời gian chỉ có thể được thêm, thay đổi hoặc xóa từ %{date} trở đi.
+              not_a_working_day: Ngày đã chọn là ngày không làm việc của người dùng này.
             start_time:
               format: "%{message}"
-              invalid_time: Invalid time. The time must be between 00:00 and 23:59.
-          duplicate_ongoing: Another timer is already running. Only one timer can be active at the same time.
+              invalid_time: Thời gian không hợp lệ. Thời gian phải nằm trong khoảng từ 00:00 đến 23:59.
+          duplicate_ongoing: Một bộ đếm giờ khác đang chạy. Chỉ có thể có một bộ đếm giờ hoạt động tại một thời điểm.
         work_package:
-          is_not_a_valid_target_for_cost_entries: 'Gói công việc #%{id} không phải là mục tiêu hợp lệ để chỉ định lại các mục chi phí.'
+          is_not_a_valid_target_for_cost_entries: 'Work package #%{id} không phải là mục tiêu hợp lệ để chỉ định lại các mục chi phí.'
           nullify_is_not_valid_for_cost_entries: Các mục chi phí không thể được phân bổ cho một dự án.
     models:
       cost_entry:
         other: Mục nhập chi phí
       cost_rate:
-        other: Cost rates
+        other: Đơn giá chi phí
       cost_type:
         other: Loại chi phí
       default_hourly_rate:
-        other: Default hourly rates
+        other: Đơn giá theo giờ mặc định
       hourly_rate:
-        other: Hourly rates
+        other: Đơn giá theo giờ
       rate:
-        other: Rates
+        other: Đơn giá
       time_entry:
         other: Mục thời gian
       time_entry_activity:
         other: Hoạt động theo dõi thời gian
       time_entry_custom_field:
-        other: Time entry custom fields
+        other: Custom field của mục thời gian
   api_v3:
     errors:
       validation:
         start_time_different_date: Phần ngày của thời gian bắt đầu (%{start_time}) phải giống với ngày chi tiêu (%{spent_on}).
   attributes:
-    comment: bình luận
+    comment: Bình luận
     cost_type: Loại chi phí
     costs: Chi phí
     current_rate: Tỷ giá hiện tại
     fixed_date: Ngày cố định
-    hours: giờ
-    units: đơn vị
+    hours: Giờ
+    units: Đơn vị
     valid_from: Có hiệu lực từ
-  button_add_activity: hoạt động
+  button_add_activity: Hoạt động
   button_add_rate: Thêm tỷ lệ
   button_add_time_entry: Đăng nhập thời gian
   button_log_costs: Ghi lại chi phí đơn vị
-  button_log_time: nhật ký
+  button_log_time: Nhật ký
   button_stop_timer: Dừng hẹn giờ
-  button_update_limits: Update limits
-  button_update_start_finish_times: Update start and finish times
+  button_update_limits: Cập nhật giới hạn
+  button_update_start_finish_times: Cập nhật thời gian bắt đầu và kết thúc
   caption_booked_on_project: Đã đặt chỗ trên dự án
-  caption_default: mặc định
+  caption_default: Mặc định
   caption_default_rate_history_for: Lịch sử tỷ lệ mặc định cho %{user}
   caption_locked_on: Đã khóa
   caption_log_time_dialog: Đăng nhập thời gian
-  caption_materials: đơn vị
+  caption_materials: Đơn vị
   caption_rate_history: Lịch sử giá
   caption_rate_history_for: Lịch sử giá cho %{user}
   caption_rate_history_for_project: Lịch sử giá cho %{user} trong dự án %{project}
@@ -153,60 +153,60 @@ vi:
   cost_types:
     admin:
       columns:
-        active_projects: Active projects
+        active_projects: Dự án đang hoạt động
       cost_type_projects:
         for_all_projects_blank_slate:
-          description: Uncheck "For all projects" on the details tab to limit this cost type to specific projects.
-          heading: This cost type is enabled in all projects
+          description: Bỏ chọn "Cho tất cả dự án" ở tab chi tiết để giới hạn loại chi phí này cho một số dự án cụ thể.
+          heading: Loại chi phí này được bật trong tất cả dự án
         no_projects:
-          description: Add projects so this cost type can be used in them.
-          heading: No projects assigned
+          description: Hãy thêm dự án để có thể dùng loại chi phí này trong đó.
+          heading: Chưa gán dự án nào
       rates:
-        title: Rate history
+        title: Lịch sử đơn giá
     errors:
-      no_cost_types_available: No cost types are available in this project. Please contact an administrator.
+      no_cost_types_available: Dự án này chưa có loại chi phí nào. Vui lòng liên hệ quản trị viên.
     settings:
       cost_types:
-        for_all_projects_hint: This cost type is enabled in all projects.
-        heading: Cost types
-        in_use_hint: This cost type cannot be disabled because costs have already been logged for it in this project.
-        none_active: No cost types are currently active in this project.
-      time_and_costs: Time and costs
+        for_all_projects_hint: Loại chi phí này được bật trong tất cả dự án.
+        heading: Loại chi phí
+        in_use_hint: Không thể tắt loại chi phí này vì đã có chi phí được ghi nhận cho nó trong dự án này.
+        none_active: Hiện chưa có loại chi phí nào đang hoạt động trong dự án này.
+      time_and_costs: Thời gian và chi phí
   costs:
     widgets:
       actual_costs:
         blankslate:
-          action: Log time
-          description: Get an overview of your costs and logged time to monitor progress of your project. Make sure that gói công việc (work package)s are associated with the correct budget.
-          heading: Start tracking your time and costs
-        title: Actual costs by month
-        view_details: View actual costs details
+          action: Ghi nhận thời gian
+          description: Get an overview of your costs and logged time to monitor progress of your project. Make sure that Work package (work package)s are associated with the correct budget.
+          heading: Bắt đầu theo dõi thời gian và chi phí của bạn
+        title: Chi phí thực tế theo tháng
+        view_details: Xem chi tiết chi phí thực tế
   description_costs_settings: Xác định định dạng mong muốn cho chi phí trong tất cả các dự án.
   description_date_for_new_rate: Ngày áp dụng mức giá mới
-  description_time_entry_restrictions: Define limits for when a user logs time. This applies to all projects.
-  description_time_settings: Time entries can have specific start and finish times, which can be made optional or mandatory.
+  description_time_entry_restrictions: Xác định các giới hạn khi người dùng ghi nhận thời gian. Áp dụng cho tất cả dự án.
+  description_time_settings: Mục thời gian có thể có thời gian bắt đầu và kết thúc cụ thể, và có thể đặt là tùy chọn hoặc bắt buộc.
   ee:
     features:
-      time_entry_time_restrictions: Time entry restrictions
+      time_entry_time_restrictions: Hạn chế mục thời gian
     upsell:
       time_entry_time_restrictions:
-        description: Improve your time tracking by allowing or enforcing precise start and finish times and by introducing limits on when and how much time can be logged by a project member.
-  group_by_others: không thuộc nhóm nào
-  label_available_cost_types_projects: Available cost types projects
-  label_between: giữa
+        description: Cải thiện việc theo dõi thời gian bằng cách cho phép hoặc bắt buộc nhập thời gian bắt đầu và kết thúc chính xác, đồng thời đặt giới hạn về thời điểm và lượng thời gian mà thành viên dự án có thể ghi nhận.
+  group_by_others: Không thuộc nhóm nào
+  label_available_cost_types_projects: Dự án có loại chi phí khả dụng
+  label_between: Giữa
   label_cost: Chi phí
-  label_cost_filter_add: Thêm bộ lọc mục nhập chi phí
-  label_cost_plural: chi phí
+  label_cost_filter_add: Thêm Filter mục nhập chi phí
+  label_cost_plural: Chi phí
   label_cost_type_plural: Loại chi phí
   label_cost_type_specific: 'Loại chi phí #%{id}: %{name}'
   label_costlog: Chi phí đơn vị được ghi lại
-  label_costs: chi phí
+  label_costs: Chi phí
   label_costs_per_page: Chi phí mỗi trang
-  label_current: Current
+  label_current: Hiện tại
   label_current_default_rate: Tỷ lệ mặc định hiện tại
-  label_date_on: trên
-  label_day: ngày
-  label_defaults_and_limits: Defaults and limits
+  label_date_on: Trên
+  label_day: Ngày
+  label_defaults_and_limits: Mặc định và giới hạn
   label_deleted_cost_types: Các loại chi phí đã xóa
   label_display_cost_entries: Chi phí đơn vị hiển thị
   label_display_time_entries: Hiển thị số giờ được báo cáo
@@ -217,47 +217,47 @@ vi:
   label_group_by: Nhóm theo
   label_group_by_add: Thêm trường nhóm
   label_include_deleted: Bao gồm đã xóa
-  label_kind: loại
+  label_kind: Loại
   label_less_or_equal: "<="
-  label_list: danh sách
+  label_list: Danh sách
   label_log_costs: Ghi lại chi phí đơn vị
-  label_month: tháng
+  label_month: Tháng
   label_my_time_tracking: Theo dõi thời gian của tôi
   label_new_time_entry_activity: Hoạt động nhập thời gian mới
   label_next_day: Ngày hôm sau
   label_next_month: Tháng tiếp theo
   label_next_week: Tuần tới
   label_next_workweek: Tuần làm việc tiếp theo
-  label_no: không
-  label_no_default_rate: No default rate set
-  label_no_project_rate: No rate set for this project
+  label_no: Không
+  label_no_default_rate: Chưa đặt đơn giá mặc định
+  label_no_project_rate: Chưa đặt đơn giá cho dự án này
   label_no_time: Không theo dõi thời gian
-  label_option_plural: tùy chọn
+  label_option_plural: Tùy chọn
   label_overall_costs: Tổng chi phí
   label_previous_day: Ngày hôm trước
   label_previous_month: Tháng trước
   label_previous_week: Tuần trước
   label_previous_workweek: Tuần làm việc trước đó
-  label_rate_plural: tỷ lệ
+  label_rate_plural: Tỷ lệ
   label_show: Hiển thị
   label_specific_day: Ngày %{day}
   label_specific_month: Tháng %{month}
-  label_stack: Stack
-  label_start_and_finished: Start and finish times
+  label_stack: Xếp chồng
+  label_start_and_finished: Thời gian bắt đầu và kết thúc
   label_status_finished: Đã hoàn thành
-  label_time: thời gian
+  label_time: Thời gian
   label_time_entry_activity_form_description: Những thay đổi đối với hoạt động mục nhập thời gian này sẽ được phản ánh trong tất cả các dự án được kích hoạt.
-  label_time_entry_custom_field_plural: Time entry custom fields
-  label_time_entry_restrictions: Limits
+  label_time_entry_custom_field_plural: Custom field của mục thời gian
+  label_time_entry_restrictions: Giới hạn
   label_timer_since: Bắt đầu lúc %{time}
-  label_today_capitalized: hôm nay
+  label_today_capitalized: Hôm nay
   label_units: Đơn vị chi phí
-  label_until: cho đến khi
-  label_using_current_default_rate: Using current default rate
+  label_until: Cho đến khi
+  label_using_current_default_rate: Đang dùng đơn giá mặc định hiện tại
   label_valid_from: Có hiệu lực từ
-  label_view_mode_switcher: Thay đổi chế độ xem
-  label_work_package_filter_add: Thêm bộ lọc gói công việc
-  label_workweek: tuần làm việc
+  label_view_mode_switcher: Thay đổi View
+  label_work_package_filter_add: Thêm Filter Work package
+  label_workweek: Tuần làm việc
   label_yes: Có
   notice_cost_logged_successfully: Đơn giá được ghi thành công.
   notice_different_time_zones: Người dùng này có múi giờ khác (%{tz}). Thời gian sẽ được ghi lại bằng múi giờ của họ.
@@ -273,57 +273,56 @@ vi:
   permission_edit_rates: Chỉnh sửa giá
   permission_log_costs: Chi phí đơn vị sổ sách
   permission_log_own_costs: Đặt chi phí đơn vị cho chính mình
-  permission_manage_default_hourly_rates: Manage default hourly rates
-  permission_manage_default_hourly_rates_explanation: 'Allows adding, changing and deleting the default hourly rates of users and placeholder users.
-
-    '
+  permission_manage_default_hourly_rates: Quản lý đơn giá theo giờ mặc định
+  permission_manage_default_hourly_rates_explanation: |
+    Cho phép thêm, thay đổi và xóa đơn giá theo giờ mặc định của người dùng và người dùng giữ chỗ.
   permission_view_cost_entries: Xem chi phí đã đặt
   permission_view_cost_rates: Xem mức chi phí
   permission_view_hourly_rates: Xem tất cả mức giá theo giờ
   permission_view_own_cost_entries: Xem chi phí đã đặt riêng
   permission_view_own_hourly_rate: Xem tỷ lệ hàng giờ của riêng bạn
   permission_view_own_time_entries: Xem thời gian đã sử dụng của chính bạn
-  placeholder_activity_select_work_package_first: Lựa chọn gói công việc là bắt buộc trước tiên
+  placeholder_activity_select_work_package_first: Lựa chọn Work package là bắt buộc trước tiên
   plugin_costs:
     description: Mô-đun này bổ sung thêm các tính năng lập kế hoạch và theo dõi chi phí của dự án.
     name: Thời gian và chi phí
   project_module_costs: Thời gian và chi phí
   setting_allow_tracking_start_and_end_times: Cho phép thời gian bắt đầu và kết thúc
   setting_allow_tracking_start_and_end_times_caption: Cho phép nhập thời gian bắt đầu và kết thúc khi ghi thời gian.
-  setting_costs_currency: tiền tệ
-  setting_costs_currency_caption: This is the unit of currency. It can be a three-letter ISO code like EUR, USD or JPY or a symbol like €, $ or ¥.
-  setting_costs_currency_format: Currency format
-  setting_costs_currency_format_prefix: Before the number (e.g. EUR 100)
-  setting_costs_currency_format_suffix: After the number (e.g. 100 EUR)
+  setting_costs_currency: Tiền tệ
+  setting_costs_currency_caption: Đây là đơn vị tiền tệ. Có thể là mã ISO ba chữ cái như EUR, USD hoặc JPY, hoặc ký hiệu như €, $ hoặc ¥.
+  setting_costs_currency_format: Định dạng tiền tệ
+  setting_costs_currency_format_prefix: 'Trước số (ví dụ: EUR 100)'
+  setting_costs_currency_format_suffix: 'Sau số (ví dụ: 100 EUR)'
   setting_enforce_tracking_start_and_end_times: Yêu cầu thời gian bắt đầu và kết thúc
   setting_enforce_tracking_start_and_end_times_caption: Bắt buộc phải nhập thời gian bắt đầu và kết thúc khi ghi thời gian.
   setting_enforce_without_allow: Không thể yêu cầu thời gian bắt đầu và kết thúc nếu không cho phép chúng
-  setting_time_entries_limit_to_user_working_hours: Limit to the user's working hours
-  setting_time_entries_limit_to_user_working_hours_caption: Limits the total hours that can be logged per day to that user’s effective working hours. Users without defined working times will not be restricted.
-  setting_time_entries_max_hours_per_day: Maximum number of hours per day
-  setting_time_entries_max_hours_per_day_caption: Limits the total number of hours a user can log in a single day. A value of 0 means there are no restrictions.
-  setting_time_entries_max_hours_per_entry: Maximum number of hours per time entry
-  setting_time_entries_max_hours_per_entry_caption: Limits how many hours a single time entry can be. A value of 0 means there are no restrictions.
-  setting_time_entries_past_month_grace_days: Grace period for past months
-  setting_time_entries_past_month_grace_days_caption: Define the number of days a user has when a new month starts to log time entries for the past month. A value of 5 lets users log time for the previous month till the 5th of the current month. A value of 0 represents no grace period at all.
-  setting_time_entries_prohibit_logging_for_past_months: Do not allow logging for past months
-  setting_time_entries_prohibit_logging_for_past_months_caption: Restricts adding, changing and deleting time entries to the current month. Time that is logged in past months can no longer be modified.
-  setting_time_entries_prohibit_logging_on_non_working_days: Do not allow logging time on non-working days
-  setting_time_entries_prohibit_logging_on_non_working_days_caption: Users will not be able to log time on days that are defined as non-working either by an administrator or by individual users in their account settings.
+  setting_time_entries_limit_to_user_working_hours: Giới hạn theo giờ làm việc của người dùng
+  setting_time_entries_limit_to_user_working_hours_caption: Giới hạn tổng số giờ có thể ghi nhận mỗi ngày theo giờ làm việc thực tế của người dùng đó. Người dùng chưa xác định thời gian làm việc sẽ không bị hạn chế.
+  setting_time_entries_max_hours_per_day: Số giờ tối đa mỗi ngày
+  setting_time_entries_max_hours_per_day_caption: Giới hạn tổng số giờ mà người dùng có thể ghi nhận trong một ngày. Giá trị 0 nghĩa là không giới hạn.
+  setting_time_entries_max_hours_per_entry: Số giờ tối đa mỗi mục thời gian
+  setting_time_entries_max_hours_per_entry_caption: Giới hạn số giờ tối đa của một mục thời gian. Giá trị 0 nghĩa là không giới hạn.
+  setting_time_entries_past_month_grace_days: Thời gian gia hạn cho các tháng trước
+  setting_time_entries_past_month_grace_days_caption: Xác định số ngày người dùng có khi bắt đầu tháng mới để ghi nhận mục thời gian cho tháng trước. Giá trị 5 cho phép người dùng ghi nhận thời gian cho tháng trước đến hết ngày 5 của tháng hiện tại. Giá trị 0 nghĩa là không có thời gian gia hạn.
+  setting_time_entries_prohibit_logging_for_past_months: Không cho phép ghi nhận cho các tháng trước
+  setting_time_entries_prohibit_logging_for_past_months_caption: Giới hạn việc thêm, thay đổi và xóa mục thời gian trong tháng hiện tại. Thời gian đã ghi nhận ở các tháng trước không thể sửa đổi được nữa.
+  setting_time_entries_prohibit_logging_on_non_working_days: Không cho phép ghi nhận thời gian vào ngày không làm việc
+  setting_time_entries_prohibit_logging_on_non_working_days_caption: Người dùng sẽ không thể ghi nhận thời gian vào những ngày được quản trị viên hoặc chính người dùng đặt là ngày không làm việc trong cài đặt tài khoản.
   text_assign_time_and_cost_entries_to_project: Chỉ định số giờ và chi phí được báo cáo cho dự án
-  text_destroy_cost_entries_question: "%{cost_entries} đã được báo cáo về các gói công việc bạn sắp xóa. Bạn muốn làm gì?"
+  text_destroy_cost_entries_question: "%{cost_entries} đã được báo cáo về các Work package bạn sắp xóa. Bạn muốn làm gì?"
   text_destroy_time_and_cost_entries: Xóa số giờ và chi phí được báo cáo
-  text_destroy_time_and_cost_entries_question: "%{hours} giờ, %{cost_entries} đã được báo cáo về các gói công việc bạn sắp xóa. Bạn muốn làm gì?"
-  text_hourly_rate_destroy_confirmation: The rate of %{rate} valid from %{valid_from} will be deleted. Costs booked against it are recalculated with the rate that then applies.
-  text_hourly_rate_destroy_confirmation_checkbox_label: I understand that this action is not reversible.
-  text_hourly_rate_recalculation: This rate applies from its valid from date until a later rate takes effect. Changing it will also recalculate existing time entries and budgets in that period.
-  text_no_default_rate: The default rate is used in all projects where the user does not have a specific rate set up.
-  text_no_project_rate: This project will use the current default rate.
-  text_reassign_time_and_cost_entries: 'Chỉ định lại số giờ và chi phí được báo cáo cho gói công việc này:'
+  text_destroy_time_and_cost_entries_question: "%{hours} giờ, %{cost_entries} đã được báo cáo về các Work package bạn sắp xóa. Bạn muốn làm gì?"
+  text_hourly_rate_destroy_confirmation: Đơn giá %{rate} có hiệu lực từ %{valid_from} sẽ bị xóa. Các chi phí đã được hạch toán theo đơn giá này sẽ được tính lại theo đơn giá áp dụng lúc đó.
+  text_hourly_rate_destroy_confirmation_checkbox_label: Tôi hiểu rằng thao tác này không thể hoàn tác.
+  text_hourly_rate_recalculation: Đơn giá này áp dụng từ ngày có hiệu lực cho đến khi có đơn giá mới hơn. Thay đổi đơn giá cũng sẽ tính lại các mục thời gian và ngân sách hiện có trong khoảng thời gian đó.
+  text_no_default_rate: Đơn giá mặc định được dùng trong tất cả dự án mà người dùng chưa có đơn giá riêng.
+  text_no_project_rate: Dự án này sẽ dùng đơn giá mặc định hiện tại.
+  text_reassign_time_and_cost_entries: 'Chỉ định lại số giờ và chi phí được báo cáo cho Work package này:'
   text_warning_hidden_elements: Một số mục có thể đã bị loại khỏi tổng hợp.
   total_times:
     day: 'Tổng số ngày: %{hours}'
     month: 'Tổng số tháng: %{hours}'
     week: 'Tổng số tuần: %{hours}'
     workweek: 'Tổng số tuần làm việc: %{hours}'
-  week: tuần
+  week: Tuần

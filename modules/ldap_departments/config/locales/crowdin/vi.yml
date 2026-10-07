@@ -4,87 +4,82 @@ vi:
     attributes:
       ldap_departments/synchronized_department:
         dn: DN
-        group: Department
-        ldap_auth_source: LDAP connection
-        users_count: Members
+        group: Phòng ban
+        ldap_auth_source: Kết nối LDAP
+        users_count: Thành viên
       ldap_departments/synchronized_tree:
         base_dn: Base DN
-        guid_attribute: Unique identifier attribute
-        ldap_auth_source: LDAP connection
-        name: Name
-        ou_name_attribute: OU name attribute
-        structure_filter_string: Organizational unit filter
-        sync_users: Sync users
-        user_filter_string: User filter
+        guid_attribute: Thuộc tính định danh duy nhất
+        ldap_auth_source: Kết nối LDAP
+        name: Tên
+        ou_name_attribute: Thuộc tính tên OU
+        structure_filter_string: Bộ lọc đơn vị tổ chức
+        sync_users: Đồng bộ người dùng
+        user_filter_string: Bộ lọc người dùng
     errors:
       models:
         ldap_departments/synchronized_tree:
-          must_contain_base_dn: The base DN must be contained within the LDAP connection's base DN.
-          overlaps_other_tree: Overlaps the base DN of another synchronization on the same LDAP connection.
+          must_contain_base_dn: Base DN phải nằm trong Base DN của kết nối LDAP.
+          overlaps_other_tree: Trùng với Base DN của một đồng bộ hóa khác trên cùng kết nối LDAP.
     models:
       ldap_departments/synchronized_department:
-        other: Synchronized departments
+        other: Phòng ban đã đồng bộ
       ldap_departments/synchronized_tree:
-        other: LDAP department synchronizations
+        other: Đồng bộ hóa phòng ban LDAP
   ee:
     upsell:
       ldap_departments:
-        description: Mirror your LDAP organizational unit structure into the OpenProject department hierarchy and keep department members in sync automatically.
-        title: LDAP department synchronization
+        description: Phản chiếu cấu trúc đơn vị tổ chức LDAP của bạn vào hệ thống phân cấp phòng ban của OpenProject và tự động đồng bộ thành viên phòng ban.
+        title: Đồng bộ hóa phòng ban LDAP
   ldap_departments:
-    label_menu_item: LDAP department synchronization
-    label_synchronize: Synchronize organizational units
+    label_menu_item: Đồng bộ hóa phòng ban LDAP
+    label_synchronize: Đồng bộ các đơn vị tổ chức
     synchronized_departments:
       blankslate:
-        description: Run the synchronization to import the organizational units of this base DN as departments.
-        heading: No departments synchronized yet
+        description: Chạy đồng bộ hóa để nhập các đơn vị tổ chức của Base DN này thành phòng ban.
+        heading: Chưa có phòng ban nào được đồng bộ
       destroy:
-        confirmation: If you continue, %{name} is no longer managed by LDAP synchronization.
-        heading: Stop managing %{name}?
-        info: The department and its members are kept. It becomes a regular department that you can edit or delete manually.
-        title: Stop managing %{name}
-      managed_notice: Managed by LDAP synchronization
-      no_results: No departments have been synchronized yet.
-      plural: Synchronized departments
-      singular: Synchronized department
+        confirmation: Nếu tiếp tục, %{name} sẽ không còn được quản lý bởi đồng bộ hóa LDAP.
+        heading: Ngừng quản lý %{name}?
+        info: Phòng ban và các thành viên sẽ được giữ lại. Phòng ban này trở thành phòng ban thông thường mà bạn có thể chỉnh sửa hoặc xóa thủ công.
+        title: Ngừng quản lý %{name}
+      managed_notice: Được quản lý bởi đồng bộ hóa LDAP
+      no_results: Chưa có phòng ban nào được đồng bộ.
+      plural: Phòng ban đã đồng bộ
+      singular: Phòng ban đã đồng bộ
     synchronized_trees:
-      add_new: Add LDAP department synchronization
+      add_new: Thêm đồng bộ hóa phòng ban LDAP
       blankslate:
-        description: Set up a synchronization to mirror your LDAP organizational unit structure into the OpenProject department hierarchy.
-        heading: No LDAP department synchronizations
+        description: Thiết lập đồng bộ hóa để phản chiếu cấu trúc đơn vị tổ chức LDAP của bạn vào hệ thống phân cấp phòng ban của OpenProject.
+        heading: Chưa có đồng bộ hóa phòng ban LDAP nào
       destroy:
         confirmation_message:
-          other: If you continue, the synchronization %{name} is removed and its %{count} departments are no longer managed by LDAP.
-        heading: Remove synchronization %{name}?
-        info: The departments and their members are kept and become regular departments. You can edit or delete them manually afterwards under Administration → Users and permissions → Organization.
-        title: Remove synchronization %{name}
+          other: Nếu tiếp tục, đồng bộ hóa %{name} sẽ bị gỡ bỏ và %{count} phòng ban của nó sẽ không còn được quản lý bởi LDAP.
+        heading: Gỡ bỏ đồng bộ hóa %{name}?
+        info: Các phòng ban và thành viên sẽ được giữ lại và trở thành phòng ban thông thường. Sau đó bạn có thể chỉnh sửa hoặc xóa chúng thủ công trong Quản trị → Người dùng và quyền → Tổ chức.
+        title: Gỡ bỏ đồng bộ hóa %{name}
       form:
-        auth_source_text: Select which LDAP connection should be used.
-        base_dn_text: 'Enter the base DN whose organizational units should be synchronized. Its direct child OUs become top-level departments. It must be below the base DN of the selected LDAP connection.
-
-          '
-        guid_attribute_text: 'Optional. The LDAP attribute holding a stable unique identifier (e.g. "objectGUID" or "entryUUID"). When set, departments survive OU renames and moves. Leave empty to match by DN.
-
-          '
-        ou_name_attribute_text: The LDAP attribute used to name the department (e.g. "ou").
+        auth_source_text: Chọn kết nối LDAP sẽ được sử dụng.
+        base_dn_text: |
+          Nhập Base DN có các đơn vị tổ chức cần đồng bộ. Các OU con trực tiếp của nó sẽ trở thành phòng ban cấp cao nhất. Base DN này phải nằm dưới Base DN của kết nối LDAP đã chọn.
+        guid_attribute_text: |
+          Tùy chọn. Thuộc tính LDAP chứa mã định danh duy nhất ổn định (ví dụ "objectGUID" hoặc "entryUUID"). Khi được đặt, phòng ban sẽ không bị ảnh hưởng khi OU bị đổi tên hoặc di chuyển. Để trống để đối chiếu theo DN.
+        ou_name_attribute_text: Thuộc tính LDAP dùng để đặt tên cho phòng ban (ví dụ "ou").
         sections:
-          connection: LDAP connection
-          structure: Organizational units
-          users: Users
-        structure_filter_string_text: RFC4515 LDAP filter identifying organizational unit entries.
-        sync_users_text: 'If enabled, users found below the base DN are also created in OpenProject. Without it, only existing accounts are assigned to departments.
-
-          '
-        user_filter_string_text: 'Optional RFC4515 LDAP filter identifying user entries. Leave empty to use the connection filter, or a generic person filter when none is set.
-
-          '
-      help_text: 'This module mirrors the organizational unit (OU) structure of your LDAP directory into the OpenProject department hierarchy. Each OU below the configured base DN becomes a department, and users are assigned to the department of the OU they reside in. Departments are synchronized regularly through a cron job.
-
-        '
-      no_results: No LDAP department synchronizations configured yet.
-      plural: LDAP department synchronizations
-      singular: LDAP department synchronization
-      synchronization_started: Synchronization started in the background. Departments will appear once it completes.
+          connection: Kết nối LDAP
+          structure: Đơn vị tổ chức
+          users: Người dùng
+        structure_filter_string_text: Bộ lọc LDAP RFC4515 để xác định các mục đơn vị tổ chức.
+        sync_users_text: |
+          Nếu bật, những người dùng tìm thấy dưới Base DN cũng sẽ được tạo trong OpenProject. Nếu tắt, chỉ các tài khoản hiện có được gán vào phòng ban.
+        user_filter_string_text: |
+          Tùy chọn. Bộ lọc LDAP RFC4515 để xác định các mục người dùng. Để trống để dùng bộ lọc của kết nối, hoặc bộ lọc person chung nếu chưa đặt.
+      help_text: |
+        Module này phản chiếu cấu trúc đơn vị tổ chức (OU) của thư mục LDAP vào hệ thống phân cấp phòng ban của OpenProject. Mỗi OU dưới Base DN đã cấu hình sẽ trở thành một phòng ban, và người dùng được gán vào phòng ban của OU mà họ thuộc về. Các phòng ban được đồng bộ định kỳ thông qua cron job.
+      no_results: Chưa cấu hình đồng bộ hóa phòng ban LDAP nào.
+      plural: Đồng bộ hóa phòng ban LDAP
+      singular: Đồng bộ hóa phòng ban LDAP
+      synchronization_started: Đồng bộ hóa đã bắt đầu ở chế độ nền. Các phòng ban sẽ xuất hiện khi hoàn tất.
   plugin_openproject_ldap_departments:
-    description: Synchronization of LDAP organizational units into OpenProject departments.
-    name: OpenProject LDAP departments
+    description: Đồng bộ hóa các đơn vị tổ chức LDAP thành phòng ban trong OpenProject.
+    name: Phòng ban LDAP của OpenProject

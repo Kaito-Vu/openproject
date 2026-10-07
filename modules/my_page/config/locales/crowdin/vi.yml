@@ -3,6 +3,6 @@ vi:
   activerecord:
     models:
       grids/my_page:
-        other: My pages
+        other: Trang của tôi
   my_page:
     label: Trang của tôi

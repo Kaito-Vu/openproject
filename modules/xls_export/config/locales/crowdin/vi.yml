@@ -11,7 +11,7 @@ vi:
     description: Xuất danh sách vấn đề dưới dạng bảng tính Excel (.xls).
     name: Xuất khẩu OpenProject XLS
   print_with_description: Xem trước bản in với mô tả
-  sentence_separator_or: hoặc
+  sentence_separator_or: Hoặc
   xls_export:
-    child_of: con của
-    parent_of: cha mẹ của
+    child_of: Con của
+    parent_of: Cha mẹ của

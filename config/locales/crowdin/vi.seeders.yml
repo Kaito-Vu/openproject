@@ -17,15 +17,15 @@ vi:
         item_4:
           name: Xanh (đậm)
         item_5:
-          name: màu vàng
+          name: Màu vàng
         item_6:
-          name: trái cam
+          name: Trái cam
         item_7:
-          name: màu đỏ
+          name: Màu đỏ
         item_8:
           name: Màu đỏ tươi
         item_9:
-          name: trắng
+          name: Trắng
         item_10:
           name: Màu xám (sáng)
         item_11:
@@ -33,7 +33,7 @@ vi:
         item_12:
           name: Màu xám (tối)
         item_13:
-          name: màu đen
+          name: Màu đen
       project_phase_colors:
         item_0:
           name: PM2 Cam
@@ -45,32 +45,32 @@ vi:
           name: PM2 Xanh Vàng
       project_query_roles:
         item_0:
-          name: Trình xem truy vấn dự án
+          name: Trình xem Query dự án
         item_1:
-          name: Trình soạn thảo truy vấn dự án
+          name: Trình soạn thảo Query dự án
       work_package_roles:
         item_0:
-          name: Trình chỉnh sửa gói công việc
+          name: Trình chỉnh sửa Work package
         item_1:
-          name: Người bình luận gói công việc
+          name: Người bình luận Work package
         item_2:
-          name: Trình xem gói công việc
+          name: Trình xem Work package
       project_roles:
         item_0:
           name: Không là thành viên
         item_1:
-          name: vô danh
+          name: Vô danh
         item_2:
-          name: thành viên
+          name: Thành viên
         item_3:
-          name: người đọc
+          name: Người đọc
         item_4:
           name: Quản trị viên dự án
       global_roles:
         item_0:
           name: Nhân viên và quản lý dự án
         item_1:
-          name: Vai trò toàn cầu tiêu chuẩn
+          name: Role toàn cầu tiêu chuẩn
       ai_text_transform_actions:
         item_0:
           label: Fix grammar
@@ -85,10 +85,10 @@ vi:
         item_0:
           name: Bắt đầu
         item_1:
-          name: lập kế hoạch
+          name: Lập kế hoạch
           start_gate: Sẵn sàng lập kế hoạch
         item_2:
-          name: đang thực thi
+          name: Đang thực thi
           start_gate: Sẵn sàng thực hiện
         item_3:
           name: Đóng cửa
@@ -99,9 +99,9 @@ vi:
         item_1:
           name: Bình Thường
         item_2:
-          name: cao
+          name: Cao
         item_3:
-          name: ngay lập tức
+          name: Ngay lập tức
       departments:
         item_0:
           name: Marketing & Communications
@@ -133,27 +133,27 @@ vi:
             item_0: Loại 1 (sẽ được thay đổi trong cài đặt Dự án)
           queries:
             item_0:
-              name: kế hoạch dự án
+              name: Kế hoạch dự án
             item_1:
-              name: Các cột mốc quan trọng
+              name: Các Milestone quan trọng
             item_2:
               name: Nhiệm vụ
             item_3:
               name: Người lập kế hoạch nhóm
           boards:
             kanban:
-              name: bảng Kanban
+              name: Kanban board
             basic:
               name: Bảng cơ bản
               lists:
                 item_0:
-                  name: danh sách mong muốn
+                  name: Danh sách mong muốn
                 item_1:
                   name: Danh sách ngắn
                 item_2:
                   name: Danh sách ưu tiên cho ngày hôm nay
                 item_3:
-                  name: không bao giờ
+                  name: Không bao giờ
             parent_child:
               name: Cấu trúc phân chia công việc
           project-overview:
@@ -173,7 +173,7 @@ vi:
 
                     1. *Mời thành viên mới tham gia dự án của bạn*: &rightarrow; Đi tới [Members]({{opSetting:base_url}}/projects/demo-project/members) trong điều hướng dự án.
                     2. *Xem công việc trong dự án của bạn*: &rightarrow; Đi tới [Work packages]({{opSetting:base_url}}/projects/demo-project/work_packages) trong điều hướng dự án.
-                    3. *Tạo gói công việc mới*: &rightarrow; Đi tới [Work packages &rightarrow; Create]({{opSetting:base_url}}/projects/demo-project/work_packages/new).
+                    3. *Tạo Work package mới*: &rightarrow; Đi tới [Work packages &rightarrow; Create]({{opSetting:base_url}}/projects/demo-project/work_packages/new).
                     4. *Tạo và cập nhật kế hoạch dự án*: &rightarrow; Truy cập [Project plan]({{opSetting:base_url}}/projects/demo-project/work_packages?query_id=##query.id:demo_project__query__project_plan) trong điều hướng dự án.
                     5. *Kích hoạt thêm các mô-đun*: &rightarrow; Chuyển đến [Project settings &rightarrow; Modules]({{opSetting:base_url}}/projects/demo-project/settings/modules).
                     6. *Hoàn thành nhiệm vụ của bạn trong dự án*: &rightarrow; Truy cập [Work packages &rightarrow; Tasks]({{opSetting:base_url}}/projects/demo-project/work_packages/details/##wp.id:set_date_and_location_of_conference/overview?query_id=##query.id:demo_project__query__tasks).
@@ -182,10 +182,10 @@ vi:
                     Vui lòng cho chúng tôi biết nếu bạn có bất kỳ câu hỏi nào hoặc cần hỗ trợ. Liên hệ với chúng tôi: [support[at]openproject.com](mailto:support@openproject.com).
               item_5:
                 options:
-                  name: Gói công việc
+                  name: Work package
               item_6:
                 options:
-                  name: Các cột mốc quan trọng
+                  name: Các Milestone quan trọng
           work_packages:
             item_0:
               subject: Bắt đầu dự án
@@ -231,8 +231,8 @@ vi:
             * Chèn văn bản và hình ảnh, đồng thời sao chép và dán từ các tài liệu khác
             * Tạo hệ thống phân cấp trang với các trang mẹ
             * Đưa các trang wiki vào menu dự án
-            * Sử dụng macro để bao gồm, ví dụ: mục lục, danh sách gói công việc hoặc biểu đồ Gantt
-            * Bao gồm các trang wiki trong các trường văn bản khác, ví dụ: trang tổng quan dự án
+            * Sử dụng macro để bao gồm, ví dụ: mục lục, danh sách Work package hoặc Gantt chart
+            * Bao gồm các trang wiki trong các trường văn bản khác, ví dụ: Dashboard dự án
             * Bao gồm các liên kết đến các tài liệu khác
             * Xem lịch sử thay đổi
             * Xem dưới dạng Markdown
@@ -265,7 +265,7 @@ vi:
             item_0: Loại 1 (sẽ được thay đổi trong cài đặt Dự án)
           queries:
             item_0:
-              name: kế hoạch dự án
+              name: Kế hoạch dự án
             item_1:
               name: Version 1.1
             item_2:
@@ -274,18 +274,18 @@ vi:
               name: Nhiệm vụ
           boards:
             kanban:
-              name: bảng Kanban
+              name: Kanban board
             basic:
               name: Bảng nhiệm vụ
               lists:
                 item_0:
-                  name: danh sách mong muốn
+                  name: Danh sách mong muốn
                 item_1:
                   name: Danh sách ngắn
                 item_2:
                   name: Danh sách ưu tiên cho ngày hôm nay
                 item_3:
-                  name: không bao giờ
+                  name: Không bao giờ
           project-overview:
             widgets:
               item_0:
@@ -312,10 +312,10 @@ vi:
                     Please let us know if you have any questions or need support. Contact us: [support[at]openproject.com](mailto:support@openproject.com).
               item_5:
                 options:
-                  name: Gói công việc
+                  name: Work package
               item_6:
                 options:
-                  name: kế hoạch dự án
+                  name: Kế hoạch dự án
           work_packages:
             item_0:
               subject: Màn hình đăng nhập mới
@@ -370,7 +370,7 @@ vi:
           wiki: |
             ### Họp lập kế hoạch Sprint
 
-            _Vui lòng ghi lại các chủ đề ở đây cho cuộc họp lập kế hoạch Sprint_
+            _Vui lòng ghi lại các chủ đề ở đây cho Meeting lập kế hoạch Sprint_
 
             * Thời gian đóng hộp (8 h)
             * Đầu vào: Product Backlog
@@ -378,15 +378,15 @@ vi:
 
             * Chia làm 2 ô thời gian bổ sung 4h:
 
-                * Chủ sản phẩm trình bày [Product Backlog]({{opSetting:base_url}}/projects/your-scrum-project/backlogs) và các ưu tiên cho nhóm, đồng thời giải thích Mục tiêu Sprint mà nhóm phải đồng ý. Họ cùng nhau ưu tiên các chủ đề trong Product Backlog mà nhóm sẽ xử lý trong lần Sprint tiếp theo. Nhóm cam kết thực hiện việc giao hàng đã thảo luận.
-                * Nhóm lập kế hoạch một cách tự động (không có Chủ sở hữu sản phẩm) một cách chi tiết và chia nhỏ các nhiệm vụ từ các yêu cầu đã thảo luận để hợp nhất [Sprint Backlog]({{opSetting:base_url}}/projects/your-scrum-project/backlogs).
+                * Chủ sản phẩm trình bày [Product Backlog]({{opSetting:base_url}}/projects/your-scrum-project/backlogs) và các ưu tiên cho nhóm, đồng thời giải thích Mục tiêu Sprint mà nhóm phải đồng ý. Họ cùng nhau ưu tiên các chủ đề trong Product Backlog mà nhóm sẽ xử lý trong lần Sprint tiếp theo. Nhóm Commit thực hiện việc giao hàng đã thảo luận.
+                * Nhóm lập kế hoạch một cách tự động (không có Chủ sở hữu sản phẩm) một cách chi tiết và chia nhỏ các nhiệm vụ từ các yêu cầu đã thảo luận để Merge [Sprint Backlog]({{opSetting:base_url}}/projects/your-scrum-project/backlogs).
 
 
-            ### Cuộc họp Scrum hàng ngày
+            ### Meeting Scrum hàng ngày
 
-            _Vui lòng ghi lại các chủ đề ở đây cho cuộc họp Scrum hàng ngày_
+            _Vui lòng ghi lại các chủ đề ở đây cho Meeting Scrum hàng ngày_
 
-            * Cuộc họp ngắn, hàng ngày về tình trạng của nhóm.
+            * Meeting ngắn, hàng ngày về tình trạng của nhóm.
             * Thời gian được đóng khung (tối đa 15 phút).
             * Họp độc lập để thảo luận các chủ đề sau từ Ban công tác.
                 * Tôi dự định làm gì cho đến buổi Daily Scrum tiếp theo?
@@ -396,7 +396,7 @@ vi:
 
             ### Họp sơ kết Sprint
 
-            _Vui lòng ghi lại các chủ đề ở đây cho cuộc họp Sprint Review_
+            _Vui lòng ghi lại các chủ đề ở đây cho Meeting Sprint Review_
 
             * Thời gian đóng hộp (4 h).
             * Thời gian chuẩn bị tối đa một giờ cho mỗi người.
@@ -408,7 +408,7 @@ vi:
 
             ### Hồi tưởng nước rút
 
-            _Vui lòng ghi lại các chủ đề ở đây cho cuộc họp Cải tiến Sprint_
+            _Vui lòng ghi lại các chủ đề ở đây cho Meeting Cải tiến Sprint_
 
             * Thời gian đóng khung (3 h).
             * Sau Sprint Review, sẽ được Scrum Master kiểm duyệt.
@@ -419,13 +419,13 @@ vi:
         item_1:
           name: Trong đặc điểm kỹ thuật
         item_2:
-          name: được chỉ định
+          name: Được chỉ định
         item_3:
-          name: xác nhận
+          name: Xác nhận
         item_4:
           name: Để được lên lịch
         item_5:
-          name: theo lịch trình
+          name: Theo lịch trình
         item_6:
           name: Đang xử lý
         item_7:
@@ -437,39 +437,39 @@ vi:
         item_10:
           name: Kiểm tra không thành công
         item_11:
-          name: đóng cửa
+          name: Đóng cửa
         item_12:
           name: Đang chờ
         item_13:
           name: Đã từ chối
       time_entry_activities:
         item_0:
-          name: quản lý
+          name: Quản lý
         item_1:
           name: Đặc điểm kỹ thuật
         item_2:
-          name: phát triển
+          name: Phát triển
         item_3:
-          name: thử nghiệm
+          name: Thử nghiệm
         item_4:
-          name: hỗ trợ
+          name: Hỗ trợ
         item_5:
-          name: khác
+          name: Khác
       types:
         item_0:
           name: Nhiệm vụ
         item_1:
-          name: cột mốc quan trọng
+          name: Milestone quan trọng
         item_2:
           name: Nhiệm vụ tóm tắt
         item_3:
-          name: tính năng
+          name: Tính năng
         item_4:
           name: Sử thi
         item_5:
           name: Cốt truyện người dùng
         item_6:
-          name: lỗi
+          name: Lỗi
       global_queries:
         item_0:
           name: 'Epic children: User stories and bugs'

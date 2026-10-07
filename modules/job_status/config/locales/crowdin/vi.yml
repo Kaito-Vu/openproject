@@ -3,9 +3,9 @@ vi:
   activerecord:
     models:
       job_status/status:
-        other: Background job statuses
+        other: Trạng thái công việc nền
   job_status_dialog:
-    click_to_download: Or [click here](download_url) to download.
+    click_to_download: Hoặc [nhấn vào đây](download_url) để tải xuống.
     download_starts: Quá trình tải xuống sẽ tự động bắt đầu.
     errors: Đã xảy ra lỗi
     generic_messages:
@@ -18,8 +18,8 @@ vi:
     redirect: Bạn đang bị chuyển hướng.
     redirect_errors: Do những lỗi này, bạn sẽ không được chuyển hướng tự động.
     redirect_link: Vui lòng nhấp vào đây để tiếp tục.
-    title: Trạng thái công việc nền
-  label_job_status_plural: Trạng thái công việc
+    title: Status công việc nền
+  label_job_status_plural: Status công việc
   plugin_openproject_job_status:
-    description: Danh sách và trạng thái của các công việc nền.
-    name: Trạng thái công việc OpenProject
+    description: Danh sách và Status của các công việc nền.
+    name: Status công việc OpenProject
