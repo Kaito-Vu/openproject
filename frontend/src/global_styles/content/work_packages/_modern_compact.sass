@@ -1,0 +1,155 @@
+@import "helpers"
+
+// Modern, compact look for the work package list page (/projects/:id/work_packages).
+// Presentation only: scoped to the WP routes, relies on Primer variables for light/dark.
+// Row height itself is set by --table-timeline--row-height (shared with the Gantt JS).
+
+.router--work-packages-base
+  // ---- Toolbar -------------------------------------------------------------
+  .toolbar-container
+    margin-bottom: 0.5rem
+
+  .work-packages-partitioned-query-space--container > .toolbar-container
+    margin-top: 0
+
+  .work-packages-partitioned-query-space--container .toolbar--editable-toolbar
+    font-size: 18px
+    font-weight: var(--base-text-weight-semibold)
+
+  .toolbar-items
+    gap: 6px
+
+    .button
+      height: 28px
+      line-height: 26px
+      font-size: 0.8125rem
+      border-radius: var(--borderRadius-medium)
+      padding-left: 8px
+      padding-right: 8px
+
+      .button--icon
+        font-size: 13px
+
+  // ---- Table ---------------------------------------------------------------
+  table.generic-table.work-package-table
+    font-size: 0.8125rem
+
+    thead
+      height: 34px
+
+      th
+        line-height: 32px
+        font-size: 0.6875rem
+        letter-spacing: 0.04em
+        font-weight: var(--base-text-weight-semibold)
+        color: var(--fgColor-default)
+        background: var(--bgColor-muted)
+        border-bottom: 1px solid var(--borderColor-default)
+        border-left: none
+        border-right: none
+
+        a
+          color: var(--fgColor-default)
+
+    tbody tr.wp-table--row
+      border-bottom: 1px solid var(--borderColor-muted)
+      transition: background-color 0.1s
+
+      &:hover
+        background: var(--bgColor-muted)
+
+      td
+        line-height: 1.4
+
+      &.-checked,
+      &.-checked:hover
+        background: var(--bgColor-accent-muted)
+        box-shadow: inset 3px 0 0 var(--bgColor-accent-emphasis)
+
+    // Row actions only on hover/focus (stay visible on touch devices)
+    // (only where a real hover exists; touch keeps them fully visible)
+    @media (hover: hover) and (pointer: fine)
+      .wp-table--context-menu-td a
+        opacity: 0.55
+        transition: opacity 0.1s
+
+      tr:hover .wp-table--context-menu-td a,
+      tr:focus-within .wp-table--context-menu-td a
+        opacity: 1
+
+    tbody tr.wp-table--row:focus-within
+      outline: 2px solid var(--focus-outlineColor, var(--bgColor-accent-emphasis))
+      outline-offset: -2px
+
+    tbody tr.wp-table--row.-checked
+      outline: 1px solid var(--bgColor-accent-emphasis)
+      outline-offset: -1px
+
+  .wp-table--group-header
+    font-size: 0.8125rem
+    font-weight: var(--base-text-weight-semibold)
+
+  // Status / priority / type rendered as small pills
+  .wp-table--cell-td
+    &.status,
+    &.priority,
+    &.type
+      .inline-edit--display-field
+        .__hl_background
+          border-radius: 10px
+          padding: 0 8px
+          font-size: 0.75rem
+          line-height: 18px
+
+  // ---- Footer / pagination -------------------------------------------------
+  .work-packages-split-view--tabletimeline-footer
+    margin-top: 4px
+    font-size: 0.75rem
+
+    .op-pagination
+      margin: 0
+      padding: 2px 0
+
+  // ---- Split view (details panel) -----------------------------------------
+  .work-packages-partitioned-page--content-right
+    border-left: 1px solid var(--borderColor-default)
+    border-radius: var(--borderRadius-medium) 0 0 var(--borderRadius-medium)
+
+    .wp-new-top-row,
+    .work-packages--details--subject
+      margin-bottom: 4px
+
+    .work-packages--details-content
+      font-size: 0.8125rem
+
+    .op-tab-row
+      font-size: 0.8125rem
+      li a
+        padding-top: 4px
+        padding-bottom: 4px
+
+    .attributes-group
+      margin-bottom: 0.5rem
+
+    .attributes-key-value
+      margin-bottom: 2px
+
+// Touch devices and narrow screens: restore comfortable tap targets
+@media (pointer: coarse), (max-width: $breakpoint-sm)
+  .router--work-packages-base
+    .toolbar-items .button
+      height: 44px
+      line-height: 42px
+    table.generic-table.work-package-table tbody tr.wp-table--row
+      height: 44px
+    .wp-table--context-menu-td a
+      min-width: 44px
+      min-height: 44px
+
+@media (prefers-reduced-motion: reduce)
+  .router--work-packages-base *
+    transition: none !important
+
+@media (forced-colors: active)
+  .router--work-packages-base tr.wp-table--row.-checked
+    outline: 2px solid Highlight
