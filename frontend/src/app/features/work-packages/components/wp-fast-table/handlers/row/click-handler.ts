@@ -78,7 +78,9 @@ export class RowClickHandler implements TableEventHandler {
 
     // Shortcut to any clicks within a cell
     // We don't want to handle these.
-    if (target.classList.contains(`${displayClassName}`) || target.classList.contains(`${activeFieldClassName}`)) {
+    // (read-only display fields are not editable, so the click acts on the row)
+    if ((target.classList.contains(`${displayClassName}`) && !target.classList.contains('-read-only'))
+      || target.classList.contains(`${activeFieldClassName}`)) {
       debugLog('Skipping click on inner cell');
       return true;
     }

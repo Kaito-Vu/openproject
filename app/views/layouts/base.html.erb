@@ -80,6 +80,12 @@ See COPYRIGHT and LICENSE files for more details.
       </div>
       <div class="op-app-header--end">
         <%= call_hook :view_layouts_base_top_menu %>
+        <%= render Primer::Beta::IconButton.new(icon: :rows,
+                                                scheme: :invisible,
+                                                "aria-label": t("js.label_density_toggle"),
+                                                tooltip_direction: :s,
+                                                classes: "op-app-menu--item op-app-header--primer-button",
+                                                data: { controller: "density-toggle", action: "density-toggle#toggle" }) %>
         <%= render_top_menu_right %>
       </div>
     </header>

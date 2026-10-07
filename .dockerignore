@@ -57,3 +57,12 @@ docker/dev
 docker/ci
 docker/pullpreview
 docker/caddy
+
+# Local tooling / caches / uploads
+.claude
+.codegraph
+.archify
+coverage
+frontend/coverage
+modules/*/frontend/node_modules
+public/uploads

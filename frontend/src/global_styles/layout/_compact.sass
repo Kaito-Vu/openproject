@@ -1,0 +1,60 @@
+// Global modern/compact overrides for legacy (non-Primer) controls.
+// Loaded late so they win over the base rules; Primer components are untouched.
+
+html:not([data-density="comfortable"])
+  // Tabs
+  .op-tab-row
+    height: 40px
+    text-transform: none
+    font-weight: var(--base-text-weight-semibold)
+    font-size: 0.8125rem
+
+    &--tab
+      line-height: 38px
+
+  // Legacy buttons
+  .button,
+  a.button
+    font-size: 0.8125rem
+    line-height: 1.25rem
+    padding: 0.25rem 0.625rem
+    border-radius: var(--borderRadius-medium, 6px)
+
+  // Legacy text inputs and selects
+  input:not([type]):not(.FormControl-input),
+  input:is([type="text"], [type="email"], [type="password"], [type="search"], [type="number"], [type="url"], [type="tel"], [type="date"], [type="time"], [type="datetime-local"]):not(.FormControl-input),
+  select:not(.FormControl-select)
+    height: 32px
+    line-height: 20px
+    font-size: 0.8125rem
+    border-radius: var(--borderRadius-medium, 6px)
+
+  // Menus
+  .dropdown-menu, .op-context-menu
+    border-radius: var(--borderRadius-medium, 6px)
+
+  // Touch devices keep comfortable targets
+  @media (pointer: coarse)
+    .button, a.button,
+    input:is([type="text"], [type="email"], [type="password"], [type="search"], [type="number"]),
+    select
+      min-height: 44px
+    .op-tab-row
+      height: 48px
+      &--tab
+        line-height: 46px
+
+// Comfortable density: restore the original (roomier) sizes of the shell tokens.
+// Note: the Gantt reads the row height on load, so reload after switching on timeline pages.
+html[data-density="comfortable"]
+  --list-side-margin: 40px
+  --header-height: 55px
+  --main-menu-toggler-top-spacing: 18px
+  --main-menu-width: 280px
+  --main-menu-x-spacing: 12px
+  --main-menu-item-height: 36px
+  --main-menu-font-size: 14px
+  --breadcrumb-height: 40px
+  --generic-table--header-height: 45px
+  --generic-table--footer-height: 34px
+  --table-timeline--row-height: 40px

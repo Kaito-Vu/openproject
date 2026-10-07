@@ -1,16 +1,16 @@
-# syntax=docker/dockerfile:1.4
-ARG RUBY_VERSION
+# syntax=docker/dockerfile:1
+ARG RUBY_VERSION=4.0.7
 FROM ruby:${RUBY_VERSION}-trixie
 
-ENV NODE_VERSION="24.18.0"
+ENV NODE_VERSION="24.19.0"
 ENV DEBIAN_FRONTEND=noninteractive
 ENV BUNDLE_WITHOUT="development:production:docker"
 
 ENV PGVERSION=17
 RUN apt-get update -qq && \
-  apt-get install -y wget gnupg lsb-release curl && \
+  apt-get install -y --no-install-recommends wget gnupg lsb-release curl && \
   wget --quiet -O- https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /usr/share/keyrings/postgrsql.gpg - && \
-  echo "deb [signed-by=/usr/share/keyrings/postgrsql.gpg] http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg  main" > /etc/apt/sources.list.d/pgdg.list
+  echo "deb [signed-by=/usr/share/keyrings/postgrsql.gpg] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg  main" > /etc/apt/sources.list.d/pgdg.list
 ENV CHROME_SOURCE_URL="https://dl.google.com/dl/linux/direct/google-chrome-stable_current_amd64.deb"
 RUN --mount=type=cache,target=/var/cache/apt export f="/tmp/chrome.deb" && \
   wget --no-verbose -O $f $CHROME_SOURCE_URL && \
@@ -21,14 +21,14 @@ RUN --mount=type=cache,target=/var/cache/apt export f="/tmp/chrome.deb" && \
   rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/lib/postgresql && \
   find /usr/share/locale/* -maxdepth 0 -type d ! -name 'en' -exec rm -rf {} \;
 
-RUN curl -L https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz -o - | tar xJf - -C /usr/local --strip=1 && node --version
+RUN curl -fsSL https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz -o - | tar xJf - -C /usr/local --strip=1 && node --version
 
 RUN rm -rf /usr/local/bundle && gem install bundler --no-document
 
 ENV APP_USER=dev
 ENV APP_PATH=/app
-ARG APP_USER_UID
-ARG APP_USER_GID
+ARG APP_USER_UID=1000
+ARG APP_USER_GID=1000
 
 RUN groupadd --force --gid $APP_USER_GID $APP_USER && \
   useradd -d $APP_PATH -m $APP_USER -s /bin/bash --uid $APP_USER_UID --gid $APP_USER_GID && \

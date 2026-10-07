@@ -57,11 +57,13 @@ export class HoverPreviewHandler implements TableEventHandler {
 
   private preview:HTMLElement|null = null;
 
+  private mouse = { x: 0, y: 0 };
+
   constructor(public readonly injector:Injector) {
   }
 
   public get EVENT():EventType[] {
-    return ['mouseover', 'mouseout'];
+    return ['mouseover', 'mouseout', 'mousemove'];
   }
 
   public get SELECTOR() {
@@ -73,7 +75,12 @@ export class HoverPreviewHandler implements TableEventHandler {
   }
 
   public handleEvent(_view:TableEventComponent, evt:Event):void {
-    if (evt.type === 'mouseover') {
+    const { clientX, clientY } = evt as MouseEvent;
+    this.mouse = { x: clientX, y: clientY };
+
+    if (evt.type === 'mousemove') {
+      if (this.preview) { this.position(this.preview); }
+    } else if (evt.type === 'mouseover') {
       this.onOver(evt as MouseEvent);
     } else {
       this.onOut(evt as MouseEvent);
@@ -125,7 +132,7 @@ export class HoverPreviewHandler implements TableEventHandler {
     const preview = this.buildPreview(workPackage);
     document.body.appendChild(preview);
     this.preview = preview;
-    this.position(preview, row);
+    this.position(preview);
   }
 
   private buildPreview(workPackage:WorkPackageResource):HTMLElement {
@@ -205,15 +212,18 @@ export class HoverPreviewHandler implements TableEventHandler {
     }
   }
 
-  private position(preview:HTMLElement, row:HTMLElement):void {
-    const rowRect = row.getBoundingClientRect();
-    const previewRect = preview.getBoundingClientRect();
+  /** Anchors the card next to the cursor, flipping to stay inside the viewport. */
+  private position(preview:HTMLElement):void {
+    const { width, height } = preview.getBoundingClientRect();
+    const gap = 14;
+    let left = this.mouse.x + gap;
+    let top = this.mouse.y + gap;
 
-    const top = Math.min(rowRect.top, window.innerHeight - previewRect.height - 8);
-    const left = Math.min(rowRect.left + 16, window.innerWidth - previewRect.width - 8);
+    if (left + width > window.innerWidth - 8) { left = this.mouse.x - gap - width; }
+    if (top + height > window.innerHeight - 8) { top = this.mouse.y - gap - height; }
 
-    preview.style.top = `${Math.max(8, top)}px`;
     preview.style.left = `${Math.max(8, left)}px`;
+    preview.style.top = `${Math.max(8, top)}px`;
   }
 
   private rowFor(target:EventTarget|null):HTMLTableRowElement|null {

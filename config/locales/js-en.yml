@@ -29,6 +29,7 @@
 ---
 en:
   js:
+    label_density_toggle: "Toggle compact / comfortable density"
     admin:
       type_form:
         edit_query: "Edit query"
