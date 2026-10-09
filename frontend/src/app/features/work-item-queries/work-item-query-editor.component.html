@@ -1,16 +1,16 @@
 <div class="toolbar-items">
   <button type="button" class="button -primary" (click)="run()">Run query</button>
-  <button type="button" class="button" (click)="save()" [disabled]="saving">Save</button>
+  <button type="button" class="button" (click)="save()" [disabled]="saving()">Save</button>
   <button type="button" class="button" (click)="revert()">Revert</button>
-  <button type="button" class="button" (click)="group()" [disabled]="selected.size < 2">Group</button>
+  <button type="button" class="button" (click)="group()" [disabled]="selected().size < 2">Group</button>
 </div>
 
-@if (loading) {
+@if (loading()) {
   <p>Loading…</p>
 }
 
-@if (error) {
-  <div class="op-toast -error">{{ error }}</div>
+@if (error(); as message) {
+  <div class="op-toast -error">{{ message }}</div>
 }
 
 <label>
@@ -36,7 +36,7 @@
     }
     <input
       type="checkbox"
-      [checked]="selected.has(row.path.join('.'))"
+      [checked]="selected().has(row.path.join('.'))"
       (change)="toggleSelected(row.path, $any($event.target).checked)"
     />
     <op-work-item-condition-row
@@ -52,8 +52,8 @@
 
 <a href="#" (click)="$event.preventDefault(); add()">Add new clause</a>
 
-@if (total > results.length) {
-  <p>Showing the first {{ results.length }} of {{ total }} results</p>
+@if (total() > results().length) {
+  <p>Showing the first {{ results().length }} of {{ total() }} results</p>
 }
 
-<op-work-item-results [rows]="results" [mode]="mode" />
+<op-work-item-results [rows]="results()" [mode]="mode()" />

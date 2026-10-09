@@ -116,3 +116,11 @@ export function parseCollection(res:unknown):AllowedValues {
 export function valuesAfterOperatorChange(from:OperatorSchema|undefined, to:OperatorSchema|undefined, values:string[]):string[] {
   return from?.type && from.type === to?.type ? values : [];
 }
+
+// User lists offer "me" first (as the WP filter UI does), and saved values missing from the options
+// (e.g. "me", deleted or locked users) stay listed by id so editing other values keeps them.
+export function withSavedValues(options:Option[], type:string|null, saved:string[], meLabel:string):Option[] {
+  const base = type?.includes('User') ? [{ id: 'me', name: meLabel }, ...options.filter((o) => o.id !== 'me')] : options;
+  const known = new Set(base.map((o) => o.id));
+  return [...base, ...saved.filter((v) => !known.has(v)).map((id) => ({ id, name: id }))];
+}

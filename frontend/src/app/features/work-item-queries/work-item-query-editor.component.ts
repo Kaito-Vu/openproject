@@ -27,7 +27,7 @@
 
 import { HttpErrorResponse } from '@angular/common/http';
 import { finalize, Subscription } from 'rxjs';
-import { Component, ElementRef, Input, OnInit, inject } from '@angular/core';
+import { Component, ElementRef, Input, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { populateInputsFromDataset } from 'core-app/shared/components/dataset-inputs';
 import {
@@ -52,33 +52,34 @@ export class WorkItemQueryEditorComponent implements OnInit {
 
   private service = inject(WorkItemQueryService);
 
-  tree:Group = emptyTree();
+  // Signals: the app is zoneless, so state changed in HTTP callbacks must notify the view itself.
+  readonly tree = signal<Group>(emptyTree());
 
-  mode:'flat'|'tree' = 'flat';
+  readonly mode = signal<'flat'|'tree'>('flat');
 
-  acrossProjects = false;
+  readonly acrossProjects = signal(false);
 
-  results:ResultRow[] = [];
+  readonly results = signal<ResultRow[]>([]);
 
-  error:string|null = null;
+  readonly error = signal<string|null>(null);
 
   saved:WorkItemQueryItem[] = [];
 
-  selected = new Set<string>();
+  readonly selected = signal(new Set<string>());
 
   currentId:number|null = null;
 
   name = '';
 
-  loading = false;
+  readonly loading = signal(false);
 
-  saving = false;
+  readonly saving = signal(false);
 
   private loadToken = 0;
 
   private runSub?:Subscription;
 
-  total = 0;
+  readonly total = signal(0);
 
   private lastLoaded:WorkItemQueryItem|null = null;
 
@@ -93,23 +94,23 @@ export class WorkItemQueryEditorComponent implements OnInit {
         const preset = this.queryId != null ? res.items.find((i) => i.id === Number(this.queryId)) : undefined;
         if (preset) { this.load(preset); this.run(); }
       },
-      error: (err:HttpErrorResponse) => { this.error = (err.error as { message?:string }|null)?.message ?? 'Loading queries failed'; },
+      error: (err:HttpErrorResponse) => { this.error.set((err.error as { message?:string }|null)?.message ?? 'Loading queries failed'); },
     });
   }
 
-  get rows():Row[] { return rows(this.tree); }
+  get rows():Row[] { return rows(this.tree()); }
 
   run():void {
     this.runSub?.unsubscribe(); // last request wins; finalize resets loading before we set it again
-    this.loading = true;
-    this.error = null;
+    this.loading.set(true);
+    this.error.set(null);
     this.runSub = this.service
-      .execute({ tree: this.tree, mode: this.mode, project_id: this.acrossProjects ? null : this.projectId, pageSize: 500 })
-      .pipe(finalize(() => { this.loading = false; }))
+      .execute({ tree: this.tree(), mode: this.mode(), project_id: this.acrossProjects() ? null : this.projectId, pageSize: 500 })
+      .pipe(finalize(() => { this.loading.set(false); }))
       .subscribe({
         next: (res) => {
-          this.total = res._embedded.results.total ?? 0;
-          this.results = res._embedded.results._embedded.elements.map((el) => ({
+          this.total.set(res._embedded.results.total ?? 0);
+          this.results.set(res._embedded.results._embedded.elements.map((el) => ({
             id: el.id,
             subject: el.subject,
             type: el._links.type.title,
@@ -117,55 +118,59 @@ export class WorkItemQueryEditorComponent implements OnInit {
             assignee: el._links.assignee?.title ?? '',
             parentId: el._links.parent?.href ? Number(el._links.parent.href.split('/').pop()) : null,
             children: [],
-          }));
+          })));
         },
         error: (err:HttpErrorResponse) => {
-          this.results = [];
-          this.total = 0;
-          this.error = (err.error as { message?:string }|null)?.message ?? 'Query failed';
+          this.results.set([]);
+          this.total.set(0);
+          this.error.set((err.error as { message?:string }|null)?.message ?? 'Query failed');
         },
       });
   }
 
-  add():void { this.tree = addCondition(this.tree, []); }
+  add():void { this.tree.update((t) => addCondition(t, [])); }
 
   remove(path:Path):void {
-    this.tree = removeAt(this.tree, path);
-    this.selected.clear();
+    this.tree.update((t) => removeAt(t, path));
+    this.selected.set(new Set());
   }
 
-  update(path:Path, patch:Partial<Condition>):void { this.tree = updateCondition(this.tree, path, patch); }
+  update(path:Path, patch:Partial<Condition>):void { this.tree.update((t) => updateCondition(t, path, patch)); }
 
   toggleSelected(path:Path, checked:boolean):void {
     const key = path.join('.');
-    if (checked) { this.selected.add(key); } else { this.selected.delete(key); }
+    this.selected.update((prev) => {
+      const next = new Set(prev);
+      if (checked) { next.add(key); } else { next.delete(key); }
+      return next;
+    });
   }
 
   group():void {
-    this.tree = group(this.tree, [...this.selected].map((s) => s.split('.').map(Number)));
-    this.selected.clear();
+    this.tree.update((t) => group(t, [...this.selected()].map((s) => s.split('.').map(Number))));
+    this.selected.set(new Set());
   }
 
   ungroup(path:Path):void {
-    this.tree = ungroup(this.tree, path);
-    this.selected.clear();
+    this.tree.update((t) => ungroup(t, path));
+    this.selected.set(new Set());
   }
 
-  toggleOp(row:Row):void { this.tree = setOp(this.tree, row.parentPath, row.parentOp === 'and' ? 'or' : 'and'); }
+  toggleOp(row:Row):void { this.tree.update((t) => setOp(t, row.parentPath, row.parentOp === 'and' ? 'or' : 'and')); }
 
   save():void {
     const name = this.name || (window.prompt('Query name') ?? '');
     if (!name) { return; }
     this.name = name;
     const item = buildSavePayload(
-      { name, mode: this.mode, project_id: this.acrossProjects ? null : this.projectId, tree: this.tree },
+      { name, mode: this.mode(), project_id: this.acrossProjects() ? null : this.projectId, tree: this.tree() },
       this.currentId != null ? this.lastLoaded : null,
     );
-    if (this.saving) { return; }
-    this.saving = true;
+    if (this.saving()) { return; }
+    this.saving.set(true);
     const token = this.loadToken;
     const req = this.currentId != null ? this.service.update(this.currentId, item) : this.service.create(item);
-    req.pipe(finalize(() => { this.saving = false; })).subscribe({
+    req.pipe(finalize(() => { this.saving.set(false); })).subscribe({
       next: (saved) => {
         const next = applySaved(
           { currentId: this.currentId, lastLoaded: this.lastLoaded, loadToken: this.loadToken }, token, saved,
@@ -174,7 +179,7 @@ export class WorkItemQueryEditorComponent implements OnInit {
         this.lastLoaded = next.lastLoaded;
         this.service.list().subscribe((res) => { this.saved = res.items; });
       },
-      error: (err:HttpErrorResponse) => { this.error = (err.error as { message?:string }|null)?.message ?? 'Save failed'; },
+      error: (err:HttpErrorResponse) => { this.error.set((err.error as { message?:string }|null)?.message ?? 'Save failed'); },
     });
   }
 
@@ -183,10 +188,10 @@ export class WorkItemQueryEditorComponent implements OnInit {
     this.lastLoaded = item;
     this.currentId = item.id ?? null;
     this.name = item.name;
-    this.mode = item.mode;
-    this.acrossProjects = item.project_id == null;
-    this.tree = structuredClone(item.tree);
-    this.selected.clear();
+    this.mode.set(item.mode);
+    this.acrossProjects.set(item.project_id == null);
+    this.tree.set(structuredClone(item.tree));
+    this.selected.set(new Set());
   }
 
   revert():void { if (this.lastLoaded) { this.load(this.lastLoaded); } }

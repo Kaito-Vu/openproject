@@ -28,9 +28,12 @@
 import { Component, computed, inject, input, output, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { catchError, Observable, of, switchMap } from 'rxjs';
+import { catchError, Observable, of, startWith, switchMap } from 'rxjs';
 import { Condition } from './work-item-query-tree';
-import { AllowedValues, FieldSchema, valuesAfterOperatorChange } from './work-item-filter-schema';
+import { I18nService } from 'core-app/core/i18n/i18n.service';
+import {
+  AllowedValues, FieldSchema, valuesAfterOperatorChange, withSavedValues,
+} from './work-item-filter-schema';
 import { WorkItemFilterSchemaService } from './work-item-filter-schema.service';
 
 // One condition: field and operator come from the query form's filter schemas, the value input
@@ -55,38 +58,40 @@ import { WorkItemFilterSchemaService } from './work-item-filter-schema.service';
 
     @switch (valueInput()) {
       @case ('list') {
-        <select multiple aria-label="Values" [ngModel]="condition().values" (ngModelChange)="emitValues($event)">
-          @for (o of list()!.options; track o.id) { <option [value]="o.id">{{ o.name }}</option> }
+        <select multiple [attr.aria-label]="'Values for ' + fieldName()" [ngModel]="condition().values" (ngModelChange)="emitValues($event)">
+          @for (o of listOptions(); track o.id) { <option [value]="o.id">{{ o.name }}</option> }
         </select>
       }
       @case ('ids') {
-        <input type="text" aria-label="Values (comma separated ids)" placeholder="ids, comma separated"
+        <input type="text" [attr.aria-label]="'Values (comma separated ids) for ' + fieldName()" placeholder="ids, comma separated"
                [ngModel]="condition().values.join(',')" (ngModelChange)="emitValues(splitValues($event))" />
       }
       @case ('boolean') {
-        <select aria-label="Value" [ngModel]="condition().values[0] ?? ''" (ngModelChange)="emitSingle($event)">
+        <select [attr.aria-label]="'Value for ' + fieldName()" [ngModel]="condition().values[0] ?? ''" (ngModelChange)="emitSingle($event)">
           <option value="" disabled>…</option>
           <option value="t">Yes</option>
           <option value="f">No</option>
         </select>
       }
       @case ('date') {
-        <input type="date" aria-label="Value" [ngModel]="condition().values[0] ?? ''" (ngModelChange)="emitSingle($event)" />
+        <input type="date" [attr.aria-label]="'Value for ' + fieldName()"
+               [ngModel]="(condition().values[0] ?? '').slice(0, 10)" (ngModelChange)="emitSingle($event)" />
       }
       @case ('dates') {
-        <input type="date" aria-label="From" [ngModel]="condition().values[0] ?? ''" (ngModelChange)="emitPair(0, $event)" />
-        <input type="date" aria-label="To" [ngModel]="condition().values[1] ?? ''" (ngModelChange)="emitPair(1, $event)" />
+        <input type="date" [attr.aria-label]="'From for ' + fieldName()" [ngModel]="pairValue(0)" (ngModelChange)="emitPair(0, $event)" />
+        <input type="date" [attr.aria-label]="'To for ' + fieldName()" [ngModel]="pairValue(1)" (ngModelChange)="emitPair(1, $event)" />
       }
       @case ('number') {
-        <input type="number" step="any" aria-label="Value" [ngModel]="condition().values[0] ?? ''" (ngModelChange)="emitSingle($event)" />
+        <input type="number" [attr.step]="operator()?.type?.includes('Integer') ? 1 : 'any'" [attr.aria-label]="'Value for ' + fieldName()"
+               [ngModel]="condition().values[0] ?? ''" (ngModelChange)="emitSingle($event)" />
       }
       @case ('text') {
-        <input type="text" aria-label="Value" [ngModel]="condition().values[0] ?? ''" (ngModelChange)="emitSingle($event)" />
+        <input type="text" [attr.aria-label]="'Value for ' + fieldName()" [ngModel]="condition().values[0] ?? ''" (ngModelChange)="emitSingle($event)" />
       }
     }
 
-    <button type="button" aria-label="Remove condition" (click)="removed.emit()">Remove</button>
-    @if (loadError()) { <span class="op-wiq-row-error">Could not load filter definitions</span> }
+    <button type="button" [attr.aria-label]="'Remove condition ' + fieldName()" (click)="removed.emit()">Remove</button>
+    @if (loadError()) { <span class="op-wiq-row-error" role="status">Could not load filter definitions</span> }
   `,
 })
 export class WorkItemConditionRowComponent {
@@ -98,6 +103,8 @@ export class WorkItemConditionRowComponent {
 
   private schema = inject(WorkItemFilterSchemaService);
 
+  private meLabel = inject(I18nService).t('js.label_me');
+
   readonly loadError = signal(false);
 
   readonly fields = toSignal(
@@ -106,6 +113,8 @@ export class WorkItemConditionRowComponent {
   );
 
   readonly field = computed(() => this.fields()?.find((f) => f.id === this.condition().field));
+
+  readonly fieldName = computed(() => this.field()?.name ?? this.condition().field);
 
   readonly operator = computed(() => this.field()?.operators.find((o) => o.id === this.condition().operator));
 
@@ -119,10 +128,17 @@ export class WorkItemConditionRowComponent {
     toObservable(this.listSource).pipe(switchMap((src):Observable<AllowedValues|null> => {
       if (src == null) { return of(null); }
       if (typeof src !== 'string') { return of({ options: src, complete: true }); }
-      return this.schema.allowedValues(src).pipe(catchError(() => of(null)));
+      return this.schema.allowedValues(src).pipe(startWith(null), catchError(() => of(null)));
     })),
     { initialValue: null },
   );
+
+  readonly listOptions = computed(() => withSavedValues(
+    this.list()?.options ?? [], this.operator()?.type ?? null, this.condition().values, this.meLabel,
+  ));
+
+  // Half-entered date range: not emitted (the backend needs both) but kept on screen.
+  private pairDraft = signal<string[]>([]);
 
   // ponytail: list values fall back to an ids text input while options load, on load errors, and when the
   // collection is truncated by the server (e.g. work packages); a search-as-you-type picker is the upgrade.
@@ -135,11 +151,13 @@ export class WorkItemConditionRowComponent {
   });
 
   setField(id:string):void {
+    this.pairDraft.set([]);
     const op = this.fields()?.find((f) => f.id === id)?.operators[0];
     this.changed.emit({ field: id, operator: op?.id ?? '', values: [] });
   }
 
   setOperator(id:string):void {
+    this.pairDraft.set([]);
     const to = this.field()?.operators.find((o) => o.id === id);
     this.changed.emit({ operator: id, values: valuesAfterOperatorChange(this.operator(), to, this.condition().values) });
   }
@@ -148,10 +166,16 @@ export class WorkItemConditionRowComponent {
 
   emitSingle(v:string|number|null):void { this.emitValues(v == null || v === '' ? [] : [String(v)]); }
 
+  pairValue(i:0|1):string {
+    const saved = this.condition().values;
+    return ((saved.length === 2 ? saved[i] : this.pairDraft()[i]) ?? '').slice(0, 10);
+  }
+
   emitPair(i:0|1, v:string|null):void {
-    const pair = [this.condition().values[0] ?? '', this.condition().values[1] ?? ''];
+    const pair = [this.pairValue(0), this.pairValue(1)];
     pair[i] = v ?? '';
-    this.emitValues(pair.some(Boolean) ? pair : []);
+    this.pairDraft.set(pair);
+    this.emitValues(pair.every(Boolean) ? pair : []);
   }
 
   splitValues(v:string):string[] { return v.split(',').map((s) => s.trim()).filter(Boolean); }

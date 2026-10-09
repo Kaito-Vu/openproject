@@ -26,7 +26,7 @@
 //++
 
 import {
-  parseCollection, parseQueryForm, valueKind, valuesAfterOperatorChange,
+  parseCollection, parseQueryForm, valueKind, valuesAfterOperatorChange, withSavedValues,
 } from './work-item-filter-schema';
 
 const op = (sym:string, title:string) => ({ href: `/api/v3/queries/operators/${encodeURIComponent(sym)}`, title });
@@ -143,5 +143,21 @@ describe('valuesAfterOperatorChange', () => {
     expect(valuesAfterOperatorChange(due[1], due[1], ['2026-01-01'])).toEqual(['2026-01-01']);
     expect(valuesAfterOperatorChange(due[0], due[1], ['3'])).toEqual([]);
     expect(valuesAfterOperatorChange(status[0], status[2], ['1'])).toEqual([]);
+  });
+});
+
+describe('withSavedValues', () => {
+  const users = [{ id: '3', name: 'Ann' }];
+
+  it('prepends "me" for user lists and keeps saved values missing from the options', () => {
+    expect(withSavedValues(users, '[]User', ['me', '99'], 'me')).toEqual([
+      { id: 'me', name: 'me' }, { id: '3', name: 'Ann' }, { id: '99', name: '99' },
+    ]);
+  });
+
+  it('adds no "me" to other lists and leaves known values alone', () => {
+    expect(withSavedValues([{ id: '1', name: 'New' }], '[]Status', ['1', '7'], 'me')).toEqual([
+      { id: '1', name: 'New' }, { id: '7', name: '7' },
+    ]);
   });
 });
