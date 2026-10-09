@@ -25,20 +25,24 @@
 // See COPYRIGHT and LICENSE files for more details.
 //++
 
-import { ResultRow } from './work-item-results.component';
+import { copyText } from './work-item-copy-text';
 
-const COLUMNS = ['id', 'type', 'subject', 'status', 'assignee'] as const;
+describe('copyText', () => {
+  it('fails when the clipboard is unavailable', async () => {
+    expect(await copyText(undefined, 'x')).toBe('failed');
+  });
 
-function cell(value:string|number):string {
-  let s = String(value);
-  // Formula injection: spreadsheets evaluate cells whose first non-blank character is one of these.
-  if (typeof value === 'string' && (/^[\t\r]/.test(s) || /^[=+\-@]/.test(s.trimStart()))) { s = `'${s}`; }
-  return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-}
+  it('fails when writeText rejects', async () => {
+    expect(await copyText({ writeText: () => Promise.reject(new Error('no')) }, 'x')).toBe('failed');
+  });
 
-// BOM so Excel opens the file as UTF-8.
-export function toCsv(rows:Pick<ResultRow, typeof COLUMNS[number]>[]):string {
-  const lines = [COLUMNS, ...rows.map((r) => COLUMNS.map((c) => r[c]))]
-    .map((line) => `${line.map(cell).join(',')}\r\n`);
-  return `\uFEFF${lines.join('')}`;
-}
+  it('fails when writeText throws synchronously', async () => {
+    expect(await copyText({ writeText: () => { throw new Error('no'); } }, 'x')).toBe('failed');
+  });
+
+  it('copies', async () => {
+    let got = '';
+    expect(await copyText({ writeText: (t) => { got = t; return Promise.resolve(); } }, 'abc')).toBe('copied');
+    expect(got).toBe('abc');
+  });
+});

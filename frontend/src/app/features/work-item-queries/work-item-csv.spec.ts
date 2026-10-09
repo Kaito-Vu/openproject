@@ -31,7 +31,7 @@ describe('toCsv', () => {
   const row = (over = {}) => ({ id: 1, type: 'Task', subject: 's', status: 'New', assignee: 'Ann', ...over });
 
   it('writes a header and CRLF line ends', () => {
-    expect(toCsv([row()])).toBe('id,type,subject,status,assignee\r\n1,Task,s,New,Ann\r\n');
+    expect(toCsv([row()])).toBe('﻿id,type,subject,status,assignee\r\n1,Task,s,New,Ann\r\n');
   });
 
   it('quotes commas, quotes and newlines', () => {
@@ -40,10 +40,14 @@ describe('toCsv', () => {
   });
 
   it('neutralises spreadsheet formulas', () => {
-    ['=1+1', '+1', '-1', '@x', '\tx', '\rx'].forEach((v) => {
+    [' =1+1', '=1+1', '+1', '-1', '@x', '\tx', '\rx'].forEach((v) => {
       const cell = toCsv([row({ subject: v })]).split('\r\n')[1].split(',')[2];
       expect(cell.replace(/^"/, '').startsWith("'")).toBe(true);
     });
+  });
+
+  it('starts with a UTF-8 BOM', () => {
+    expect(toCsv([]).startsWith('﻿')).toBe(true);
   });
 
   it('keeps numeric ids untouched', () => {

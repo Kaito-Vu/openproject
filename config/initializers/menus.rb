@@ -78,7 +78,7 @@ Redmine::MenuManager.map :top_menu do |menu|
             caption: :label_work_item_queries,
             icon: "filter",
             if: ->(_) {
-              (User.current.logged? || !Setting.login_required?) &&
+              User.current.logged? &&
                 User.current.allowed_in_any_work_package?(:view_work_packages) &&
                 Project.visible.active.has_module(:work_package_tracking).present?
             }
@@ -822,7 +822,7 @@ Redmine::MenuManager.map :project_menu do |menu|
   menu.push :work_item_queries,
             { controller: "/work_item_queries", action: "index" },
             caption: :label_work_item_queries,
-            if: ->(project) { project.module_enabled?("work_package_tracking") },
+            if: ->(project) { User.current.logged? && project.module_enabled?("work_package_tracking") },
             icon: "filter"
 
   menu.push :news,

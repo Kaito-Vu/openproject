@@ -35,8 +35,15 @@ import {
 } from './work-item-query-tree';
 import { applySaved, buildSavePayload, WorkItemQueryItem, WorkItemQueryService } from './work-item-query.service';
 import { toCsv } from './work-item-csv';
+import { copyText } from './work-item-copy-text';
 import { ResultRow, WorkItemResultsComponent } from './work-item-results.component';
 import { WorkItemConditionRowComponent } from './work-item-condition-row.component';
+
+// Replaces characters invalid in file names (and control chars) with underscores.
+function safeFileName(name:string):string {
+  const clean = [...name].map((c) => (c.charCodeAt(0) < 32 || '/\\:*?"<>|'.includes(c) ? '_' : c)).join('').trim();
+  return clean || 'query';
+}
 
 @Component({
   selector: 'op-work-item-query-editor',
@@ -103,7 +110,9 @@ export class WorkItemQueryEditorComponent implements OnInit, OnDestroy {
     });
   }
 
-  ngOnDestroy():void { clearTimeout(this.copyTimer); }
+  private destroyed = false;
+
+  ngOnDestroy():void { this.destroyed = true; clearTimeout(this.copyTimer); }
 
   get listUrl():string { return this.projectId ? `/projects/${this.projectId}/queries` : '/queries'; }
 
@@ -113,23 +122,23 @@ export class WorkItemQueryEditorComponent implements OnInit, OnDestroy {
     const url = URL.createObjectURL(new Blob([toCsv(this.results())], { type: 'text/csv;charset=utf-8' }));
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${this.name() || 'query'}.csv`;
+    a.download = `${safeFileName(this.name())}.csv`;
     document.body.appendChild(a);
     a.click();
     a.remove();
-    URL.revokeObjectURL(url);
+    setTimeout(() => { URL.revokeObjectURL(url); }, 1000);
   }
 
   copyUrl():void {
     const id = this.currentId();
     if (id == null) { return; }
     const done = (state:'copied'|'failed'):void => {
+      if (this.destroyed) { return; }
       this.copyState.set(state);
       clearTimeout(this.copyTimer);
       this.copyTimer = setTimeout(() => { this.copyState.set('idle'); }, 2000);
     };
-    navigator.clipboard.writeText(`${window.location.origin}${this.editorPath}?id=${id}`)
-      .then(() => { done('copied'); }, () => { done('failed'); });
+    void copyText((navigator as { clipboard?:Clipboard }).clipboard, `${window.location.origin}${this.editorPath}?id=${id}`).then(done);
   }
 
   get rows():Row[] { return rows(this.tree()); }
@@ -195,7 +204,6 @@ export class WorkItemQueryEditorComponent implements OnInit, OnDestroy {
   save():void {
     const name = this.name() || (window.prompt('Query name') ?? '');
     if (!name) { return; }
-    this.name.set(name);
     const item = buildSavePayload(
       { name, mode: this.mode(), project_id: this.acrossProjects() ? null : this.projectId, tree: this.tree() },
       this.currentId() != null ? this.lastLoaded : null,
@@ -210,6 +218,7 @@ export class WorkItemQueryEditorComponent implements OnInit, OnDestroy {
         const next = applySaved(
           { currentId: this.currentId(), lastLoaded: this.lastLoaded, loadToken: this.loadToken }, token, saved,
         );
+        this.name.set(name);
         const wasNew = this.currentId() == null;
         this.currentId.set(next.currentId);
         if (wasNew && next.currentId != null) {

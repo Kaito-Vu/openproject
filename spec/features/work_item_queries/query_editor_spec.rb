@@ -41,8 +41,10 @@ RSpec.describe "Query editor", :js do
 
   def pick_status(clause, status)
     within(clause) do
-      find("select[aria-label='Field']").find("option", text: "Status").select_option
-      find("select[aria-label='Values for Status']").find("option", text: status.name).select_option
+      find("select[aria-label='Field']").find("option", exact_text: "Status").select_option
+      values = find("select[aria-label='Values for Status']")
+      expect(values).to have_css("option", text: status.name)
+      values.find("option", text: status.name).select_option
     end
   end
 
@@ -54,7 +56,7 @@ RSpec.describe "Query editor", :js do
 
     click_on "Add new clause"
     second = all(".op-wiq-row").last
-    within(second) { first("select").find("option", text: "Or").select_option }
+    within(second) { find("select[aria-label='Operator for clause']").find("option", text: "Or").select_option }
     pick_status(second, closed_status)
 
     click_on "Run query"

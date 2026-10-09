@@ -38,7 +38,7 @@
 @for (row of rows; track row.path.join('.')) {
   <div class="op-wiq-row" [style.margin-left.px]="row.depth * 24" [style.border-left]="row.depth ? '2px solid #ccc' : 'none'">
     @if (row.indexInParent > 0) {
-      <select [ngModel]="row.parentOp" (ngModelChange)="toggleOp(row)">
+      <select aria-label="Operator for clause" [ngModel]="row.parentOp" (ngModelChange)="toggleOp(row)">
         <option value="and">And</option>
         <option value="or">Or</option>
       </select>

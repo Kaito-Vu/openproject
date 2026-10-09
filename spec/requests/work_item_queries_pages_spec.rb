@@ -50,7 +50,7 @@ RSpec.describe "Work item queries pages", type: :rails_request do
         get path
         expect(response).to have_http_status(:ok)
         expect(response.body).to include("opce-work-item-query-list")
-        expect(response.body).to match(%r{href="[^"]*/queries"})
+        expect(response.body).to include(%(href="#{path}")).or include(%(href="http://test.host#{path}"))
       end
     end
   end
@@ -61,6 +61,18 @@ RSpec.describe "Work item queries pages", type: :rails_request do
     it "denies the project-scoped editor" do
       get "/projects/#{project.identifier}/queries/editor"
       expect(response).to have_http_status(:forbidden).or have_http_status(:not_found)
+    end
+  end
+
+  context "when anonymous and login is not required" do
+    before { allow(Setting).to receive(:login_required?).and_return(false) }
+
+    it "does not show the Queries menu item on a home page" do
+      get "/"
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("op-app-header")
+      expect(response.body).not_to include("work-item-queries-menu-item")
+      expect(response.body).not_to include(%(href="/queries"))
     end
   end
 

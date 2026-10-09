@@ -25,20 +25,15 @@
 // See COPYRIGHT and LICENSE files for more details.
 //++
 
-import { ResultRow } from './work-item-results.component';
-
-const COLUMNS = ['id', 'type', 'subject', 'status', 'assignee'] as const;
-
-function cell(value:string|number):string {
-  let s = String(value);
-  // Formula injection: spreadsheets evaluate cells whose first non-blank character is one of these.
-  if (typeof value === 'string' && (/^[\t\r]/.test(s) || /^[=+\-@]/.test(s.trimStart()))) { s = `'${s}`; }
-  return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-}
-
-// BOM so Excel opens the file as UTF-8.
-export function toCsv(rows:Pick<ResultRow, typeof COLUMNS[number]>[]):string {
-  const lines = [COLUMNS, ...rows.map((r) => COLUMNS.map((c) => r[c]))]
-    .map((line) => `${line.map(cell).join(',')}\r\n`);
-  return `\uFEFF${lines.join('')}`;
+export async function copyText(
+  clipboard:Pick<Clipboard, 'writeText'>|undefined,
+  text:string,
+):Promise<'copied'|'failed'> {
+  try {
+    if (!clipboard) { return 'failed'; }
+    await clipboard.writeText(text);
+    return 'copied';
+  } catch {
+    return 'failed';
+  }
 }
