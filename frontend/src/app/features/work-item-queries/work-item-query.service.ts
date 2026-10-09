@@ -52,6 +52,14 @@ export function buildSavePayload(state:EditorState, loaded:WorkItemQueryItem|nul
   };
 }
 
+export interface SaveState { currentId:number|null; lastLoaded:WorkItemQueryItem|null; loadToken:number }
+
+// Ignore a save response if the editor loaded another query since the save was clicked.
+export function applySaved(state:SaveState, tokenAtClick:number, saved:WorkItemQueryItem):SaveState {
+  if (state.loadToken !== tokenAtClick) { return state; }
+  return { ...state, currentId: saved.id ?? state.currentId, lastLoaded: saved };
+}
+
 export interface ExecuteElement {
   id:number; subject:string;
   _links:{ type:{ title:string }; status:{ title:string }; assignee?:{ title:string }; parent?:{ href:string|null } };

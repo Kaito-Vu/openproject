@@ -26,14 +26,14 @@
 //++
 
 import { HttpErrorResponse } from '@angular/common/http';
-import { finalize } from 'rxjs';
+import { finalize, Subscription } from 'rxjs';
 import { Component, ElementRef, Input, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { populateInputsFromDataset } from 'core-app/shared/components/dataset-inputs';
 import {
   addCondition, Condition, emptyTree, group, Group, Path, removeAt, Row, rows, setOp, ungroup, updateCondition,
 } from './work-item-query-tree';
-import { buildSavePayload, WorkItemQueryItem, WorkItemQueryService } from './work-item-query.service';
+import { applySaved, buildSavePayload, WorkItemQueryItem, WorkItemQueryService } from './work-item-query.service';
 import { ResultRow, WorkItemResultsComponent } from './work-item-results.component';
 import { WorkItemConditionRowComponent } from './work-item-condition-row.component';
 
@@ -72,6 +72,12 @@ export class WorkItemQueryEditorComponent implements OnInit {
 
   loading = false;
 
+  saving = false;
+
+  private loadToken = 0;
+
+  private runSub?:Subscription;
+
   total = 0;
 
   private lastLoaded:WorkItemQueryItem|null = null;
@@ -94,10 +100,10 @@ export class WorkItemQueryEditorComponent implements OnInit {
   get rows():Row[] { return rows(this.tree); }
 
   run():void {
-    if (this.loading) { return; }
+    this.runSub?.unsubscribe(); // last request wins; finalize resets loading before we set it again
     this.loading = true;
     this.error = null;
-    this.service
+    this.runSub = this.service
       .execute({ tree: this.tree, mode: this.mode, project_id: this.acrossProjects ? null : this.projectId, pageSize: 500 })
       .pipe(finalize(() => { this.loading = false; }))
       .subscribe({
@@ -155,11 +161,17 @@ export class WorkItemQueryEditorComponent implements OnInit {
       { name, mode: this.mode, project_id: this.acrossProjects ? null : this.projectId, tree: this.tree },
       this.currentId != null ? this.lastLoaded : null,
     );
+    if (this.saving) { return; }
+    this.saving = true;
+    const token = this.loadToken;
     const req = this.currentId != null ? this.service.update(this.currentId, item) : this.service.create(item);
-    req.subscribe({
+    req.pipe(finalize(() => { this.saving = false; })).subscribe({
       next: (saved) => {
-        this.currentId = saved.id ?? this.currentId;
-        this.lastLoaded = saved;
+        const next = applySaved(
+          { currentId: this.currentId, lastLoaded: this.lastLoaded, loadToken: this.loadToken }, token, saved,
+        );
+        this.currentId = next.currentId;
+        this.lastLoaded = next.lastLoaded;
         this.service.list().subscribe((res) => { this.saved = res.items; });
       },
       error: (err:HttpErrorResponse) => { this.error = (err.error as { message?:string }|null)?.message ?? 'Save failed'; },
@@ -167,6 +179,7 @@ export class WorkItemQueryEditorComponent implements OnInit {
   }
 
   load(item:WorkItemQueryItem):void {
+    this.loadToken += 1;
     this.lastLoaded = item;
     this.currentId = item.id ?? null;
     this.name = item.name;

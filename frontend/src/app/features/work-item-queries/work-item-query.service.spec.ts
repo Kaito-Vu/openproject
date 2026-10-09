@@ -25,7 +25,7 @@
 // See COPYRIGHT and LICENSE files for more details.
 //++
 
-import { buildSavePayload, WorkItemQueryItem } from './work-item-query.service';
+import { applySaved, buildSavePayload, WorkItemQueryItem } from './work-item-query.service';
 import { emptyTree } from './work-item-query-tree';
 
 describe('buildSavePayload', () => {
@@ -51,5 +51,20 @@ describe('buildSavePayload', () => {
     expect(p.tree).toBe(tree);
     expect(p.mode).toBe('tree');
     expect(p.project_id).toBe(3);
+  });
+});
+
+describe('applySaved', () => {
+  const saved = { id: 7, name: 's' } as WorkItemQueryItem;
+
+  it('applies the response when the editor has not loaded anything else', () => {
+    const out = applySaved({ currentId: null, lastLoaded: null, loadToken: 2 }, 2, saved);
+    expect(out.currentId).toBe(7);
+    expect(out.lastLoaded).toBe(saved);
+  });
+
+  it('ignores the response when another query was loaded meanwhile', () => {
+    const state = { currentId: 3, lastLoaded: null, loadToken: 3 };
+    expect(applySaved(state, 2, saved)).toBe(state);
   });
 });
