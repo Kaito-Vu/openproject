@@ -41,7 +41,8 @@ RSpec.describe "Query editor", :js do
 
   def pick_status(clause, status)
     within(clause) do
-      find("select[aria-label='Field']").find("option", exact_text: "Status").select_option
+      find("input[aria-label='Field']").click
+      find("li[role='option']", exact_text: "Status").click
       values = find("select[aria-label='Values for Status']")
       expect(values).to have_css("option", text: status.name)
       values.find("option", text: status.name).select_option

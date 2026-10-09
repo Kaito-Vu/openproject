@@ -36,21 +36,19 @@ import {
 } from './work-item-filter-schema';
 import { WorkItemFilterSchemaService } from './work-item-filter-schema.service';
 import { WorkItemMultiSelectComponent } from './work-item-multi-select.component';
+import { WorkItemComboboxComponent } from './work-item-combobox.component';
 
 // One condition: field and operator come from the query form's filter schemas, the value input
 // follows the value type of the chosen operator. Signals because the app runs zoneless.
 @Component({
   selector: 'op-work-item-condition-row',
   standalone: true,
-  imports: [FormsModule, WorkItemMultiSelectComponent],
+  imports: [FormsModule, WorkItemMultiSelectComponent, WorkItemComboboxComponent],
   styleUrls: ['./work-item-queries.shared.css', './work-item-condition-row.component.css'],
   template: `
     <div class="cell">
-      <select class="wiq-control" aria-label="Field" [ngModel]="condition().field" (ngModelChange)="setField($event)">
-        @if (!condition().field) { <option value="" disabled>Select a field…</option> }
-        @if (condition().field && !field()) { <option [value]="condition().field">{{ condition().field }}</option> }
-        @for (f of fields() ?? []; track f.id) { <option [value]="f.id">{{ f.name }}</option> }
-      </select>
+      <op-work-item-combobox [options]="fieldOptions()" [value]="condition().field" label="Field"
+        placeholder="Search for a field…" (changed)="setField($event)" />
       @if (loadError()) { <div class="error" role="status">Could not load filter definitions</div> }
     </div>
 
@@ -120,6 +118,8 @@ export class WorkItemConditionRowComponent {
     ))),
     { initialValue: null },
   );
+
+  readonly fieldOptions = computed(() => (this.fields() ?? []).map((f) => ({ id: f.id, name: f.name })));
 
   readonly field = computed(() => this.fields()?.find((f) => f.id === this.condition().field));
 
