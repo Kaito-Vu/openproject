@@ -114,7 +114,12 @@ class Queries::Filters::Base
   end
 
   def apply_to(query_scope)
-    query_scope = query_scope.where(where)
+    apply_joins_to(query_scope.where(where))
+  end
+
+  # Everything apply_to does except the where clause. Used by tree queries, whose
+  # combined where is built separately.
+  def apply_joins_to(query_scope)
     query_scope = query_scope.from(from) if from
     query_scope = query_scope.joins(joins) if joins
     query_scope = query_scope.left_outer_joins(left_outer_joins) if left_outer_joins

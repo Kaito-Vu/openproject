@@ -334,7 +334,7 @@ class Query::Results
 
   def filter_merges
     query.filters.inject(::WorkPackage.unscoped) do |scope, filter|
-      filter.apply_to(scope)
+      query.filter_tree_sql ? filter.apply_joins_to(scope) : filter.apply_to(scope)
     end
   end
 

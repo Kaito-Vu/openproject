@@ -35,6 +35,9 @@ class Query < ApplicationRecord
   include ManualSorting
   include Queries::Filters::AvailableFilters
 
+  # Compiled WorkItemQueries condition tree; when set it replaces the AND-joined filters in #statement.
+  attr_accessor :filter_tree_sql
+
   belongs_to :project
   belongs_to :user
   has_many :views,
@@ -416,10 +419,7 @@ class Query < ApplicationRecord
   def statement
     return "1=0" unless valid?
 
-    statement_filters
-      .map { |filter| "(#{filter.where})" }
-      .compact_blank
-      .join(" AND ")
+    statement_clauses.compact_blank.join(" AND ")
   end
 
   # Returns the result set
@@ -501,6 +501,15 @@ class Query < ApplicationRecord
 
   def for_all?
     @for_all ||= project.nil?
+  end
+
+  # A condition tree (see WorkItemQueries::Compiler) replaces the AND-joined filter list;
+  # the project limit still applies.
+  def statement_clauses
+    return statement_filters.map { |filter| "(#{filter.where})" } if filter_tree_sql.nil?
+
+    limit = project ? project_limiting_filter : nil
+    ["(#{filter_tree_sql})", (limit && "(#{limit.where})")]
   end
 
   def statement_filters

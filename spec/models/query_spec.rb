@@ -997,4 +997,21 @@ RSpec.describe Query,
       expect(query.work_package_journals).not_to include(internal_journals)
     end
   end
+
+  describe "#filter_tree_sql" do
+    let(:query) { build(:query, project: nil) }
+
+    it "uses the AND-joined filters when nil" do
+      query.add_filter("subject", "~", ["foo"])
+
+      expect(query.statement).to include("subject")
+    end
+
+    it "replaces the AND-joined filters when set" do
+      query.add_filter("subject", "~", ["foo"])
+      query.filter_tree_sql = "work_packages.id = 42"
+
+      expect(query.statement).to eq("(work_packages.id = 42)")
+    end
+  end
 end
