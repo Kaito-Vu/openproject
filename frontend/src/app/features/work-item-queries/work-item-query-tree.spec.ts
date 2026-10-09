@@ -126,4 +126,39 @@ describe('work item query tree', () => {
     }).not.toThrow();
     expect(t).toEqual(make());
   });
+
+  describe('invalid or stale paths', () => {
+    const t = () => g('and', c('a'), g('or', c('b')));
+
+    it('removeAt ignores the root and missing paths', () => {
+      const tree = t();
+      [[], [9], [9, 0], [0, 0]].forEach((p) => expect(removeAt(tree, p)).toBe(tree));
+    });
+
+    it('ungroup ignores missing and non-group paths', () => {
+      const tree = t();
+      [[9], [9, 0], [0]].forEach((p) => expect(ungroup(tree, p)).toBe(tree));
+    });
+
+    it('setOp ignores condition and missing paths', () => {
+      const tree = t();
+      [[0], [9]].forEach((p) => expect(setOp(tree, p, 'or')).toBe(tree));
+    });
+
+    it('updateCondition ignores group and missing paths', () => {
+      const tree = t();
+      [[1], [9]].forEach((p) => expect(updateCondition(tree, p, { field: 'z' })).toBe(tree));
+    });
+
+    it('group ignores out-of-range paths', () => {
+      const tree = t();
+      expect(group(tree, [[0], [5]])).toBe(tree);
+      expect(group(tree, [[8, 0], [8, 1]])).toBe(tree);
+    });
+
+    it('addCondition ignores condition and missing parents', () => {
+      const tree = t();
+      [[0], [9]].forEach((p) => expect(addCondition(tree, p)).toBe(tree));
+    });
+  });
 });

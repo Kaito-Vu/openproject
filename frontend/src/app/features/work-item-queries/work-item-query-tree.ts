@@ -34,11 +34,14 @@ export interface Row {
   path:Path; node:Condition; depth:number; parentPath:Path; indexInParent:number; parentOp:Op;
 }
 
-export const isGroup = (n:TreeNode):n is Group => 'children' in n;
+export const isGroup = (n:TreeNode|undefined):n is Group => !!n && 'children' in n;
 export const emptyTree = ():Group => ({ op: 'and', children: [] });
 
 const clone = <T>(v:T):T => structuredClone(v);
-const at = (tree:Group, path:Path):TreeNode => path.reduce<TreeNode>((n, i) => (n as Group).children[i], tree);
+const find = (tree:Group, path:Path):TreeNode|undefined => path.reduce<TreeNode|undefined>(
+  (n, i) => (isGroup(n) ? n.children[i] : undefined),
+  tree,
+);
 const last = (p:Path) => p[p.length - 1];
 const parentOf = (p:Path) => p.slice(0, -1);
 
@@ -48,56 +51,64 @@ function prune(g:Group):Group {
   return g;
 }
 
+// Every path-taking function returns the input tree unchanged for an invalid/stale path.
 export function addCondition(tree:Group, parent:Path):Group {
+  if (!isGroup(find(tree, parent))) { return tree; }
   const next = clone(tree);
-  (at(next, parent) as Group).children.push({ field: '', operator: '=', values: [] });
+  (find(next, parent) as Group).children.push({ field: '', operator: '=', values: [] });
   return next;
 }
 
 export function removeAt(tree:Group, path:Path):Group {
+  if (path.length === 0 || !find(tree, path)) { return tree; }
   const next = clone(tree);
-  (at(next, parentOf(path)) as Group).children.splice(last(path), 1);
+  (find(next, parentOf(path)) as Group).children.splice(last(path), 1);
   return prune(next);
 }
 
 export function setOp(tree:Group, path:Path, op:Op):Group {
+  if (!isGroup(find(tree, path))) { return tree; }
   const next = clone(tree);
-  (at(next, path) as Group).op = op;
+  (find(next, path) as Group).op = op;
   return next;
 }
 
 export function updateCondition(tree:Group, path:Path, patch:Partial<Condition>):Group {
+  const node = find(tree, path);
+  if (!node || isGroup(node)) { return tree; }
   const next = clone(tree);
-  Object.assign(at(next, path), patch);
+  Object.assign(find(next, path) as Condition, patch);
   return next;
 }
 
 export function canGroup(paths:Path[]):boolean {
   if (paths.length < 2) { return false; }
   const parent = parentOf(paths[0]).join('.');
-  if (!paths.every((p) => parentOf(p).join('.') === parent)) { return false; }
+  if (!paths.every((p) => p.length > 0 && parentOf(p).join('.') === parent)) { return false; }
   const idx = paths.map(last).sort((a, b) => a - b);
   return idx.every((v, i) => i === 0 || v === idx[i - 1] + 1);
 }
 
 export function group(tree:Group, paths:Path[]):Group {
-  if (!canGroup(paths)) { return tree; }
+  if (!canGroup(paths) || !paths.every((p) => find(tree, p))) { return tree; }
   const next = clone(tree);
-  const parent = at(next, parentOf(paths[0])) as Group;
+  const parent = find(next, parentOf(paths[0])) as Group;
   const idx = paths.map(last).sort((a, b) => a - b);
   const moved = parent.children.splice(idx[0], idx.length);
   parent.children.splice(idx[0], 0, { op: parent.op === 'and' ? 'or' : 'and', children: moved });
   return next;
 }
 
+// Note: ungrouping a group whose op differs from its parent's changes the query logic (UI concern).
 export function ungroup(tree:Group, path:Path):Group {
-  if (path.length === 0 || !isGroup(at(tree, path))) { return tree; }
+  if (path.length === 0 || !isGroup(find(tree, path))) { return tree; }
   const next = clone(tree);
-  const parent = at(next, parentOf(path)) as Group;
-  parent.children.splice(last(path), 1, ...(at(next, path) as Group).children);
+  const parent = find(next, parentOf(path)) as Group;
+  parent.children.splice(last(path), 1, ...(find(next, path) as Group).children);
   return next;
 }
 
+// Lists conditions only; groups are addressed by path (e.g. row.parentPath).
 export function rows(tree:Group):Row[] {
   const out:Row[] = [];
   const walk = (g:Group, path:Path) => g.children.forEach((child, i) => {
