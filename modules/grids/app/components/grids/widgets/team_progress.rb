@@ -28,25 +28,40 @@
 # See COPYRIGHT and LICENSE files for more details.
 #++
 
-module Homescreen
-  module Blocks
-    class ProjectsOverview < DashboardBlock
-      LIMIT = 8
+module Grids
+  module Widgets
+    # Workload and completion per project member, visible to everyone who can see the project's members.
+    class TeamProgress < Grids::WidgetComponent
+      param :project
 
       def title
-        I18n.t("homescreen.dashboard.projects.title")
+        I18n.t("project_dashboard.team.title")
       end
 
-      def projects
-        @projects ||= stats.projects.reorder(:name).limit(LIMIT).to_a
+      def wrapper_arguments
+        { full_width: true }
       end
 
-      def progress
-        @progress ||= stats.project_progress(projects.map(&:id))
+      def can_view?
+        current_user.allowed_in_project?(:view_members, project) &&
+          current_user.allowed_in_project?(:view_work_packages, project)
       end
 
-      def overdue_counts
-        @overdue_counts ||= stats.overdue_per_project(projects.map(&:id))
+      def members
+        @members ||= Projects::Metrics
+          .new([project.id], user: current_user)
+          .team(project.id, users)
+      end
+
+      def list_path(user)
+        filters = [{ n: "status", o: "o", v: [] }, { n: "assignee", o: "=", v: [user.id.to_s] }]
+        helpers.project_work_packages_path(project, query_props: { f: filters }.to_json)
+      end
+
+      private
+
+      def users
+        project.members.visible(current_user).includes(:principal).filter_map { it.principal if it.principal.is_a?(User) }.uniq
       end
     end
   end

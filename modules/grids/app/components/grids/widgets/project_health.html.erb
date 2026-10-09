@@ -1,0 +1,35 @@
+<%= widget_wrapper do |container| %>
+  <% if can_view? %>
+    <% container.with_body do %>
+      <div class="op-dashboard-health-header">
+        <%= render(Projects::HealthBadgeComponent.new(health: row.health)) %>
+        <% if project.status_code %>
+          <span class="project-status--name <%= project_status_css_class(project.status_code) %>">
+            <%= project_status_name(project.status_code) %>
+          </span>
+        <% end %>
+      </div>
+      <div class="op-dashboard-kpis">
+        <% cards.each do |card| %>
+          <% classes = class_names("op-dashboard-kpi", "-danger" => card[:danger] && card[:value].to_i.positive?) %>
+          <% content = capture do %>
+            <span class="op-dashboard-kpi--value"><%= card[:value] %></span>
+            <span class="op-dashboard-kpi--label"><%= t("project_dashboard.health_widget.#{card[:key]}") %></span>
+          <% end %>
+          <% if card[:href] %>
+            <%= link_to content, card[:href], class: classes, data: { "test-selector": "project-kpi-#{card[:key]}" } %>
+          <% else %>
+            <div class="<%= classes %>" data-test-selector="project-kpi-<%= card[:key] %>"><%= content %></div>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+  <% else %>
+    <% container.with_body(classes: "op-widget-box--empty") do %>
+      <%= render(Primer::Beta::Blankslate.new(test_selector: "project-health-no-permission")) do |component|
+            component.with_heading(tag: :h3).with_content(title)
+            component.with_description { t("grids.widgets.not_available") }
+          end %>
+    <% end %>
+  <% end %>
+<% end %>

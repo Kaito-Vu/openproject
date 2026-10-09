@@ -28,50 +28,34 @@
 # See COPYRIGHT and LICENSE files for more details.
 #++
 
-require "open_project/static/homescreen"
-require "open_project/static/links"
+require "spec_helper"
 
-OpenProject::Static::Homescreen.manage :blocks do |blocks|
-  blocks.push(
-    { name: "dashboard_kpis" },
-    { name: "portfolio_health" },
-    { name: "my_work" },
-    { name: "favorite_projects" },
-    { name: "status_distribution" },
-    { name: "recent_activity" },
-    {
-      name: "administration",
-      if: Proc.new { User.current.admin? }
-    }
-  )
-end
+RSpec.describe "Project overview health and team widgets" do
+  include TestSelectorFinders
 
-OpenProject::Static::Homescreen.manage :links do |links|
-  links.push(
-    {
-      label: :user_guides,
-      icon: "milestone",
-      url_key: :user_guides
-    },
-    {
-      label: :glossary,
-      icon: "op-glossar",
-      url_key: :glossary
-    },
-    {
-      label: :shortcuts,
-      icon: "op-shortcuts",
-      url_key: :shortcuts
-    },
-    {
-      label: :forums,
-      icon: "comment-discussion",
-      url_key: :forums
-    },
-    {
-      label: :impressum,
-      icon: "info",
-      url_key: :impressum
-    }
-  )
+  let(:project) { create(:project) }
+  let(:status) { create(:status) }
+  let(:member) { create(:user, firstname: "Dana", lastname: "Member", member_with_permissions: { project => permissions }) }
+  let(:permissions) { %i[view_project view_work_packages view_members] }
+
+  before do
+    create(:work_package, project:, status:, assigned_to: member, due_date: Time.zone.today - 2)
+    login_as member
+    visit project_path(project)
+  end
+
+  it "shows computed health, key figures and every member's workload" do
+    expect(page).to have_test_selector("project-health-risk")
+    expect(page).to have_test_selector("project-kpi-overdue", text: "1")
+    expect(page).to have_test_selector("team-progress-row", text: "Dana Member")
+  end
+
+  context "without permission to view members" do
+    let(:permissions) { %i[view_project view_work_packages] }
+
+    it "hides the team table but keeps the health figures" do
+      expect(page).to have_test_selector("team-progress-no-permission")
+      expect(page).to have_test_selector("project-kpi-open", text: "1")
+    end
+  end
 end

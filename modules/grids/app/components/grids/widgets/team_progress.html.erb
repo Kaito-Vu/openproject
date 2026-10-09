@@ -1,0 +1,60 @@
+<%= widget_wrapper do |container| %>
+  <% if !can_view? %>
+    <% container.with_body(classes: "op-widget-box--empty") do %>
+      <%= render(Primer::Beta::Blankslate.new(test_selector: "team-progress-no-permission")) do |component|
+            component.with_heading(tag: :h3).with_content(title)
+            component.with_description { t("grids.widgets.not_available") }
+          end %>
+    <% end %>
+  <% elsif members.empty? %>
+    <% container.with_body(classes: "op-widget-box--empty") do %>
+      <%= render(Primer::Beta::Blankslate.new(test_selector: "team-progress-empty")) do |component|
+            component.with_visual_icon(icon: :person)
+            component.with_heading(tag: :h3).with_content(t("project_dashboard.team.empty"))
+          end %>
+    <% end %>
+  <% else %>
+    <% container.with_body do %>
+      <div class="op-dashboard-table-wrapper">
+        <table class="op-dashboard-table">
+          <thead>
+            <tr>
+              <th scope="col"><%= t("project_dashboard.team.member") %></th>
+              <th scope="col" class="-number"><%= t("project_dashboard.team.open") %></th>
+              <th scope="col" class="-number"><%= t("project_dashboard.team.overdue") %></th>
+              <th scope="col" class="-number"><%= t("project_dashboard.team.closed_recent") %></th>
+              <th scope="col"><%= t("project_dashboard.team.progress") %></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% members.each do |member| %>
+              <tr data-test-selector="team-progress-row">
+                <td>
+                  <%= link_to list_path(member.user) do %>
+                    <%= render(Users::AvatarComponent.new(user: member.user, size: :mini, link: false, show_name: true)) %>
+                  <% end %>
+                </td>
+                <td class="-number"><%= member.open %></td>
+                <td class="-number <%= "op-dashboard-danger" if member.overdue.positive? %>"><%= member.overdue %></td>
+                <td class="-number"><%= member.closed_recent %></td>
+                <td>
+                  <% if member.progress %>
+                    <div class="op-dashboard-progress">
+                      <progress value="<%= member.progress %>" max="100" aria-label="<%= member.user.name %>"><%= member.progress %>%</progress>
+                      <span class="op-dashboard-meta"><%= member.progress %>%</span>
+                    </div>
+                  <% else %>
+                    <span class="op-dashboard-meta">–</span>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
+    <% container.with_footer do %>
+      <%= render(Primer::Beta::Link.new(href: helpers.project_members_path(project))) { t("project_dashboard.team.view_members") } %>
+    <% end %>
+  <% end %>
+<% end %>

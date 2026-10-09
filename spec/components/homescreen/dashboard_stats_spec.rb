@@ -66,33 +66,22 @@ RSpec.describe Homescreen::DashboardStats do
     end
   end
 
+  describe "#visible_projects" do
+    before { other_project }
+
+    it "returns every active project the user may see, member or not" do
+      other_project.update!(public: true)
+      user
+
+      expect(stats.visible_projects).to contain_exactly(project, other_project)
+    end
+  end
+
   describe "#projects" do
     before { other_project }
 
     it "returns only active projects the user is a member of" do
       expect(stats.projects).to contain_exactly(project)
-    end
-  end
-
-  describe "#project_progress" do
-    it "weights leaf done_ratio by estimated hours and ignores parents" do
-      parent = work_package
-      work_package(parent:, done_ratio: 100, estimated_hours: 1)
-      work_package(parent:, done_ratio: 0, estimated_hours: 3)
-      work_package(done_ratio: 100, estimated_hours: nil) # unestimated counts as 1h
-
-      # (100*1 + 0*3 + 100*1) / (1 + 3 + 1)
-      expect(stats.project_progress([project.id])).to eq(project.id => 40)
-    end
-  end
-
-  describe "#overdue_per_project" do
-    it "counts open overdue work packages of every assignee" do
-      work_package(due_date: today - 1)
-      work_package(due_date: today - 2, assigned_to: nil)
-      work_package(due_date: today - 1, status: closed_status)
-
-      expect(stats.overdue_per_project([project.id])).to eq(project.id => 2)
     end
   end
 

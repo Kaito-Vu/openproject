@@ -1,0 +1,55 @@
+<%= widget_wrapper do |container| %>
+  <% if projects.empty? %>
+    <% container.with_body(classes: "op-widget-box--empty") do %>
+      <%= render(Primer::Beta::Blankslate.new(test_selector: "portfolio-health-widget-empty")) do |component|
+            component.with_visual_icon(icon: :project)
+            component.with_heading(tag: :h3).with_content(t("homescreen.dashboard.portfolio.empty"))
+          end %>
+    <% end %>
+  <% else %>
+    <% container.with_body do %>
+      <div class="op-dashboard-table-wrapper">
+        <table class="op-dashboard-table">
+          <thead>
+            <tr>
+              <th scope="col"><%= t("homescreen.dashboard.portfolio.project") %></th>
+              <th scope="col"><%= t("homescreen.dashboard.portfolio.health") %></th>
+              <th scope="col"><%= t("homescreen.dashboard.portfolio.progress") %></th>
+              <th scope="col" class="-number"><%= t("homescreen.dashboard.portfolio.open") %></th>
+              <th scope="col" class="-number"><%= t("homescreen.dashboard.portfolio.overdue") %></th>
+              <th scope="col" class="-number"><%= t("homescreen.dashboard.portfolio.unassigned") %></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% projects.each do |project| %>
+              <% row = metrics[project.id] %>
+              <tr data-test-selector="portfolio-health-row">
+                <td>
+                  <%= render(Primer::Beta::Link.new(font_weight: :bold, href: helpers.project_path(project))) { project.name } %>
+                  <% if project.status_code %>
+                    <span class="project-status--name <%= project_status_css_class(project.status_code) %>">
+                      <%= project_status_name(project.status_code) %>
+                    </span>
+                  <% end %>
+                </td>
+                <td><%= render(Projects::HealthBadgeComponent.new(health: row.health)) %></td>
+                <td>
+                  <div class="op-dashboard-progress">
+                    <progress value="<%= row.progress %>" max="100" aria-label="<%= t("homescreen.dashboard.portfolio.progress") %>"><%= row.progress %>%</progress>
+                    <span class="op-dashboard-meta"><%= row.progress %>%</span>
+                  </div>
+                </td>
+                <td class="-number"><%= row.open %></td>
+                <td class="-number <%= "op-dashboard-danger" if row.overdue.positive? %>"><%= row.overdue %></td>
+                <td class="-number"><%= row.unassigned %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
+    <% container.with_footer do %>
+      <%= render(Primer::Beta::Link.new(href: helpers.projects_path)) { t("homescreen.dashboard.portfolio.view_all", count: total) } %>
+    <% end %>
+  <% end %>
+<% end %>

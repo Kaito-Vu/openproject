@@ -28,50 +28,21 @@
 # See COPYRIGHT and LICENSE files for more details.
 #++
 
-require "open_project/static/homescreen"
-require "open_project/static/links"
+module Projects
+  # Badge for the computed project health from Projects::Metrics.
+  class HealthBadgeComponent < ApplicationComponent
+    SCHEMES = { healthy: :success, attention: :attention, risk: :danger, no_data: :secondary }.freeze
 
-OpenProject::Static::Homescreen.manage :blocks do |blocks|
-  blocks.push(
-    { name: "dashboard_kpis" },
-    { name: "portfolio_health" },
-    { name: "my_work" },
-    { name: "favorite_projects" },
-    { name: "status_distribution" },
-    { name: "recent_activity" },
-    {
-      name: "administration",
-      if: Proc.new { User.current.admin? }
-    }
-  )
-end
+    def initialize(health:)
+      super()
 
-OpenProject::Static::Homescreen.manage :links do |links|
-  links.push(
-    {
-      label: :user_guides,
-      icon: "milestone",
-      url_key: :user_guides
-    },
-    {
-      label: :glossary,
-      icon: "op-glossar",
-      url_key: :glossary
-    },
-    {
-      label: :shortcuts,
-      icon: "op-shortcuts",
-      url_key: :shortcuts
-    },
-    {
-      label: :forums,
-      icon: "comment-discussion",
-      url_key: :forums
-    },
-    {
-      label: :impressum,
-      icon: "info",
-      url_key: :impressum
-    }
-  )
+      @health = health
+    end
+
+    def call
+      render(Primer::Beta::Label.new(scheme: SCHEMES.fetch(@health), test_selector: "project-health-#{@health}")) do
+        I18n.t("project_dashboard.health.#{@health}")
+      end
+    end
+  end
 end

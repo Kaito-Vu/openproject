@@ -3461,6 +3461,28 @@ vi:
       favoured: Đánh dấu View này là yêu thích và thêm vào thanh bên View đã lưu ở bên trái.
       project: "%{plural} luôn gắn liền với một dự án. Ở đây bạn chỉ có thể chọn các dự án có mô-đun %{plural} đang hoạt động. Sau khi tạo %{singular} bạn có thể thêm các Work package từ các dự án khác vào đó.\n"
       public: Công khai view này để người dùng khác có thể truy cập. Người dùng có quyền 'Quản lý view công khai' có thể sửa hoặc xóa query công khai. Điều này không ảnh hưởng đến việc hiển thị các work package trong view; tùy theo quyền của mình, mỗi người có thể thấy kết quả khác nhau.
+  project_dashboard:
+    health:
+      healthy: Tốt
+      attention: Cần chú ý
+      risk: Nguy cơ
+      no_data: Chưa có dữ liệu
+    health_widget:
+      title: Sức khỏe dự án
+      progress: Tiến độ
+      open: Công việc đang mở
+      overdue: Quá hạn
+      unassigned: Chưa giao
+      schedule: Tiến độ theo kế hoạch
+    team:
+      title: Tiến độ thành viên
+      member: Thành viên
+      open: Đang mở
+      overdue: Quá hạn
+      closed_recent: Đã đóng (30 ngày)
+      progress: Hoàn thành
+      empty: Dự án chưa có thành viên
+      view_members: Xem tất cả thành viên
   homescreen:
     dashboard:
       kpis:
@@ -3468,7 +3490,7 @@ vi:
         assigned: Được giao cho tôi
         overdue: Quá hạn
         due_soon: Đến hạn trong 7 ngày tới
-        projects: Dự án của tôi
+        at_risk: Dự án cần chú ý
       my_work:
         title: Công việc và deadline của tôi
         overdue: Quá hạn
@@ -3476,11 +3498,16 @@ vi:
         soon: Đến hạn trong tuần
         empty: Không có công việc nào của bạn sắp đến hạn
         view_all: Xem tất cả công việc đang mở của tôi
-      projects:
-        title: Tiến độ dự án
+      portfolio:
+        title: Sức khỏe các dự án
+        project: Dự án
+        health: Sức khỏe
         progress: Tiến độ
-        overdue: "%{count} quá hạn"
-        empty: Bạn chưa tham gia dự án nào đang hoạt động
+        open: Đang mở
+        overdue: Quá hạn
+        unassigned: Chưa giao
+        empty: Chưa có dự án nào bạn có thể xem
+        view_all: Xem tất cả dự án (%{count})
       status:
         title: Công việc của tôi theo trạng thái
         empty: Chưa có công việc nào được giao cho bạn

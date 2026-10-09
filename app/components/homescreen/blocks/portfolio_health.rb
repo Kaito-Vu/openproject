@@ -28,50 +28,36 @@
 # See COPYRIGHT and LICENSE files for more details.
 #++
 
-require "open_project/static/homescreen"
-require "open_project/static/links"
+module Homescreen
+  module Blocks
+    # All visible projects side by side, worst health first.
+    class PortfolioHealth < DashboardBlock
+      include ProjectStatusHelper
 
-OpenProject::Static::Homescreen.manage :blocks do |blocks|
-  blocks.push(
-    { name: "dashboard_kpis" },
-    { name: "portfolio_health" },
-    { name: "my_work" },
-    { name: "favorite_projects" },
-    { name: "status_distribution" },
-    { name: "recent_activity" },
-    {
-      name: "administration",
-      if: Proc.new { User.current.admin? }
-    }
-  )
-end
+      LIMIT = 15
 
-OpenProject::Static::Homescreen.manage :links do |links|
-  links.push(
-    {
-      label: :user_guides,
-      icon: "milestone",
-      url_key: :user_guides
-    },
-    {
-      label: :glossary,
-      icon: "op-glossar",
-      url_key: :glossary
-    },
-    {
-      label: :shortcuts,
-      icon: "op-shortcuts",
-      url_key: :shortcuts
-    },
-    {
-      label: :forums,
-      icon: "comment-discussion",
-      url_key: :forums
-    },
-    {
-      label: :impressum,
-      icon: "info",
-      url_key: :impressum
-    }
-  )
+      def title
+        I18n.t("homescreen.dashboard.portfolio.title")
+      end
+
+      def wrapper_arguments
+        { full_width: true }
+      end
+
+      def metrics
+        stats.portfolio_metrics
+      end
+
+      def total
+        @total ||= stats.visible_projects.count
+      end
+
+      def projects
+        @projects ||= Project.where(id: stats.portfolio_ids).to_a.sort_by do |project|
+          row = metrics[project.id]
+          [-Projects::Metrics::HEALTH_ORDER.index(row.health), -row.overdue, project.name.downcase]
+        end.first(LIMIT)
+      end
+    end
+  end
 end

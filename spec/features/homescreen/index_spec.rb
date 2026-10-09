@@ -59,7 +59,7 @@ RSpec.describe "Homescreen", "index" do
     it "shows the overview cards, the user's deadlines and the project progress" do
       expect(page).to have_test_selector("dashboard-kpi-overdue", text: "1")
       expect(page).to have_test_selector("my-work-overdue", text: "Late one")
-      expect(page).to have_test_selector("projects-overview-row", text: project.name)
+      expect(page).to have_test_selector("portfolio-health-row", text: project.name)
       expect(page).to have_test_selector("status-distribution-row")
     end
   end

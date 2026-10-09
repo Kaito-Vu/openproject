@@ -28,33 +28,44 @@
 # See COPYRIGHT and LICENSE files for more details.
 #++
 
-module Homescreen
-  module Blocks
-    class DashboardKpis < DashboardBlock
+module Grids
+  module Widgets
+    # Computed health and key figures of one project, shown at the top of its overview.
+    class ProjectHealth < Grids::WidgetComponent
+      include ProjectStatusHelper
+
+      param :project
+
       def title
-        I18n.t("homescreen.dashboard.kpis.title")
+        I18n.t("project_dashboard.health_widget.title")
       end
 
       def wrapper_arguments
         { full_width: true }
       end
 
-      # Projects whose computed health is attention or risk.
-      def at_risk_count
-        stats.portfolio_ids.count { %i[attention risk].include?(stats.portfolio_metrics[it].health) }
+      def can_view?
+        current_user.allowed_in_project?(:view_work_packages, project)
       end
 
-      # @return [Array<Hash>] key, value, href and optional danger flag per card
+      def row
+        @row ||= Projects::Metrics.new([project.id], user: current_user)[project.id]
+      end
+
+      def list_path(*filters)
+        helpers.project_work_packages_path(project, query_props: { f: filters }.to_json)
+      end
+
+      # @return [Array<Hash>] key, value, optional href and danger flag per card
       def cards
-        today = stats.today
+        open = { n: "status", o: "o", v: [] }
         [
-          { key: :assigned, value: stats.assigned_open.count, href: wp_list_path(*my_open_filters) },
-          { key: :overdue, value: stats.overdue.count, danger: true,
-            href: wp_list_path(*my_open_filters, due_between_filter(nil, today - 1)) },
-          { key: :due_soon,
-            value: stats.assigned_open.where(due_date: today..stats.due_soon_until).count,
-            href: wp_list_path(*my_open_filters, due_between_filter(today, stats.due_soon_until)) },
-          { key: :at_risk, value: at_risk_count, href: helpers.projects_path }
+          { key: :progress, value: "#{row.progress}%" },
+          { key: :open, value: row.open, href: list_path(open) },
+          { key: :overdue, value: row.overdue, danger: true,
+            href: list_path(open, { n: "dueDate", o: "<>d", v: ["", (Time.zone.today - 1).iso8601] }) },
+          { key: :unassigned, value: row.unassigned, href: list_path(open, { n: "assignee", o: "!*", v: [] }) },
+          { key: :schedule, value: row.planned ? "#{row.planned}%" : "–" }
         ]
       end
     end

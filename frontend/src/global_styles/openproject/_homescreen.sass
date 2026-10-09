@@ -99,3 +99,44 @@
   display: flex
   justify-content: space-between
   gap: var(--base-size-12)
+
+.op-dashboard-health-header
+  display: flex
+  align-items: center
+  gap: var(--base-size-12)
+  margin-bottom: var(--base-size-12)
+
+.op-dashboard-table-wrapper
+  overflow-x: auto
+
+.op-dashboard-table
+  width: 100%
+  border-collapse: collapse
+
+  th, td
+    padding: var(--base-size-8) var(--base-size-12)
+    text-align: left
+    vertical-align: middle
+    border-bottom: 1px solid var(--borderColor-muted)
+    white-space: nowrap
+
+  th
+    color: var(--fgColor-muted)
+    font-size: var(--text-body-size-small)
+    font-weight: var(--base-text-weight-semibold)
+
+  .-number
+    text-align: right
+
+.op-dashboard-progress
+  display: flex
+  align-items: center
+  gap: var(--base-size-8)
+  min-width: 140px
+
+  progress
+    flex: 1
+
+.op-dashboard-danger
+  color: var(--fgColor-danger)
+  font-weight: var(--base-text-weight-semibold)

@@ -33,6 +33,7 @@ module Homescreen
   # Everything is scoped to what `user` may see.
   class DashboardStats
     DUE_SOON_DAYS = 7
+    PORTFOLIO_LIMIT = 100
 
     attr_reader :user, :today
 
@@ -69,36 +70,25 @@ module Homescreen
       Project.visible(user).active.where(id: Member.where(user_id: user.id).select(:project_id))
     end
 
+    # Every active project the user may see: the portfolio shown on the homescreen.
+    def visible_projects
+      Project.visible(user).active.workspace_type("project")
+    end
+
+    # ponytail: capped at PORTFOLIO_LIMIT projects (by name), page or pre-aggregate beyond that.
+    def portfolio_ids
+      @portfolio_ids ||= visible_projects.reorder(:name).limit(PORTFOLIO_LIMIT).pluck(:id)
+    end
+
+    def portfolio_metrics
+      @portfolio_metrics ||= Projects::Metrics.new(portfolio_ids, user:, today:)
+    end
+
     # Work package count per status for the user's assigned work, ordered like the status list.
     # @return [Array<[Status, Integer]>]
     def status_distribution
       counts = WorkPackage.visible(user).where(assigned_to_id: user.id).group(:status_id).count
       Status.where(id: counts.keys).order(:position).map { |status| [status, counts[status.id]] }
-    end
-
-    # Progress per project id in percent (0-100), the average of the leaf work packages'
-    # done_ratio weighted by estimated hours (1 when there is no estimate).
-    # Parents are left out because their value is derived from their children.
-    # @return [Hash{Integer => Integer}]
-    def project_progress(project_ids)
-      weight = "COALESCE(NULLIF(work_packages.estimated_hours, 0), 1)"
-      leaves = WorkPackage.where.not(id: WorkPackage.where.not(parent_id: nil).select(:parent_id))
-
-      leaves
-        .visible(user)
-        .joins(:status)
-        .where(project_id: project_ids, statuses: { excluded_from_totals: false })
-        .group(:project_id)
-        .pluck(:project_id,
-               Arel.sql("SUM(COALESCE(work_packages.done_ratio, 0) * #{weight}) / SUM(#{weight})"))
-        .to_h { |id, percent| [id, percent.round] }
-    end
-
-    # Overdue open work package count per project id (all assignees).
-    def overdue_per_project(project_ids)
-      WorkPackage.visible(user).with_status_open
-        .where(project_id: project_ids, due_date: ...today)
-        .group(:project_id).count
     end
 
     def recent_events(limit: 8)
