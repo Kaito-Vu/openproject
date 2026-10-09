@@ -50,7 +50,8 @@ RSpec.describe "Work item queries pages", type: :rails_request do
         get path
         expect(response).to have_http_status(:ok)
         expect(response.body).to include("opce-work-item-query-list")
-        expect(response.body).to include(%(href="#{path}")).or include(%(href="http://test.host#{path}"))
+        menu = path == "/queries" ? ".op-app-header" : "#main-menu"
+        expect(Capybara.string(response.body)).to have_css("#{menu} a[href$='#{path}']")
       end
     end
   end
@@ -65,14 +66,27 @@ RSpec.describe "Work item queries pages", type: :rails_request do
   end
 
   context "when anonymous and login is not required" do
-    before { allow(Setting).to receive(:login_required?).and_return(false) }
+    shared_let(:public_project) { create(:public_project) }
 
-    it "does not show the Queries menu item on a home page" do
+    before do
+      allow(Setting).to receive(:login_required?).and_return(false)
+      create(:anonymous_role, permissions: %i[view_project view_work_packages])
+    end
+
+    it "does not show the Queries menu item globally" do
       get "/"
       expect(response).to have_http_status(:ok)
-      expect(response.body).to include("op-app-header")
-      expect(response.body).not_to include("work-item-queries-menu-item")
-      expect(response.body).not_to include(%(href="/queries"))
+      page = Capybara.string(response.body)
+      expect(page).to have_css(".op-app-header")
+      expect(page).to have_no_css(".op-app-header a[href='/queries']")
+    end
+
+    it "does not show the Queries menu item in a public project" do
+      get "/projects/#{public_project.identifier}"
+      expect(response).to have_http_status(:ok)
+      page = Capybara.string(response.body)
+      expect(page).to have_css("#main-menu")
+      expect(page).to have_no_css("#main-menu a[href$='/queries']")
     end
   end
 

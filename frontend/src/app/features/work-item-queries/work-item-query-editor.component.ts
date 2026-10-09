@@ -202,13 +202,13 @@ export class WorkItemQueryEditorComponent implements OnInit, OnDestroy {
   toggleOp(row:Row):void { this.tree.update((t) => setOp(t, row.parentPath, row.parentOp === 'and' ? 'or' : 'and')); }
 
   save():void {
+    if (this.saving()) { return; }
     const name = this.name() || (window.prompt('Query name') ?? '');
     if (!name) { return; }
     const item = buildSavePayload(
       { name, mode: this.mode(), project_id: this.acrossProjects() ? null : this.projectId, tree: this.tree() },
       this.currentId() != null ? this.lastLoaded : null,
     );
-    if (this.saving()) { return; }
     this.saving.set(true);
     const token = this.loadToken;
     const id = this.currentId();
@@ -216,9 +216,9 @@ export class WorkItemQueryEditorComponent implements OnInit, OnDestroy {
     req.pipe(finalize(() => { this.saving.set(false); })).subscribe({
       next: (saved) => {
         const next = applySaved(
-          { currentId: this.currentId(), lastLoaded: this.lastLoaded, loadToken: this.loadToken }, token, saved,
+          { currentId: this.currentId(), lastLoaded: this.lastLoaded, loadToken: this.loadToken, name: this.name() }, token, saved,
         );
-        this.name.set(name);
+        this.name.set(next.name);
         const wasNew = this.currentId() == null;
         this.currentId.set(next.currentId);
         if (wasNew && next.currentId != null) {

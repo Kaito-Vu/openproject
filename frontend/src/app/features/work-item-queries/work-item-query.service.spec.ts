@@ -58,13 +58,17 @@ describe('applySaved', () => {
   const saved = { id: 7, name: 's' } as WorkItemQueryItem;
 
   it('applies the response when the editor has not loaded anything else', () => {
-    const out = applySaved({ currentId: null, lastLoaded: null, loadToken: 2 }, 2, saved);
+    const out = applySaved({ currentId: null, lastLoaded: null, loadToken: 2, name: '' }, 2, saved);
     expect(out.currentId).toBe(7);
+    expect(out.name).toBe('s');
     expect(out.lastLoaded).toBe(saved);
   });
 
   it('ignores the response when another query was loaded meanwhile', () => {
-    const state = { currentId: 3, lastLoaded: null, loadToken: 3 };
-    expect(applySaved(state, 2, saved)).toBe(state);
+    const state = { currentId: 3, lastLoaded: null, loadToken: 3, name: 'B' };
+    const out = applySaved(state, 2, saved);
+    expect(out).toBe(state);
+    expect(out.name).toBe('B');
+    expect(out.currentId).toBe(3);
   });
 });
