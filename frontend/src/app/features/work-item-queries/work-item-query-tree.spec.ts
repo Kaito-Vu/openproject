@@ -26,6 +26,7 @@
 //++
 
 import {
+  pruneIncomplete,
   addCondition, canGroup, emptyTree, group, Group, removeAt, rows, setOp, ungroup, updateCondition,
 } from './work-item-query-tree';
 
@@ -160,5 +161,27 @@ describe('work item query tree', () => {
       const tree = t();
       [[0], [9]].forEach((p) => expect(addCondition(tree, p)).toBe(tree));
     });
+  });
+});
+
+describe('pruneIncomplete', () => {
+  const done = (field:string) => ({ field, operator: '=', values: ['1'] });
+  const blank = { field: '', operator: '=', values: [] as string[] };
+
+  it('drops conditions without a field and keeps complete ones', () => {
+    const t:Group = { op: 'and', children: [blank, done('status')] };
+    expect(pruneIncomplete(t).children).toEqual([done('status')]);
+  });
+
+  it('drops groups that become empty and keeps the root', () => {
+    const t:Group = { op: 'and', children: [{ op: 'or', children: [blank] }] };
+    expect(pruneIncomplete(t)).toEqual({ op: 'and', children: [] });
+  });
+
+  it('keeps nested groups with complete conditions and does not mutate the input', () => {
+    const t:Group = { op: 'and', children: [blank, { op: 'or', children: [done('type'), blank] }] };
+    const before = JSON.stringify(t);
+    expect(pruneIncomplete(t)).toEqual({ op: 'and', children: [{ op: 'or', children: [done('type')] }] });
+    expect(JSON.stringify(t)).toBe(before);
   });
 });

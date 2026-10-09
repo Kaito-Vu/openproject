@@ -1,0 +1,6 @@
+:host { display: contents; }
+.cell { min-width: 0; }
+.values { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.values .wiq-control { flex: 1 1 140px; }
+.sep { color: var(--wiq-fg-muted); }
+.error { color: var(--wiq-danger); font-size: 12px; }

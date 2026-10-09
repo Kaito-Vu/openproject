@@ -38,6 +38,7 @@ import { groupAndFilter, initials } from './work-item-query-list';
   standalone: true,
   imports: [FormsModule, DatePipe],
   templateUrl: './work-item-query-list.component.html',
+  styleUrls: ['./work-item-queries.shared.css', './work-item-query-list.component.css'],
 })
 export class WorkItemQueryListComponent implements OnInit {
   @Input() projectId:number|null = null;
@@ -106,7 +107,13 @@ export class WorkItemQueryListComponent implements OnInit {
     });
   }
 
-  open(item:WorkItemQueryItem):void { window.location.href = `${this.editorUrl}?id=${item.id!}`; }
+  href(item:WorkItemQueryItem):string { return `${this.editorUrl}?id=${item.id!}`; }
+
+  // Stable colour per person for the initials avatar.
+  avatarColor(name?:string):string {
+    const hue = [...(name ?? '')].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 360, 7);
+    return `hsl(${hue} 45% 40%)`;
+  }
 
   newQuery():void { window.location.href = this.editorUrl; }
 

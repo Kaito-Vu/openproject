@@ -1,88 +1,182 @@
-<nav aria-label="Breadcrumb">
-  <a [href]="listUrl">Queries</a> &gt; <span aria-current="page">{{ name() || 'New query' }}</span>
-</nav>
+<div class="wiq">
+  <nav class="wiq-breadcrumb" aria-label="Breadcrumb">
+    <a [href]="listUrl">Queries</a>
+    <span aria-hidden="true">/</span>
+    <span aria-current="page">{{ name() || 'New query' }}</span>
+  </nav>
 
-<div class="toolbar-items">
-  <button type="button" class="button -primary" (click)="run()">Run query</button>
-  <button type="button" class="button" (click)="save()" [disabled]="saving()">Save query</button>
-  <button type="button" class="button" (click)="revert()">Revert</button>
-  <button type="button" class="button" (click)="exportCsv()" [disabled]="results().length === 0"
-    title="Exports the rows loaded by the last run (up to 500)">Export CSV (loaded rows)</button>
-  <button type="button" class="button" (click)="copyUrl()" [disabled]="currentId() === null">Copy URL</button>
-  <button type="button" class="button" (click)="group()" [disabled]="selected().size < 2">Group</button>
-  <button type="button" class="button" (click)="showColumns.set(!showColumns())" [attr.aria-expanded]="showColumns()">Column options</button>
-</div>
-
-@if (showColumns()) {
-  <fieldset class="op-wiq-columns">
-    <legend>Columns</legend>
-    @for (c of catalog; track c.id) {
-      <label>
-        <input type="checkbox" [checked]="columns().includes(c.id)" (change)="toggleColumn(c.id, $any($event.target).checked)" />
-        {{ c.label }}
-      </label>
-    }
-  </fieldset>
-}
-
-<span role="status">@switch (copyState()) { @case ('copied') { Copied } @case ('failed') { Copy failed - clipboard not available } }</span>
-
-@if (loading()) {
-  <p>Loading…</p>
-}
-
-@if (error(); as message) {
-  <div class="op-toast -error">{{ message }}</div>
-}
-
-<label>
-  Type of query
-  <select [(ngModel)]="mode">
-    <option value="flat">Flat</option>
-    <option value="tree">Tree</option>
-  </select>
-</label>
-
-<label [title]="hasOwnProject() ? '' : 'Neither the query nor this page has a project'">
-  <input type="checkbox" [(ngModel)]="acrossProjects" [disabled]="!hasOwnProject()" />
-  Query across projects
-</label>
-
-<label [title]="publicDenied() ? 'You are not allowed to share queries with everyone' : ''">
-  <input type="checkbox" [(ngModel)]="isPublic" [disabled]="publicDenied()" />
-  Shared with everyone
-</label>
-
-@for (row of rows; track row.path.join('.')) {
-  <div class="op-wiq-row" [style.margin-left.px]="row.depth * 24" [style.border-left]="row.depth ? '2px solid #ccc' : 'none'">
-    @if (row.indexInParent > 0) {
-      <select aria-label="Operator for clause" [ngModel]="row.parentOp" (ngModelChange)="toggleOp(row)">
-        <option value="and">And</option>
-        <option value="or">Or</option>
-      </select>
-    }
+  <header class="wiq-header">
     <input
-      type="checkbox"
-      aria-label="Select clause"
-      [checked]="selected().has(row.path.join('.'))"
-      (change)="toggleSelected(row.path, $any($event.target).checked)"
+      class="wiq-title"
+      type="text"
+      aria-label="Query name"
+      placeholder="Untitled query"
+      maxlength="255"
+      [ngModel]="name()"
+      (ngModelChange)="name.set($event)"
     />
-    <op-work-item-condition-row
-      [condition]="row.node"
-      [projectId]="queryProjectId()"
-      (changed)="update(row.path, $event)"
-      (removed)="remove(row.path)"
-    />
-    @if (row.depth > 0) {
-      <a href="#" (click)="$event.preventDefault(); ungroup(row.parentPath)">Ungroup</a>
+
+    <div class="wiq-actions">
+      <button type="button" class="wiq-btn wiq-btn--primary" (click)="run()">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 2.5v11a.5.5 0 0 0 .77.42l8.5-5.5a.5.5 0 0 0 0-.84l-8.5-5.5A.5.5 0 0 0 4 2.5z"/></svg>
+        Run query
+      </button>
+      <button type="button" class="wiq-btn" (click)="save()" [disabled]="saving()">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 2.5h9l2 2v9h-11z"/><path d="M5 2.5v3.5h5V2.5M5 13.5V9.5h6v4"/></svg>
+        Save query
+      </button>
+      <button type="button" class="wiq-btn wiq-btn--ghost" (click)="revert()">Revert</button>
+      <span class="wiq-sep" aria-hidden="true"></span>
+      <button type="button" class="wiq-btn wiq-btn--ghost" (click)="showColumns.set(!showColumns())" [attr.aria-expanded]="showColumns()">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2" y="2.5" width="12" height="11" rx="1.5"/><path d="M6 2.5v11M10 2.5v11"/></svg>
+        Column options
+      </button>
+      <button type="button" class="wiq-btn wiq-btn--ghost" (click)="exportCsv()" [disabled]="results().length === 0"
+        title="Exports the rows loaded by the last run (up to 500)">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2v8M4.5 7 8 10.5 11.5 7M2.5 13.5h11"/></svg>
+        Export CSV (loaded rows)
+      </button>
+      <button type="button" class="wiq-btn wiq-btn--ghost" (click)="copyUrl()" [disabled]="currentId() === null">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10.5 5.5v-2a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2"/></svg>
+        Copy URL
+      </button>
+      <span class="wiq-status" role="status">@switch (copyState()) { @case ('copied') { Copied } @case ('failed') { Copy failed - clipboard not available } }</span>
+    </div>
+  </header>
+
+  @if (error(); as message) {
+    <div class="wiq-alert" role="alert">{{ message }}</div>
+  }
+
+  <section class="wiq-card wiq-settings" aria-label="Query settings">
+    <div class="wiq-field">
+      <span class="wiq-label" id="wiq-type-label">Type of query</span>
+      <div class="wiq-segmented" role="group" aria-labelledby="wiq-type-label">
+        <button type="button" [class.is-active]="mode() === 'flat'" [attr.aria-pressed]="mode() === 'flat'" (click)="mode.set('flat')">Flat list</button>
+        <button type="button" [class.is-active]="mode() === 'tree'" [attr.aria-pressed]="mode() === 'tree'" (click)="mode.set('tree')">Tree</button>
+      </div>
+    </div>
+
+    <label class="wiq-check" [title]="hasOwnProject() ? '' : 'Neither the query nor this page has a project'">
+      <input type="checkbox" [ngModel]="acrossProjects()" (ngModelChange)="acrossProjects.set($event)" [disabled]="!hasOwnProject()" />
+      Query across projects
+    </label>
+
+    <label class="wiq-check" [title]="publicDenied() ? 'You are not allowed to share queries with everyone' : ''">
+      <input type="checkbox" [ngModel]="isPublic()" (ngModelChange)="isPublic.set($event)" [disabled]="publicDenied()" />
+      Shared with everyone
+    </label>
+  </section>
+
+  @if (showColumns()) {
+    <fieldset class="wiq-columns">
+      <legend>Columns</legend>
+      <div class="wiq-columns-list">
+        @for (c of catalog; track c.id) {
+          <label class="wiq-pill">
+            <input type="checkbox" [checked]="columns().includes(c.id)" (change)="toggleColumn(c.id, $any($event.target).checked)" />
+            {{ c.label }}
+          </label>
+        }
+      </div>
+    </fieldset>
+  }
+
+  <section class="wiq-card" aria-labelledby="wiq-filters-title">
+    <div class="wiq-card-head">
+      <h2 id="wiq-filters-title">Filters for top level work items</h2>
+      <span class="wiq-spacer"></span>
+      <button type="button" class="wiq-btn wiq-btn--small" (click)="group()" [disabled]="selected().size < 2"
+        title="Select two or more clauses to group them">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M5 2.5H3.5a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1H5M11 2.5h1.5a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H11"/></svg>
+        Group
+      </button>
+    </div>
+    <p class="wiq-hint">Combine clauses with And / Or. Select two or more clauses and press Group to nest them.</p>
+
+    <div class="wiq-rows">
+      <div class="wiq-grid-head" aria-hidden="true">
+        <span></span><span>And/Or</span><span>Field</span><span>Operator</span><span>Value</span><span></span>
+      </div>
+
+      @for (row of rows; track row.path.join('.')) {
+        <div class="wiq-row" [class.is-nested]="row.depth > 0" [class.is-selected]="selected().has(row.path.join('.'))"
+          [style.margin-left.px]="row.depth * 20">
+          <span class="wiq-pick">
+            <input type="checkbox" aria-label="Select clause" [checked]="selected().has(row.path.join('.'))"
+              (change)="toggleSelected(row.path, $any($event.target).checked)" />
+          </span>
+
+          <span class="wiq-andor">
+            @if (row.indexInParent > 0) {
+              <select class="wiq-control" aria-label="Operator for clause" [ngModel]="row.parentOp" (ngModelChange)="toggleOp(row)">
+                <option value="and">And</option>
+                <option value="or">Or</option>
+              </select>
+            } @else {
+              <span class="wiq-where">{{ row.depth > 0 ? 'Where' : '' }}</span>
+            }
+          </span>
+
+          <op-work-item-condition-row
+            [condition]="row.node"
+            [projectId]="queryProjectId()"
+            (changed)="update(row.path, $event)"
+          />
+
+          <span class="wiq-row-actions">
+            @if (row.depth > 0) {
+              <button type="button" class="wiq-link-btn" (click)="ungroup(row.parentPath)">Ungroup</button>
+            }
+            <button type="button" class="wiq-icon-btn" aria-label="Add clause below" title="Add clause" (click)="add(row.parentPath)">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg>
+            </button>
+            <button type="button" class="wiq-icon-btn is-danger" aria-label="Remove clause" title="Remove clause" (click)="remove(row.path)">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+            </button>
+          </span>
+        </div>
+      }
+    </div>
+
+    <div class="wiq-add-row">
+      <button type="button" class="wiq-btn wiq-btn--small" (click)="add()">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg>
+        Add new clause
+      </button>
+    </div>
+  </section>
+
+  <section class="wiq-card" aria-labelledby="wiq-results-title">
+    <div class="wiq-card-head">
+      <h2 id="wiq-results-title">Results</h2>
+      @if (ran()) {
+        <span class="wiq-chip">{{ total() }} work item{{ total() === 1 ? '' : 's' }}</span>
+      }
+      <span class="wiq-spacer"></span>
+      @if (loading()) {
+        <span class="wiq-running" role="status">Running…</span>
+      }
+    </div>
+
+    @if (total() > results().length) {
+      <p class="wiq-notice">Showing the first {{ results().length }} of {{ total() }} results</p>
     }
-  </div>
-}
 
-<a href="#" (click)="$event.preventDefault(); add()">Add new clause</a>
-
-@if (total() > results().length) {
-  <p>Showing the first {{ results().length }} of {{ total() }} results</p>
-}
-
-<op-work-item-results [rows]="results()" [mode]="mode()" [columns]="columns()" />
+    @if (results().length > 0) {
+      <op-work-item-results [rows]="results()" [mode]="mode()" [columns]="columns()" />
+    } @else if (ran() && !loading()) {
+      <div class="wiq-empty">
+        <svg width="40" height="40" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 14 14"/></svg>
+        <strong>No matching work items</strong>
+        <span>Adjust the filters and run the query again.</span>
+      </div>
+    } @else if (!ran()) {
+      <div class="wiq-empty">
+        <svg width="40" height="40" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 2.5v11a.5.5 0 0 0 .77.42l8.5-5.5a.5.5 0 0 0 0-.84l-8.5-5.5A.5.5 0 0 0 4 2.5z"/></svg>
+        <strong>Run the query to see results</strong>
+        <span>Choose a field, an operator and a value, then press Run query.</span>
+      </div>
+    }
+  </section>
+</div>

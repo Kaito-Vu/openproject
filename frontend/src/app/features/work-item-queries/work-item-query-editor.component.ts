@@ -31,7 +31,7 @@ import { Component, ElementRef, Input, OnDestroy, OnInit, computed, inject, sign
 import { FormsModule } from '@angular/forms';
 import { populateInputsFromDataset } from 'core-app/shared/components/dataset-inputs';
 import {
-  addCondition, Condition, emptyTree, group, Group, Path, removeAt, Row, rows, setOp, ungroup, updateCondition,
+  addCondition, Condition, emptyTree, group, Group, Path, pruneIncomplete, removeAt, Row, rows, setOp, ungroup, updateCondition,
 } from './work-item-query-tree';
 import {
   applySaved, buildSavePayload, resolveProjectId, WorkItemQueryItem, WorkItemQueryService,
@@ -57,6 +57,7 @@ function errorMessage(err:HttpErrorResponse, fallback:string):string {
   standalone: true,
   imports: [FormsModule, WorkItemResultsComponent, WorkItemConditionRowComponent],
   templateUrl: './work-item-query-editor.component.html',
+  styleUrls: ['./work-item-queries.shared.css', './work-item-query-editor.component.css'],
 })
 export class WorkItemQueryEditorComponent implements OnInit, OnDestroy {
   @Input() projectId:number|null = null;
@@ -109,6 +110,9 @@ export class WorkItemQueryEditorComponent implements OnInit, OnDestroy {
 
   readonly total = signal(0);
 
+  // True once a run has finished, to tell "not run yet" from "no matches".
+  readonly ran = signal(false);
+
   // The saved query being edited (as last loaded or saved); null for a new query.
   readonly loaded = signal<WorkItemQueryItem|null>(null);
 
@@ -124,7 +128,10 @@ export class WorkItemQueryEditorComponent implements OnInit, OnDestroy {
 
   ngOnInit():void {
     this.acrossProjects.set(this.projectId == null);
-    if (this.queryId == null) { return; }
+    if (this.queryId == null) {
+      this.ensureClause();
+      return;
+    }
     this.subs.load = this.service.get(Number(this.queryId)).subscribe({
       next: (item) => { this.load(item); this.run(); },
       error: (err:HttpErrorResponse) => { this.error.set(errorMessage(err, 'Loading the query failed')); },
@@ -174,11 +181,16 @@ export class WorkItemQueryEditorComponent implements OnInit, OnDestroy {
     this.error.set(null);
     this.subs.run = this.service
       .execute({
-        tree: this.tree(), mode: this.mode(), project_id: this.queryProjectId(), columns: this.columns(), pageSize: 500,
+        tree: pruneIncomplete(this.tree()),
+        mode: this.mode(),
+        project_id: this.queryProjectId(),
+        columns: this.columns(),
+        pageSize: 500,
       })
       .pipe(finalize(() => { this.loading.set(false); }))
       .subscribe({
         next: (res) => {
+          this.ran.set(true);
           this.total.set(res._embedded.results.total ?? 0);
           this.results.set(res._embedded.results._embedded.elements.map((element) => {
             const parentHref = element._links.parent?.href;
@@ -190,15 +202,22 @@ export class WorkItemQueryEditorComponent implements OnInit, OnDestroy {
         error: (err:HttpErrorResponse) => {
           this.results.set([]);
           this.total.set(0);
+          this.ran.set(false);
           this.error.set(errorMessage(err, 'Query failed'));
         },
       });
   }
 
-  add():void { this.tree.update((t) => addCondition(t, [])); }
+  add(parent:Path = []):void { this.tree.update((t) => addCondition(t, parent)); }
+
+  // The editor always shows at least one (possibly blank) clause, like the Azure DevOps editor.
+  private ensureClause():void {
+    if (rows(this.tree()).length === 0) { this.tree.update((t) => addCondition(t, [])); }
+  }
 
   remove(path:Path):void {
     this.tree.update((t) => removeAt(t, path));
+    this.ensureClause();
     this.selected.set(new Set());
   }
 
@@ -229,15 +248,19 @@ export class WorkItemQueryEditorComponent implements OnInit, OnDestroy {
 
   save():void {
     if (this.saving()) { return; }
-    const name = this.name() || (window.prompt('Query name') ?? '');
-    if (!name) { return; }
+    const name = this.name().trim();
+    if (!name) {
+      this.error.set('Give the query a name before saving it.');
+      return;
+    }
+    this.error.set(null);
     const loaded = this.loaded();
     const item = buildSavePayload(
       {
         name,
         mode: this.mode(),
         project_id: this.queryProjectId(),
-        tree: this.tree(),
+        tree: pruneIncomplete(this.tree()),
         public: this.isPublic(),
         columns: this.columns(),
       },
@@ -280,11 +303,22 @@ export class WorkItemQueryEditorComponent implements OnInit, OnDestroy {
     this.columns.set([...item.columns]);
     this.isPublic.set(item.public);
     this.tree.set(structuredClone(item.tree));
+    this.ensureClause();
     this.selected.set(new Set());
   }
 
   revert():void {
     const loaded = this.loaded();
-    if (loaded) { this.load(loaded); }
+    if (loaded) {
+      this.load(loaded);
+      return;
+    }
+    this.tree.set(emptyTree());
+    this.ensureClause();
+    this.results.set([]);
+    this.total.set(0);
+    this.ran.set(false);
+    this.error.set(null);
+    this.selected.set(new Set());
   }
 }

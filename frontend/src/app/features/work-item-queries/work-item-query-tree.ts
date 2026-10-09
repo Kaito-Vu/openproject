@@ -122,3 +122,17 @@ export function rows(tree:Group):Row[] {
   walk(tree, []);
   return out;
 }
+
+// Drops conditions that have no field yet (the starter row, half-filled rows) and the groups that
+// become empty, so Run/Save only send complete conditions. The root group is always kept.
+export function pruneIncomplete(tree:Group):Group {
+  const keep = (g:Group):Group => ({
+    op: g.op,
+    children: g.children.flatMap((c):TreeNode[] => {
+      if (!isGroup(c)) { return c.field ? [c] : []; }
+      const inner = keep(c);
+      return inner.children.length ? [inner] : [];
+    }),
+  });
+  return keep(tree);
+}

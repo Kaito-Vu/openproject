@@ -48,14 +48,19 @@ RSpec.describe "Query editor", :js do
     end
   end
 
+  def name_and_save(name)
+    find("input[aria-label='Query name']").set(name)
+    click_on "Save query"
+  end
+
   it "runs and saves an OR query" do
     visit "/projects/#{project.identifier}/queries/editor"
 
-    click_on "Add new clause"
-    pick_status(first(".op-wiq-row"), open_status)
+    # The editor starts with one blank clause.
+    pick_status(first(".wiq-row"), open_status)
 
     click_on "Add new clause"
-    second = all(".op-wiq-row").last
+    second = all(".wiq-row").last
     within(second) { find("select[aria-label='Operator for clause']").find("option", text: "Or").select_option }
     pick_status(second, closed_status)
 
@@ -63,7 +68,7 @@ RSpec.describe "Query editor", :js do
     expect(page).to have_text("Open one")
     expect(page).to have_text("Closed one")
 
-    accept_prompt(with: "Both") { click_on "Save query" }
+    name_and_save("Both")
     expect(page).to have_current_path(/queries\/editor\?id=\d+/)
 
     query = WorkItemQuery.find_by!(name: "Both")
@@ -74,20 +79,19 @@ RSpec.describe "Query editor", :js do
   it "groups two selected clauses into an OR group and runs it" do
     visit "/projects/#{project.identifier}/queries/editor"
 
+    pick_status(first(".wiq-row"), open_status)
     click_on "Add new clause"
-    pick_status(first(".op-wiq-row"), open_status)
-    click_on "Add new clause"
-    pick_status(all(".op-wiq-row").last, closed_status)
+    pick_status(all(".wiq-row").last, closed_status)
 
-    all(".op-wiq-row").each { |row| within(row) { find("input[aria-label='Select clause']").check } }
+    all(".wiq-row").each { |row| within(row) { find("input[aria-label='Select clause']").check } }
     click_on "Group"
-    expect(page).to have_link("Ungroup", count: 2)
+    expect(page).to have_button("Ungroup", count: 2)
 
     click_on "Run query"
     expect(page).to have_text("Open one")
     expect(page).to have_text("Closed one")
 
-    accept_prompt(with: "Grouped") { click_on "Save query" }
+    name_and_save("Grouped")
     expect(page).to have_current_path(/queries\/editor\?id=\d+/)
     group = WorkItemQuery.find_by!(name: "Grouped").tree["children"].first
     expect(group).to include("op" => "or")
@@ -98,28 +102,29 @@ RSpec.describe "Query editor", :js do
     create(:work_package, project:, status: open_status, subject: "Child one", parent: wp_open)
     visit "/projects/#{project.identifier}/queries/editor"
 
-    select "Tree", from: "Type of query"
+    click_on "Tree"
     click_on "Run query"
 
-    expect(page).to have_css("td", exact_text: "Open one")
-    expect(page).to have_css("td[style*='padding-left: 16px']", exact_text: "Child one")
+    expect(page).to have_css(".subject", exact_text: "Open one")
+    expect(page).to have_css(".subject[style*='padding-left: 22px']", exact_text: "Child one")
   end
 
   it "shows a column picked in Column options" do
     visit "/projects/#{project.identifier}/queries/editor"
     click_on "Run query"
-    expect(page).to have_css("th", exact_text: "Type")
-    expect(page).to have_no_css("th", exact_text: "Priority")
+    # Header cells are upper-cased by CSS, so match case-insensitively.
+    expect(page).to have_css("th", text: /\AType\z/i)
+    expect(page).to have_no_css("th", text: /\APriority\z/i)
 
     click_on "Column options"
     check "Priority"
     uncheck "Type"
 
-    expect(page).to have_css("th", exact_text: "Priority")
-    expect(page).to have_no_css("th", exact_text: "Type")
-    expect(page).to have_css("td", exact_text: wp_open.priority.name)
+    expect(page).to have_css("th", text: /\APriority\z/i)
+    expect(page).to have_no_css("th", text: /\AType\z/i)
+    expect(page).to have_css("td .chip-priority", exact_text: wp_open.priority.name)
 
-    accept_prompt(with: "With priority") { click_on "Save query" }
+    name_and_save("With priority")
     expect(page).to have_current_path(/queries\/editor\?id=\d+/)
     expect(WorkItemQuery.find_by!(name: "With priority").columns).to eq %w[id subject status assignee priority]
   end
@@ -128,7 +133,7 @@ RSpec.describe "Query editor", :js do
     visit "/projects/#{project.identifier}/queries/editor"
 
     check "Shared with everyone"
-    accept_prompt(with: "Shared") { click_on "Save query" }
+    name_and_save("Shared")
     expect(page).to have_current_path(/queries\/editor\?id=\d+/)
 
     expect(WorkItemQuery.find_by!(name: "Shared")).to have_attributes(public: true, project_id: project.id)

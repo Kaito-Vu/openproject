@@ -49,21 +49,38 @@ export function nestByParent(flat:Omit<ResultRow, 'children'>[]):ResultRow[] {
   standalone: true,
   imports: [NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  styleUrls: ['./work-item-queries.shared.css', './work-item-results.component.css'],
   template: `
-    <table class="generic-table">
-      <thead>
-        <tr>@for (c of columns; track c) { <th>{{ label(c) }}</th> }</tr>
-      </thead>
-      <tbody>
-        @for (row of (mode === 'tree' ? nested() : rows); track row.id) {
-          <ng-container *ngTemplateOutlet="rowTpl; context: { row: row, depth: 0 }" />
-        }
-      </tbody>
-    </table>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>@for (c of columns; track c) { <th scope="col" [class.col-id]="c === 'id'">{{ label(c) }}</th> }</tr>
+        </thead>
+        <tbody>
+          @for (row of (mode === 'tree' ? nested() : rows); track row.id) {
+            <ng-container *ngTemplateOutlet="rowTpl; context: { row: row, depth: 0 }" />
+          }
+        </tbody>
+      </table>
+    </div>
     <ng-template #rowTpl let-row="row" let-depth="depth">
       <tr>
         @for (c of columns; track c) {
-          <td [style.padding-left.px]="c === 'subject' && depth ? depth * 16 : null">{{ cell(row.element, c) }}</td>
+          <td [class.col-id]="c === 'id'" [class.col-subject]="c === 'subject'">
+            @switch (c) {
+              @case ('id') { <span class="id">#{{ cell(row.element, c) }}</span> }
+              @case ('subject') {
+                <span class="subject" [style.padding-left.px]="depth * 22">
+                  @if (depth > 0) { <span class="branch" aria-hidden="true"></span> }
+                  {{ cell(row.element, c) }}
+                </span>
+              }
+              @case ('type') { @if (cell(row.element, c); as v) { <span class="chip chip-type">{{ v }}</span> } }
+              @case ('status') { @if (cell(row.element, c); as v) { <span class="chip chip-status">{{ v }}</span> } }
+              @case ('priority') { @if (cell(row.element, c); as v) { <span class="chip chip-priority">{{ v }}</span> } }
+              @default { {{ cell(row.element, c) }} }
+            }
+          </td>
         }
       </tr>
       @if (mode === 'tree') {

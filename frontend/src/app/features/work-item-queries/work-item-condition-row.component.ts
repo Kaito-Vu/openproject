@@ -42,64 +42,68 @@ import { WorkItemFilterSchemaService } from './work-item-filter-schema.service';
   selector: 'op-work-item-condition-row',
   standalone: true,
   imports: [FormsModule],
+  styleUrls: ['./work-item-queries.shared.css', './work-item-condition-row.component.css'],
   template: `
-    <select aria-label="Field" [ngModel]="condition().field" (ngModelChange)="setField($event)">
-      @if (!condition().field) { <option value="" disabled>Field…</option> }
-      @if (condition().field && !field()) { <option [value]="condition().field">{{ condition().field }}</option> }
-      @for (f of fields() ?? []; track f.id) { <option [value]="f.id">{{ f.name }}</option> }
-    </select>
-
-    @if (condition().field) {
-      <select aria-label="Operator" [ngModel]="condition().operator" (ngModelChange)="setOperator($event)">
-        @if (!operator()) { <option [value]="condition().operator">{{ condition().operator }}</option> }
-        @for (o of field()?.operators ?? []; track o.id) { <option [value]="o.id">{{ o.name }}</option> }
+    <div class="cell">
+      <select class="wiq-control" aria-label="Field" [ngModel]="condition().field" (ngModelChange)="setField($event)">
+        @if (!condition().field) { <option value="" disabled>Select a field…</option> }
+        @if (condition().field && !field()) { <option [value]="condition().field">{{ condition().field }}</option> }
+        @for (f of fields() ?? []; track f.id) { <option [value]="f.id">{{ f.name }}</option> }
       </select>
-    }
+      @if (loadError()) { <div class="error" role="status">Could not load filter definitions</div> }
+    </div>
 
-    @switch (valueInput()) {
-      @case ('list') {
-        <select multiple [attr.aria-label]="'Values for ' + fieldName()" [ngModel]="condition().values" (ngModelChange)="emitValues($event)">
-          @for (o of listOptions(); track o.id) { <option [value]="o.id">{{ o.name }}</option> }
+    <div class="cell">
+      @if (condition().field) {
+        <select class="wiq-control" aria-label="Operator" [ngModel]="condition().operator" (ngModelChange)="setOperator($event)">
+          @if (!operator()) { <option [value]="condition().operator">{{ condition().operator }}</option> }
+          @for (o of field()?.operators ?? []; track o.id) { <option [value]="o.id">{{ o.name }}</option> }
         </select>
       }
-      @case ('ids') {
-        <input type="text" [attr.aria-label]="'Values (comma separated ids) for ' + fieldName()" placeholder="ids, comma separated"
-               [ngModel]="condition().values.join(',')" (ngModelChange)="emitValues(splitValues($event))" />
-      }
-      @case ('boolean') {
-        <select [attr.aria-label]="'Value for ' + fieldName()" [ngModel]="condition().values[0] ?? ''" (ngModelChange)="emitSingle($event)">
-          <option value="" disabled>…</option>
-          <option value="t">Yes</option>
-          <option value="f">No</option>
-        </select>
-      }
-      @case ('date') {
-        <input type="date" [attr.aria-label]="'Value for ' + fieldName()"
-               [ngModel]="(condition().values[0] ?? '').slice(0, 10)" (ngModelChange)="emitSingle($event)" />
-      }
-      @case ('dates') {
-        <input type="date" [attr.aria-label]="'From for ' + fieldName()" [ngModel]="pairValue(0)" (ngModelChange)="emitPair(0, $event)" />
-        <input type="date" [attr.aria-label]="'To for ' + fieldName()" [ngModel]="pairValue(1)" (ngModelChange)="emitPair(1, $event)" />
-      }
-      @case ('number') {
-        <input type="number" [attr.step]="operator()?.type?.includes('Integer') ? 1 : 'any'" [attr.aria-label]="'Value for ' + fieldName()"
-               [ngModel]="condition().values[0] ?? ''" (ngModelChange)="emitSingle($event)" />
-      }
-      @case ('text') {
-        <input type="text" [attr.aria-label]="'Value for ' + fieldName()" [ngModel]="condition().values[0] ?? ''" (ngModelChange)="emitSingle($event)" />
-      }
-    }
+    </div>
 
-    <button type="button" [attr.aria-label]="'Remove condition ' + fieldName()" (click)="removed.emit()">Remove</button>
-    @if (loadError()) { <span class="op-wiq-row-error" role="status">Could not load filter definitions</span> }
+    <div class="cell values">
+      @switch (valueInput()) {
+        @case ('list') {
+          <select class="wiq-control" multiple [attr.aria-label]="'Values for ' + fieldName()" [ngModel]="condition().values" (ngModelChange)="emitValues($event)">
+            @for (o of listOptions(); track o.id) { <option [value]="o.id">{{ o.name }}</option> }
+          </select>
+        }
+        @case ('ids') {
+          <input class="wiq-control" type="text" [attr.aria-label]="'Values (comma separated ids) for ' + fieldName()" placeholder="ids, comma separated"
+                 [ngModel]="condition().values.join(',')" (ngModelChange)="emitValues(splitValues($event))" />
+        }
+        @case ('boolean') {
+          <select class="wiq-control" [attr.aria-label]="'Value for ' + fieldName()" [ngModel]="condition().values[0] ?? ''" (ngModelChange)="emitSingle($event)">
+            <option value="" disabled>Select…</option>
+            <option value="t">Yes</option>
+            <option value="f">No</option>
+          </select>
+        }
+        @case ('date') {
+          <input class="wiq-control" type="date" [attr.aria-label]="'Value for ' + fieldName()"
+                 [ngModel]="(condition().values[0] ?? '').slice(0, 10)" (ngModelChange)="emitSingle($event)" />
+        }
+        @case ('dates') {
+          <input class="wiq-control" type="date" [attr.aria-label]="'From for ' + fieldName()" [ngModel]="pairValue(0)" (ngModelChange)="emitPair(0, $event)" />
+          <span class="sep" aria-hidden="true">to</span>
+          <input class="wiq-control" type="date" [attr.aria-label]="'To for ' + fieldName()" [ngModel]="pairValue(1)" (ngModelChange)="emitPair(1, $event)" />
+        }
+        @case ('number') {
+          <input class="wiq-control" type="number" [attr.step]="operator()?.type?.includes('Integer') ? 1 : 'any'" [attr.aria-label]="'Value for ' + fieldName()"
+                 [ngModel]="condition().values[0] ?? ''" (ngModelChange)="emitSingle($event)" />
+        }
+        @case ('text') {
+          <input class="wiq-control" type="text" [attr.aria-label]="'Value for ' + fieldName()" placeholder="Value" [ngModel]="condition().values[0] ?? ''" (ngModelChange)="emitSingle($event)" />
+        }
+      }
+    </div>
   `,
 })
 export class WorkItemConditionRowComponent {
   readonly condition = input.required<Condition>();
 
   readonly changed = output<Partial<Condition>>();
-
-  readonly removed = output<void>();
 
   private schema = inject(WorkItemFilterSchemaService);
 
