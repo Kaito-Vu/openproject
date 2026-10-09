@@ -28,7 +28,7 @@
 import { ApplicationController } from 'stimulus-use';
 import { announce } from '@primer/live-region-element';
 
-export const SUCCESS_AUTOHIDE_TIMEOUT = 5000;
+export const SUCCESS_AUTOHIDE_TIMEOUT = 15000;
 // Match Primer's live-region registration delay. Manual screen reader
 // testing showed the first announcement can be missed without this pause.
 export const LIVE_REGION_ANNOUNCEMENT_DELAY = 150;

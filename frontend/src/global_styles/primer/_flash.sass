@@ -28,12 +28,24 @@
 .op-primer-flash
   @include banner-styles
   z-index: 599
-  background-color: var(--body-background)
+  background-color: transparent
+
+  // Toast: stacked at the top right instead of a centered banner
+  top: 1rem
+  left: auto
+  right: 1rem
+  margin: 0
+  width: 100%
+  pointer-events: none
+
+  &--item
+    pointer-events: auto
+    box-shadow: var(--shadow-floating-large)
+    border-radius: var(--borderRadius-medium)
+    background-color: var(--body-background)
+    word-wrap: break-word
 
   // Align multiple toasts
   display: flex
   flex-direction: column
   gap: 1rem
-
-  &--item
-    word-wrap: break-word

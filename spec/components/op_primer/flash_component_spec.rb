@@ -98,6 +98,42 @@ RSpec.describe OpPrimer::FlashComponent, type: :component do
       end
     end
 
+    context "with danger scheme" do
+      let(:content) { "Flash Text" }
+
+      subject(:rendered_component) { render_component(content, scheme: :danger) }
+
+      it "marks the flash for autohide" do
+        expect(rendered_component).to have_css '[data-autohide="true"]'
+      end
+
+      context "with disabled dismissing" do
+        subject(:rendered_component) { render_component(content, scheme: :danger, dismiss_scheme: :none) }
+
+        it "does not mark the flash for autohide" do
+          expect(rendered_component).to have_css '[data-autohide="false"]'
+        end
+      end
+    end
+
+    context "with warning scheme" do
+      let(:content) { "Flash Text" }
+
+      subject(:rendered_component) { render_component(content, scheme: :warning) }
+
+      it "marks the flash for autohide" do
+        expect(rendered_component).to have_css '[data-autohide="true"]'
+      end
+
+      context "with disabled dismissing" do
+        subject(:rendered_component) { render_component(content, scheme: :warning, dismiss_scheme: :none) }
+
+        it "does not mark the flash for autohide" do
+          expect(rendered_component).to have_css '[data-autohide="false"]'
+        end
+      end
+    end
+
     context "with blank content" do
       let(:content) { " " }
 

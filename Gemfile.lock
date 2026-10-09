@@ -2108,6 +2108,7 @@ CHECKSUMS
   openproject-gantt (1.0.0)
   openproject-github_integration (1.0.0)
   openproject-gitlab_integration (3.0.0)
+  openproject-issue_view (1.0.0)
   openproject-job_status (1.0.0)
   openproject-ldap_departments (1.0.0)
   openproject-ldap_groups (1.0.0)
