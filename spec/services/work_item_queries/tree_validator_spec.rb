@@ -65,9 +65,16 @@ RSpec.describe WorkItemQueries::TreeValidator do
   it "rejects trees deeper than MAX_DEPTH" do
     # nest(n) wraps a leaf in n-1 groups; with the root that makes n groups deep.
     deep = { "op" => "and", "children" => [nest(WorkItemQuery::MAX_DEPTH + 1)] } # 6 groups
-    expect(described_class.errors(deep)).to include(a_string_matching(/deeper/))
+    expect(described_class.errors(deep)).to include([:too_deep, { max: WorkItemQuery::MAX_DEPTH }])
     ok = { "op" => "and", "children" => [nest(WorkItemQuery::MAX_DEPTH)] } # 5 groups
     expect(described_class.errors(ok)).to be_empty
+  end
+
+  it "translates problems into messages" do
+    deep = { "op" => "xor", "children" => [nest(WorkItemQuery::MAX_DEPTH + 1)] }
+    expect(described_class.messages(deep)).to contain_exactly(
+      "unknown op \"xor\"", "group nested deeper than #{WorkItemQuery::MAX_DEPTH}"
+    )
   end
 
   it "rejects more than MAX_CONDITIONS conditions" do

@@ -100,7 +100,7 @@ RSpec.describe "API v3 work_item_queries" do
     bad = { op: "or", children: [{ field: "nope", operator: "=", values: ["1"] }] }
     post_json "/api/v3/work_item_queries/execute", { tree: bad }
     expect(last_response).to have_http_status(422)
-    expect(JSON.parse(last_response.body)["message"]).to be_present
+    expect(JSON.parse(last_response.body)["message"]).to eq I18n.t("work_item_queries.errors.invalid_condition", field: "nope")
   end
 
   it "lists favorite flag and last modifier, and toggles favorites" do
@@ -156,6 +156,7 @@ RSpec.describe "API v3 work_item_queries" do
       [other_project.id, 0].each do |pid|
         post_json "/api/v3/work_item_queries", { name: "x", project_id: pid }
         expect(last_response).to have_http_status(422)
+        expect(JSON.parse(last_response.body)["message"]).to eq I18n.t("work_item_queries.errors.project_not_found")
         post_json "/api/v3/work_item_queries/execute", { project_id: pid }
         expect(last_response).to have_http_status(422)
       end
@@ -172,6 +173,8 @@ RSpec.describe "API v3 work_item_queries" do
       post_json "/api/v3/work_item_queries/execute", bad
       expect(last_response).to have_http_status(422)
     end
+    # The last case ({ mode: "grid" }) renders the translated model error.
+    expect(JSON.parse(last_response.body)["message"]).to eq "Mode must be one of flat, tree"
   end
 
   it "does not persist anything on execute and honours pageSize" do
@@ -233,6 +236,7 @@ RSpec.describe "API v3 work_item_queries" do
     it "rejects public: true without manage_public_queries on create and update" do
       post_json "/api/v3/work_item_queries", { name: "x", public: true }
       expect(last_response).to have_http_status(403)
+      expect(JSON.parse(last_response.body)["message"]).to eq I18n.t("work_item_queries.errors.public_not_allowed")
       post_json "/api/v3/work_item_queries", { name: "x", public: true, project_id: project.id }
       expect(last_response).to have_http_status(403)
 

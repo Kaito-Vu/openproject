@@ -41,17 +41,17 @@ RSpec.describe "Query editor", :js do
 
   def pick_status(clause, status)
     within(clause) do
-      find("input[aria-label='Field']").click
-      find("li[role='option']", exact_text: "Status").click
-      values = find("select[aria-label='Values for Status']")
+      find("input[aria-label='#{I18n.t('js.work_item_queries.filter.field')}']").click
+      find("li[role='option']", exact_text: I18n.t("js.work_packages.properties.status")).click
+      values = find("select[aria-label='#{I18n.t('js.work_item_queries.filter.values_for', field: 'Status')}']")
       expect(values).to have_css("option", text: status.name)
       values.find("option", text: status.name).select_option
     end
   end
 
   def name_and_save(name)
-    find("input[aria-label='Query name']").set(name)
-    click_on "Save query"
+    find("input[aria-label='#{I18n.t('js.work_item_queries.editor.name_label')}']").set(name)
+    click_on I18n.t("js.work_item_queries.editor.save")
   end
 
   it "runs and saves an OR query" do
@@ -60,12 +60,15 @@ RSpec.describe "Query editor", :js do
     # The editor starts with one blank clause.
     pick_status(first(".wiq-row"), open_status)
 
-    click_on "Add new clause"
+    click_on I18n.t("js.work_item_queries.editor.add_new_clause")
     second = all(".wiq-row").last
-    within(second) { find("select[aria-label='Operator for clause']").find("option", text: "Or").select_option }
+    within(second) do
+      find("select[aria-label='#{I18n.t('js.work_item_queries.editor.clause_operator')}']")
+        .find("option", text: I18n.t("js.work_item_queries.editor.or")).select_option
+    end
     pick_status(second, closed_status)
 
-    click_on "Run query"
+    click_on I18n.t("js.work_item_queries.editor.run")
     expect(page).to have_text("Open one")
     expect(page).to have_text("Closed one")
 
@@ -81,14 +84,15 @@ RSpec.describe "Query editor", :js do
     visit "/projects/#{project.identifier}/queries/editor"
 
     pick_status(first(".wiq-row"), open_status)
-    click_on "Add new clause"
+    click_on I18n.t("js.work_item_queries.editor.add_new_clause")
     pick_status(all(".wiq-row").last, closed_status)
 
-    all(".wiq-row").each { |row| within(row) { find("input[aria-label='Select clause']").check } }
-    click_on "Group"
-    expect(page).to have_button("Ungroup", count: 2)
+    select_clause = "input[aria-label='#{I18n.t('js.work_item_queries.editor.select_clause')}']"
+    all(".wiq-row").each { |row| within(row) { find(select_clause).check } }
+    click_on I18n.t("js.label_group")
+    expect(page).to have_button(I18n.t("js.work_item_queries.editor.ungroup"), count: 2)
 
-    click_on "Run query"
+    click_on I18n.t("js.work_item_queries.editor.run")
     expect(page).to have_text("Open one")
     expect(page).to have_text("Closed one")
 
@@ -103,26 +107,28 @@ RSpec.describe "Query editor", :js do
     create(:work_package, project:, status: open_status, subject: "Child one", parent: wp_open)
     visit "/projects/#{project.identifier}/queries/editor"
 
-    click_on "Tree"
-    click_on "Run query"
+    click_on I18n.t("js.work_item_queries.editor.mode_tree")
+    click_on I18n.t("js.work_item_queries.editor.run")
 
     expect(page).to have_css(".subject", exact_text: "Open one")
     expect(page).to have_css(".subject[style*='padding-left: 22px']", exact_text: "Child one")
   end
 
   it "shows a column picked in Column options" do
+    type_label = I18n.t("js.work_packages.properties.type")
+    priority_label = I18n.t("js.work_packages.properties.priority")
     visit "/projects/#{project.identifier}/queries/editor"
-    click_on "Run query"
+    click_on I18n.t("js.work_item_queries.editor.run")
     # Header cells are upper-cased by CSS, so match case-insensitively.
-    expect(page).to have_css("th", text: /\AType\z/i)
-    expect(page).to have_no_css("th", text: /\APriority\z/i)
+    expect(page).to have_css("th", text: /\A#{type_label}\z/i)
+    expect(page).to have_no_css("th", text: /\A#{priority_label}\z/i)
 
-    click_on "Column options"
-    check "Priority"
-    uncheck "Type"
+    click_on I18n.t("js.work_item_queries.editor.column_options")
+    check priority_label
+    uncheck type_label
 
-    expect(page).to have_css("th", text: /\APriority\z/i)
-    expect(page).to have_no_css("th", text: /\AType\z/i)
+    expect(page).to have_css("th", text: /\A#{priority_label}\z/i)
+    expect(page).to have_no_css("th", text: /\A#{type_label}\z/i)
     expect(page).to have_css("td .chip-priority", exact_text: wp_open.priority.name)
 
     name_and_save("With priority")
@@ -133,7 +139,7 @@ RSpec.describe "Query editor", :js do
   it "lets an admin share a query with everyone" do
     visit "/projects/#{project.identifier}/queries/editor"
 
-    check "Shared with everyone"
+    check I18n.t("js.work_item_queries.editor.shared_with_everyone")
     name_and_save("Shared")
     expect(page).to have_current_path(/queries\/editor\?id=\d+/)
 

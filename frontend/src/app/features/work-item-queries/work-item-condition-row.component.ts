@@ -47,14 +47,14 @@ import { WorkItemComboboxComponent } from './work-item-combobox.component';
   styleUrls: ['./work-item-queries.shared.css', './work-item-condition-row.component.css'],
   template: `
     <div class="cell">
-      <op-work-item-combobox [options]="fieldOptions()" [value]="condition().field" label="Field"
-        placeholder="Search for a field…" (changed)="setField($event)" />
-      @if (loadError()) { <div class="error" role="status">Could not load filter definitions</div> }
+      <op-work-item-combobox [options]="fieldOptions()" [value]="condition().field" [label]="text.field"
+        [placeholder]="text.fieldPlaceholder" (changed)="setField($event)" />
+      @if (loadError()) { <div class="error" role="status">{{ text.loadError }}</div> }
     </div>
 
     <div class="cell">
       @if (condition().field) {
-        <select class="wiq-control" aria-label="Operator" [ngModel]="condition().operator" (ngModelChange)="setOperator($event)">
+        <select class="wiq-control" [attr.aria-label]="text.operator" [ngModel]="condition().operator" (ngModelChange)="setOperator($event)">
           @if (!operator()) { <option [value]="condition().operator">{{ condition().operator }}</option> }
           @for (o of field()?.operators ?? []; track o.id) { <option [value]="o.id">{{ o.name }}</option> }
         </select>
@@ -65,34 +65,34 @@ import { WorkItemComboboxComponent } from './work-item-combobox.component';
       @switch (valueInput()) {
         @case ('list') {
           <op-work-item-multi-select [options]="listOptions()" [selected]="condition().values"
-            [label]="'Values for ' + fieldName()" (changed)="emitValues($event)" />
+            [label]="text.valuesFor(fieldName())" (changed)="emitValues($event)" />
         }
         @case ('ids') {
-          <input class="wiq-control" type="text" [attr.aria-label]="'Values (comma separated ids) for ' + fieldName()" placeholder="ids, comma separated"
+          <input class="wiq-control" type="text" [attr.aria-label]="text.idsFor(fieldName())" [placeholder]="text.idsPlaceholder"
                  [ngModel]="condition().values.join(',')" (ngModelChange)="emitValues(splitValues($event))" />
         }
         @case ('boolean') {
-          <select class="wiq-control" [attr.aria-label]="'Value for ' + fieldName()" [ngModel]="condition().values[0] ?? ''" (ngModelChange)="emitSingle($event)">
-            <option value="" disabled>Select…</option>
-            <option value="t">Yes</option>
-            <option value="f">No</option>
+          <select class="wiq-control" [attr.aria-label]="text.valueFor(fieldName())" [ngModel]="condition().values[0] ?? ''" (ngModelChange)="emitSingle($event)">
+            <option value="" disabled>{{ text.select }}</option>
+            <option value="t">{{ text.yes }}</option>
+            <option value="f">{{ text.no }}</option>
           </select>
         }
         @case ('date') {
-          <input class="wiq-control" type="date" [attr.aria-label]="'Value for ' + fieldName()"
+          <input class="wiq-control" type="date" [attr.aria-label]="text.valueFor(fieldName())"
                  [ngModel]="(condition().values[0] ?? '').slice(0, 10)" (ngModelChange)="emitSingle($event)" />
         }
         @case ('dates') {
-          <input class="wiq-control" type="date" [attr.aria-label]="'From for ' + fieldName()" [ngModel]="pairValue(0)" (ngModelChange)="emitPair(0, $event)" />
-          <span class="sep" aria-hidden="true">to</span>
-          <input class="wiq-control" type="date" [attr.aria-label]="'To for ' + fieldName()" [ngModel]="pairValue(1)" (ngModelChange)="emitPair(1, $event)" />
+          <input class="wiq-control" type="date" [attr.aria-label]="text.fromFor(fieldName())" [ngModel]="pairValue(0)" (ngModelChange)="emitPair(0, $event)" />
+          <span class="sep" aria-hidden="true">{{ text.to }}</span>
+          <input class="wiq-control" type="date" [attr.aria-label]="text.toFor(fieldName())" [ngModel]="pairValue(1)" (ngModelChange)="emitPair(1, $event)" />
         }
         @case ('number') {
-          <input class="wiq-control" type="number" [attr.step]="operator()?.type?.includes('Integer') ? 1 : 'any'" [attr.aria-label]="'Value for ' + fieldName()"
+          <input class="wiq-control" type="number" [attr.step]="operator()?.type?.includes('Integer') ? 1 : 'any'" [attr.aria-label]="text.valueFor(fieldName())"
                  [ngModel]="condition().values[0] ?? ''" (ngModelChange)="emitSingle($event)" />
         }
         @case ('text') {
-          <input class="wiq-control" type="text" [attr.aria-label]="'Value for ' + fieldName()" placeholder="Value" [ngModel]="condition().values[0] ?? ''" (ngModelChange)="emitSingle($event)" />
+          <input class="wiq-control" type="text" [attr.aria-label]="text.valueFor(fieldName())" [placeholder]="text.value" [ngModel]="condition().values[0] ?? ''" (ngModelChange)="emitSingle($event)" />
         }
       }
     </div>
@@ -105,7 +105,27 @@ export class WorkItemConditionRowComponent {
 
   private schema = inject(WorkItemFilterSchemaService);
 
-  private meLabel = inject(I18nService).t('js.label_me');
+  private I18n = inject(I18nService);
+
+  private meLabel = this.I18n.t('js.label_me');
+
+  readonly text = {
+    field: this.I18n.t('js.work_item_queries.filter.field'),
+    fieldPlaceholder: this.I18n.t('js.work_item_queries.filter.field_placeholder'),
+    loadError: this.I18n.t('js.work_item_queries.filter.load_error'),
+    operator: this.I18n.t('js.work_item_queries.filter.operator'),
+    idsPlaceholder: this.I18n.t('js.work_item_queries.filter.ids_placeholder'),
+    select: this.I18n.t('js.work_item_queries.filter.select_placeholder'),
+    yes: this.I18n.t('js.general_text_Yes'),
+    no: this.I18n.t('js.general_text_No'),
+    to: this.I18n.t('js.work_item_queries.filter.to'),
+    value: this.I18n.t('js.work_item_queries.filter.value'),
+    valuesFor: (field:string) => this.I18n.t('js.work_item_queries.filter.values_for', { field }),
+    idsFor: (field:string) => this.I18n.t('js.work_item_queries.filter.ids_for', { field }),
+    valueFor: (field:string) => this.I18n.t('js.work_item_queries.filter.value_for', { field }),
+    fromFor: (field:string) => this.I18n.t('js.work_item_queries.filter.from_for', { field }),
+    toFor: (field:string) => this.I18n.t('js.work_item_queries.filter.to_for', { field }),
+  };
 
   readonly loadError = signal(false);
 

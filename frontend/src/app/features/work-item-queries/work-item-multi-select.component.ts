@@ -29,6 +29,7 @@ import {
   Component, computed, ElementRef, HostListener, inject, input, output, signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { I18nService } from 'core-app/core/i18n/i18n.service';
 import { Option } from './work-item-filter-schema';
 import {
   filterOptions, popoverPosition, selectedChips, toggleValue,
@@ -49,7 +50,7 @@ let nextId = 0;
       @for (chip of chips(); track chip.id) {
         <span class="chip">
           {{ chip.name }}
-          <button type="button" class="chip-x" [attr.aria-label]="'Remove ' + chip.name" (click)="remove(chip.id, $event)">
+          <button type="button" class="chip-x" [attr.aria-label]="text.remove(chip.name)" (click)="remove(chip.id, $event)">
             <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg>
           </button>
         </span>
@@ -62,7 +63,7 @@ let nextId = 0;
     @if (open()) {
       <div class="pop" role="dialog" [id]="popId" [attr.aria-label]="label()" [style.left.px]="pos().left" [style.top.px]="pos().top" [style.width.px]="pos().width">
         <div class="pop-search">
-          <input type="search" class="wiq-control" placeholder="Search…" [attr.aria-label]="'Search ' + label()" [ngModel]="query()" (ngModelChange)="query.set($event)" (keydown.escape)="close()" />
+          <input type="search" class="wiq-control" [placeholder]="text.search" [attr.aria-label]="text.searchIn(label())" [ngModel]="query()" (ngModelChange)="query.set($event)" (keydown.escape)="close()" />
         </div>
         <ul class="pop-list" role="listbox" aria-multiselectable="true">
           @for (o of shown(); track o.id) {
@@ -73,12 +74,12 @@ let nextId = 0;
               </label>
             </li>
           } @empty {
-            <li class="none">No matches</li>
+            <li class="none">{{ text.noMatches }}</li>
           }
         </ul>
         <div class="pop-foot">
-          <span>{{ selected().length }} selected</span>
-          <button type="button" class="link" [disabled]="selected().length === 0" (click)="clear()">Clear</button>
+          <span>{{ text.selected(selected().length) }}</span>
+          <button type="button" class="link" [disabled]="selected().length === 0" (click)="clear()">{{ text.clear }}</button>
         </div>
       </div>
     }
@@ -91,9 +92,20 @@ export class WorkItemMultiSelectComponent {
 
   readonly selected = input.required<string[]>();
 
-  readonly label = input('Values');
+  private I18n = inject(I18nService);
 
-  readonly placeholder = input('Select values…');
+  readonly text = {
+    clear: this.I18n.t('js.button_clear'),
+    noMatches: this.I18n.t('js.work_item_queries.multi_select.no_matches'),
+    search: this.I18n.t('js.work_item_queries.multi_select.search'),
+    remove: (name:string) => this.I18n.t('js.work_item_queries.multi_select.remove', { name }),
+    searchIn: (label:string) => this.I18n.t('js.work_item_queries.multi_select.search_in', { label }),
+    selected: (count:number) => this.I18n.t('js.work_item_queries.multi_select.selected', { count }),
+  };
+
+  readonly label = input.required<string>();
+
+  readonly placeholder = input(this.I18n.t('js.work_item_queries.multi_select.placeholder'));
 
   readonly changed = output<string[]>();
 

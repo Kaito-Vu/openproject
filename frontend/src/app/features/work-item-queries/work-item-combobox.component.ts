@@ -28,6 +28,7 @@
 import {
   Component, computed, ElementRef, HostListener, inject, input, output, signal,
 } from '@angular/core';
+import { I18nService } from 'core-app/core/i18n/i18n.service';
 import { Option } from './work-item-filter-schema';
 import { filterOptions, popoverPosition } from './work-item-multi-select';
 import { highlightParts, initialActive, moveActive } from './work-item-combobox';
@@ -82,7 +83,7 @@ let nextId = 0;
             {{ p.before }}<mark>{{ p.match }}</mark>{{ p.after }}
           </li>
         } @empty {
-          <li class="none">No matching field</li>
+          <li class="none">{{ noMatchText }}</li>
         }
       </ul>
     }
@@ -94,13 +95,15 @@ export class WorkItemComboboxComponent {
   // Selected option id; may not be among the options (unknown saved field): it is then shown as is.
   readonly value = input<string>('');
 
-  readonly label = input('Select');
+  readonly label = input.required<string>();
 
-  readonly placeholder = input('Select…');
+  readonly placeholder = input('');
 
   readonly changed = output<string>();
 
   private host = inject<ElementRef<HTMLElement>>(ElementRef);
+
+  readonly noMatchText = inject(I18nService).t('js.work_item_queries.combobox.no_matching_field');
 
   readonly listId = `wiq-cb-${(nextId += 1)}`;
 

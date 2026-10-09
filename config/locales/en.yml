@@ -1028,6 +1028,23 @@ en:
             slug:
               undeducible: "cannot be deduced from the title '%{title}'."
           error_conflict: "The wiki page has been updated by someone else while you were editing it."
+        work_item_query:
+          attributes:
+            columns:
+              invalid_shape: "must be an array of at most %{max} non-blank strings"
+            mode:
+              inclusion: "must be one of %{modes}"
+            sort_criteria:
+              invalid_shape: "must be an array of at most %{max} [field, asc|desc] pairs"
+            tree:
+              children_not_array: "children must be an array"
+              incomplete_condition: "condition needs field and operator"
+              invalid_node: "node must be a group or a condition"
+              root_not_group: "root must be a group"
+              too_deep: "group nested deeper than %{max}"
+              too_many_conditions: "more than %{max} conditions"
+              unknown_op: "unknown op %{op}"
+              values_not_strings: "values must be an array of strings"
         work_package:
           attributes:
             assigned_to:
@@ -7832,6 +7849,14 @@ en:
   work_flows:
     index:
       no_results_title_text: There are currently no workflows.
+
+  work_item_queries:
+    errors:
+      invalid_condition: "invalid condition on %{field}"
+      or_unsafe: "%{field} cannot be used inside an OR group"
+      project_not_found: "Project not found"
+      public_not_allowed: "Sharing a query with everyone requires the permission to manage public queries."
+      unsupported_filter: "%{field} is not supported in the query editor"
 
   # TODO: merge with work_packages top level key
   work_package:

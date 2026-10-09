@@ -26,8 +26,9 @@
 //++
 
 import { NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { cellValue, columnLabel, DEFAULT_COLUMNS, ResultElement } from './work-item-columns';
+import { ChangeDetectionStrategy, Component, Input, inject } from '@angular/core';
+import { I18nService } from 'core-app/core/i18n/i18n.service';
+import { cellValue, columnLabelKey, DEFAULT_COLUMNS, ResultElement } from './work-item-columns';
 
 export interface ResultRow {
   id:number; parentId:number|null; element:ResultElement; children:ResultRow[];
@@ -98,9 +99,14 @@ export class WorkItemResultsComponent {
 
   @Input() columns:string[] = DEFAULT_COLUMNS;
 
+  private I18n = inject(I18nService);
+
   readonly cell = cellValue;
 
-  readonly label = columnLabel;
+  label(id:string):string {
+    const key = columnLabelKey(id);
+    return key ? this.I18n.t(key) : id;
+  }
 
   nested():ResultRow[] { return nestByParent(this.rows); }
 }

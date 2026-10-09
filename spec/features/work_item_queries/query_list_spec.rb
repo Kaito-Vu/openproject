@@ -44,19 +44,19 @@ RSpec.describe "Queries list", :js do
     expect(page).to have_text("Release bugs")
     expect(page).to have_no_text("Hidden")
 
-    fill_in "Filter by keywords", with: "release"
+    fill_in I18n.t("js.work_item_queries.list.filter_placeholder"), with: "release"
     expect(page).to have_no_text("My bugs")
 
-    fill_in "Filter by keywords", with: ""
+    fill_in I18n.t("js.work_item_queries.list.filter_placeholder"), with: ""
     within(:xpath, "//tr[contains(., 'My bugs')]") { find("button[aria-pressed]").click }
-    click_on "Favorites"
+    click_on I18n.t("js.label_favorites")
     expect(page).to have_text("My bugs")
     expect(page).to have_no_text("Release bugs")
   end
 
   it "opens the editor from New query" do
     visit "/queries"
-    click_on "New query"
+    click_on I18n.t("js.work_item_queries.new_query")
     expect(page).to have_current_path(%r{/queries/editor})
   end
 end

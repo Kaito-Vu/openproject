@@ -41,6 +41,20 @@ RSpec.describe WorkItemQuery do
     expect(described_class.new(name: "q", user:, tree: { "op" => "xor", "children" => [] })).not_to be_valid
   end
 
+  it "reports translated validation errors" do
+    query = described_class.new(name: "q", user:, mode: "grid", tree: { "op" => "xor", "children" => [] },
+                                columns: nil, sort_criteria: nil)
+    query.validate
+    expect(query.errors.added?(:tree, :unknown_op, op: "\"xor\"")).to be true
+    expect(query.errors.added?(:columns, :invalid_shape, max: described_class::MAX_COLUMNS)).to be true
+    expect(query.errors.full_messages).to include(
+      "Mode must be one of flat, tree",
+      "Conditions unknown op \"xor\"",
+      "Columns must be an array of at most #{described_class::MAX_COLUMNS} non-blank strings",
+      "Sort criteria must be an array of at most #{described_class::MAX_SORT_CRITERIA} [field, asc|desc] pairs"
+    )
+  end
+
   it "scopes visible to own queries and public ones that are global or in a visible project" do
     visible_project = create(:project, member_with_permissions: { user => %i[view_work_packages] })
     hidden_project = create(:project)

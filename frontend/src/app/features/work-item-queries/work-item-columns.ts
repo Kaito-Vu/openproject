@@ -33,28 +33,31 @@ export interface ResultElement {
   [property:string]:unknown;
 }
 
-// API column ids; WorkItemQueries::BuildQuery converts them to Query column names.
-export const COLUMN_CATALOG:readonly { id:string; label:string }[] = [
-  { id: 'id', label: 'ID' },
-  { id: 'type', label: 'Type' },
-  { id: 'subject', label: 'Subject' },
-  { id: 'status', label: 'Status' },
-  { id: 'assignee', label: 'Assignee' },
-  { id: 'priority', label: 'Priority' },
-  { id: 'project', label: 'Project' },
-  { id: 'author', label: 'Author' },
-  { id: 'startDate', label: 'Start date' },
-  { id: 'dueDate', label: 'Finish date' },
-  { id: 'percentageDone', label: '% Complete' },
-  { id: 'createdAt', label: 'Created on' },
-  { id: 'updatedAt', label: 'Updated on' },
+const prop = (name:string) => `js.work_packages.properties.${name}`;
+
+// API column ids; WorkItemQueries::BuildQuery converts them to Query column names. Labels are i18n keys.
+export const COLUMN_CATALOG:readonly { id:string; labelKey:string }[] = [
+  { id: 'id', labelKey: 'js.work_item_queries.columns.id' },
+  { id: 'type', labelKey: prop('type') },
+  { id: 'subject', labelKey: prop('subject') },
+  { id: 'status', labelKey: prop('status') },
+  { id: 'assignee', labelKey: prop('assignee') },
+  { id: 'priority', labelKey: prop('priority') },
+  { id: 'project', labelKey: prop('projectName') },
+  { id: 'author', labelKey: prop('author') },
+  { id: 'startDate', labelKey: prop('startDate') },
+  { id: 'dueDate', labelKey: prop('dueDate') },
+  { id: 'percentageDone', labelKey: prop('percentComplete') },
+  { id: 'createdAt', labelKey: prop('createdAt') },
+  { id: 'updatedAt', labelKey: prop('updatedAt') },
 ];
 
 export const DEFAULT_COLUMNS = ['id', 'type', 'subject', 'status', 'assignee'];
 
 const LINK_COLUMNS = new Set(['type', 'status', 'assignee', 'priority', 'project', 'author']);
 
-export function columnLabel(id:string):string { return COLUMN_CATALOG.find((c) => c.id === id)?.label ?? id; }
+// i18n key of a column's label; null for columns outside the catalog (shown by id).
+export function columnLabelKey(id:string):string|null { return COLUMN_CATALOG.find((c) => c.id === id)?.labelKey ?? null; }
 
 // Display text of one cell; timestamps are shown as "YYYY-MM-DD HH:MM" (UTC, as sent by the API).
 export function cellValue(el:ResultElement, column:string):string {

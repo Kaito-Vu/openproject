@@ -38,9 +38,13 @@ import {
 } from './work-item-query.service';
 import { toCsv } from './work-item-csv';
 import { copyText } from './work-item-copy-text';
+import { I18nService } from 'core-app/core/i18n/i18n.service';
 import { COLUMN_CATALOG, DEFAULT_COLUMNS, toggleColumn } from './work-item-columns';
 import { ResultRow, WorkItemResultsComponent } from './work-item-results.component';
 import { WorkItemConditionRowComponent } from './work-item-condition-row.component';
+
+// Rows loaded per run (and exported as CSV).
+const PAGE_SIZE = 500;
 
 // Replaces characters invalid in file names (and control chars) with underscores.
 function safeFileName(name:string):string {
@@ -68,6 +72,60 @@ export class WorkItemQueryEditorComponent implements OnInit, OnDestroy {
 
   private service = inject(WorkItemQueryService);
 
+  private I18n = inject(I18nService);
+
+  readonly text = {
+    queries: this.I18n.t('js.work_item_queries.title'),
+    newQuery: this.I18n.t('js.work_item_queries.new_query'),
+    columns: this.I18n.t('js.label_columns'),
+    group: this.I18n.t('js.label_group'),
+    field: this.I18n.t('js.work_item_queries.filter.field'),
+    operator: this.I18n.t('js.work_item_queries.filter.operator'),
+    value: this.I18n.t('js.work_item_queries.filter.value'),
+    addClause: this.I18n.t('js.work_item_queries.editor.add_clause'),
+    addClauseBelow: this.I18n.t('js.work_item_queries.editor.add_clause_below'),
+    addNewClause: this.I18n.t('js.work_item_queries.editor.add_new_clause'),
+    and: this.I18n.t('js.work_item_queries.editor.and'),
+    andOr: this.I18n.t('js.work_item_queries.editor.and_or'),
+    breadcrumb: this.I18n.t('js.work_item_queries.editor.breadcrumb'),
+    clauseOperator: this.I18n.t('js.work_item_queries.editor.clause_operator'),
+    columnOptions: this.I18n.t('js.work_item_queries.editor.column_options'),
+    copied: this.I18n.t('js.work_item_queries.editor.copied'),
+    copyFailed: this.I18n.t('js.work_item_queries.editor.copy_failed'),
+    copyUrl: this.I18n.t('js.work_item_queries.editor.copy_url'),
+    emptyNoResultsText: this.I18n.t('js.work_item_queries.editor.empty_no_results_text'),
+    emptyNoResultsTitle: this.I18n.t('js.work_item_queries.editor.empty_no_results_title'),
+    emptyNotRunText: this.I18n.t('js.work_item_queries.editor.empty_not_run_text'),
+    emptyNotRunTitle: this.I18n.t('js.work_item_queries.editor.empty_not_run_title'),
+    exportCsv: this.I18n.t('js.work_item_queries.editor.export_csv'),
+    exportCsvTitle: this.I18n.t('js.work_item_queries.editor.export_csv_title', { max: PAGE_SIZE }),
+    filtersHint: this.I18n.t('js.work_item_queries.editor.filters_hint'),
+    filtersTitle: this.I18n.t('js.work_item_queries.editor.filters_title'),
+    groupHint: this.I18n.t('js.work_item_queries.editor.group_hint'),
+    modeFlat: this.I18n.t('js.work_item_queries.editor.mode_flat'),
+    modeLabel: this.I18n.t('js.work_item_queries.editor.mode_label'),
+    modeTree: this.I18n.t('js.work_item_queries.editor.mode_tree'),
+    nameLabel: this.I18n.t('js.work_item_queries.editor.name_label'),
+    namePlaceholder: this.I18n.t('js.work_item_queries.editor.name_placeholder'),
+    noOwnProject: this.I18n.t('js.work_item_queries.editor.no_own_project'),
+    or: this.I18n.t('js.work_item_queries.editor.or'),
+    publicDenied: this.I18n.t('js.work_item_queries.editor.public_denied'),
+    queryAcrossProjects: this.I18n.t('js.work_item_queries.editor.query_across_projects'),
+    removeClause: this.I18n.t('js.work_item_queries.editor.remove_clause'),
+    results: this.I18n.t('js.work_item_queries.editor.results'),
+    revert: this.I18n.t('js.work_item_queries.editor.revert'),
+    run: this.I18n.t('js.work_item_queries.editor.run'),
+    running: this.I18n.t('js.work_item_queries.editor.running'),
+    save: this.I18n.t('js.work_item_queries.editor.save'),
+    selectClause: this.I18n.t('js.work_item_queries.editor.select_clause'),
+    settingsLabel: this.I18n.t('js.work_item_queries.editor.settings_label'),
+    sharedWithEveryone: this.I18n.t('js.work_item_queries.editor.shared_with_everyone'),
+    ungroup: this.I18n.t('js.work_item_queries.editor.ungroup'),
+    where: this.I18n.t('js.work_item_queries.editor.where'),
+    showingFirst: (shown:number, total:number) => this.I18n.t('js.work_item_queries.editor.showing_first', { shown, total }),
+    workItemsCount: (count:number) => this.I18n.t('js.work_item_queries.editor.work_items_count', { count }),
+  };
+
   // Signals: the app is zoneless, so state changed in HTTP callbacks must notify the view itself.
   readonly tree = signal<Group>(emptyTree());
 
@@ -79,7 +137,7 @@ export class WorkItemQueryEditorComponent implements OnInit, OnDestroy {
 
   readonly showColumns = signal(false);
 
-  readonly catalog = COLUMN_CATALOG;
+  readonly catalog = COLUMN_CATALOG.map((c) => ({ id: c.id, label: this.I18n.t(c.labelKey) }));
 
   readonly isPublic = signal(false);
 
@@ -134,7 +192,7 @@ export class WorkItemQueryEditorComponent implements OnInit, OnDestroy {
     }
     this.subs.load = this.service.get(Number(this.queryId)).subscribe({
       next: (item) => { this.load(item); this.run(); },
-      error: (err:HttpErrorResponse) => { this.error.set(errorMessage(err, 'Loading the query failed')); },
+      error: (err:HttpErrorResponse) => { this.error.set(errorMessage(err, this.I18n.t('js.work_item_queries.errors.load_failed'))); },
     });
   }
 
@@ -185,7 +243,7 @@ export class WorkItemQueryEditorComponent implements OnInit, OnDestroy {
         mode: this.mode(),
         project_id: this.queryProjectId(),
         columns: this.columns(),
-        pageSize: 500,
+        pageSize: PAGE_SIZE,
       })
       .pipe(finalize(() => { this.loading.set(false); }))
       .subscribe({
@@ -203,7 +261,7 @@ export class WorkItemQueryEditorComponent implements OnInit, OnDestroy {
           this.results.set([]);
           this.total.set(0);
           this.ran.set(false);
-          this.error.set(errorMessage(err, 'Query failed'));
+          this.error.set(errorMessage(err, this.I18n.t('js.work_item_queries.errors.run_failed')));
         },
       });
   }
@@ -250,7 +308,7 @@ export class WorkItemQueryEditorComponent implements OnInit, OnDestroy {
     if (this.saving()) { return; }
     const name = this.name().trim();
     if (!name) {
-      this.error.set('Give the query a name before saving it.');
+      this.error.set(this.I18n.t('js.work_item_queries.errors.name_required'));
       return;
     }
     this.error.set(null);
@@ -288,7 +346,7 @@ export class WorkItemQueryEditorComponent implements OnInit, OnDestroy {
           this.publicDenied.set(true);
           this.isPublic.set(false);
         }
-        this.error.set(errorMessage(err, 'Save failed'));
+        this.error.set(errorMessage(err, this.I18n.t('js.work_item_queries.errors.save_failed')));
       },
     });
   }

@@ -30,6 +30,7 @@ import { Component, ElementRef, Input, OnInit, computed, inject, signal } from '
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { populateInputsFromDataset } from 'core-app/shared/components/dataset-inputs';
+import { I18nService } from 'core-app/core/i18n/i18n.service';
 import { WorkItemQueryItem, WorkItemQueryService } from './work-item-query.service';
 import { groupAndFilter, initials } from './work-item-query-list';
 
@@ -48,6 +49,38 @@ export class WorkItemQueryListComponent implements OnInit {
   readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
 
   private service = inject(WorkItemQueryService);
+
+  private I18n = inject(I18nService);
+
+  readonly text = {
+    title: this.I18n.t('js.work_item_queries.title'),
+    newQuery: this.I18n.t('js.work_item_queries.new_query'),
+    favorites: this.I18n.t('js.label_favorites'),
+    all: this.I18n.t('js.label_all_uppercase'),
+    delete: this.I18n.t('js.button_delete'),
+    createFirst: this.I18n.t('js.work_item_queries.list.create_first'),
+    emptyFavoritesText: this.I18n.t('js.work_item_queries.list.empty_favorites_text'),
+    emptyFavoritesTitle: this.I18n.t('js.work_item_queries.list.empty_favorites_title'),
+    emptyNoneText: this.I18n.t('js.work_item_queries.list.empty_none_text'),
+    emptyNoneTitle: this.I18n.t('js.work_item_queries.list.empty_none_title'),
+    emptyText: this.I18n.t('js.work_item_queries.list.empty_text'),
+    emptyTitle: this.I18n.t('js.work_item_queries.list.empty_title'),
+    filterPlaceholder: this.I18n.t('js.work_item_queries.list.filter_placeholder'),
+    lastModifiedBy: this.I18n.t('js.work_item_queries.list.last_modified_by'),
+    loading: this.I18n.t('js.work_item_queries.list.loading'),
+    myQueries: this.I18n.t('js.work_item_queries.list.my_queries'),
+    noMatchesText: this.I18n.t('js.work_item_queries.list.no_matches_text'),
+    noMatchesTitle: this.I18n.t('js.work_item_queries.list.no_matches_title'),
+    shared: this.I18n.t('js.work_item_queries.list.shared'),
+    sharedQueries: this.I18n.t('js.work_item_queries.list.shared_queries'),
+    show: this.I18n.t('js.work_item_queries.list.show'),
+    subtitle: this.I18n.t('js.work_item_queries.list.subtitle'),
+    titleColumn: this.I18n.t('js.work_item_queries.list.title_column'),
+    addFavorite: (name:string) => this.I18n.t('js.work_item_queries.list.add_favorite', { name }),
+    removeFavorite: (name:string) => this.I18n.t('js.work_item_queries.list.remove_favorite', { name }),
+    deleteNamed: (name:string) => this.I18n.t('js.work_item_queries.list.delete_named', { name }),
+    updated: (date:string|null) => this.I18n.t('js.work_item_queries.list.updated', { date }),
+  };
 
   // Signals: the app is zoneless, so state changed in HTTP callbacks must notify the view itself.
   readonly items = signal<WorkItemQueryItem[]>([]);
@@ -80,7 +113,7 @@ export class WorkItemQueryListComponent implements OnInit {
     this.loading.set(true);
     this.service.list().subscribe({
       next: (res) => { this.items.set(res.items); this.loading.set(false); },
-      error: (err:HttpErrorResponse) => { this.fail(err, 'Loading queries failed'); this.loading.set(false); },
+      error: (err:HttpErrorResponse) => { this.fail(err, this.I18n.t('js.work_item_queries.errors.list_failed')); this.loading.set(false); },
     });
   }
 
@@ -93,17 +126,17 @@ export class WorkItemQueryListComponent implements OnInit {
     this.setFavoriteLocally(item.id, on);
     this.error.set(null);
     this.service.setFavorite(item.id!, on).subscribe({
-      error: (err:HttpErrorResponse) => { this.setFavoriteLocally(item.id, !on); this.fail(err, 'Updating favorite failed'); },
+      error: (err:HttpErrorResponse) => { this.setFavoriteLocally(item.id, !on); this.fail(err, this.I18n.t('js.work_item_queries.errors.favorite_failed')); },
     });
   }
 
   remove(item:WorkItemQueryItem):void {
     if (!this.isOwn(item)) { return; }
-    if (!confirm(`Delete query "${item.name}"?`)) { return; }
+    if (!confirm(this.I18n.t('js.work_item_queries.list.confirm_delete', { name: item.name }))) { return; }
     this.error.set(null);
     this.service.remove(item.id!).subscribe({
       next: () => { this.items.update((all) => all.filter((i) => i.id !== item.id)); },
-      error: (err:HttpErrorResponse) => { this.fail(err, 'Deleting query failed'); },
+      error: (err:HttpErrorResponse) => { this.fail(err, this.I18n.t('js.work_item_queries.errors.delete_failed')); },
     });
   }
 

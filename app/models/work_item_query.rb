@@ -42,7 +42,8 @@ class WorkItemQuery < ApplicationRecord
   has_many :favorites, class_name: "WorkItemQueryFavorite", dependent: :delete_all
 
   validates :name, presence: true, length: { maximum: 255 }
-  validates :mode, inclusion: { in: MODES, message: "must be one of #{MODES.join(", ")}" }
+  # Extra validator options are passed on to the message as interpolation values.
+  validates :mode, inclusion: { in: MODES, modes: MODES.join(", ") }
   validate :tree_shape
   validate :columns_shape
   validate :sort_criteria_shape
@@ -62,16 +63,16 @@ class WorkItemQuery < ApplicationRecord
   def columns_shape
     return if columns.is_a?(Array) && columns.size <= MAX_COLUMNS && columns.all? { |c| c.is_a?(String) && c.present? }
 
-    errors.add(:columns, "must be an array of at most #{MAX_COLUMNS} non-blank strings")
+    errors.add(:columns, :invalid_shape, max: MAX_COLUMNS)
   end
 
   def sort_criteria_shape
     ok = sort_criteria.is_a?(Array) && sort_criteria.size <= MAX_SORT_CRITERIA &&
          sort_criteria.all? { |s| s.is_a?(Array) && s.size == 2 && s.all?(String) && SORT_DIRECTIONS.include?(s[1]) }
-    errors.add(:sort_criteria, "must be an array of at most #{MAX_SORT_CRITERIA} [field, asc|desc] pairs") unless ok
+    errors.add(:sort_criteria, :invalid_shape, max: MAX_SORT_CRITERIA) unless ok
   end
 
   def tree_shape
-    WorkItemQueries::TreeValidator.errors(tree).each { |message| errors.add(:tree, message) }
+    WorkItemQueries::TreeValidator.errors(tree).each { |key, options| errors.add(:tree, key, **options) }
   end
 end

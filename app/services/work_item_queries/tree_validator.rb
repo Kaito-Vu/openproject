@@ -34,32 +34,39 @@ module WorkItemQueries
 
     def present_string?(value) = value.is_a?(String) && value.present?
 
-    # Returns a list of human readable problems; empty means valid.
+    # i18n scope of the problem keys (also the model's error keys for the tree attribute).
+    I18N_SCOPE = "activerecord.errors.models.work_item_query.attributes.tree"
+
+    # Returns a list of [error key, interpolation options] problems; empty means valid.
     def errors(tree)
       problems = []
       count = 0
       walk = lambda do |node, depth|
         if node.is_a?(Hash) && node.key?("children")
-          problems << "unknown op #{node['op'].inspect}" unless %w[and or].include?(node["op"])
+          problems << [:unknown_op, { op: node["op"].inspect }] unless %w[and or].include?(node["op"])
           if depth > WorkItemQuery::MAX_DEPTH
-            problems << "group nested deeper than #{WorkItemQuery::MAX_DEPTH}"
+            problems << [:too_deep, { max: WorkItemQuery::MAX_DEPTH }]
             next
           end
           children = node["children"]
-          children.is_a?(Array) ? children.each { |c| walk.call(c, depth + 1) } : problems << "children must be an array"
+          children.is_a?(Array) ? children.each { |c| walk.call(c, depth + 1) } : problems << [:children_not_array, {}]
         elsif node.is_a?(Hash) && node.key?("field")
           count += 1
-          problems << "condition needs field and operator" unless present_string?(node["field"]) && present_string?(node["operator"])
-          problems << "values must be an array of strings" unless node["values"].is_a?(Array) && node["values"].all?(String)
+          problems << [:incomplete_condition, {}] unless present_string?(node["field"]) && present_string?(node["operator"])
+          problems << [:values_not_strings, {}] unless node["values"].is_a?(Array) && node["values"].all?(String)
         else
-          problems << "node must be a group or a condition"
+          problems << [:invalid_node, {}]
         end
       end
 
-      problems << "root must be a group" unless tree.is_a?(Hash) && tree.key?("children")
+      problems << [:root_not_group, {}] unless tree.is_a?(Hash) && tree.key?("children")
       walk.call(tree, 1) if problems.empty?
-      problems << "more than #{WorkItemQuery::MAX_CONDITIONS} conditions" if count > WorkItemQuery::MAX_CONDITIONS
+      problems << [:too_many_conditions, { max: WorkItemQuery::MAX_CONDITIONS }] if count > WorkItemQuery::MAX_CONDITIONS
       problems.uniq
+    end
+
+    def messages(tree)
+      errors(tree).map { |key, options| I18n.t(key, scope: I18N_SCOPE, **options) }
     end
   end
 end

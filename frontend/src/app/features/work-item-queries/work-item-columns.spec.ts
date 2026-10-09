@@ -25,7 +25,9 @@
 // See COPYRIGHT and LICENSE files for more details.
 //++
 
-import { cellValue, columnLabel, ResultElement, toggleColumn } from './work-item-columns';
+import {
+  cellValue, COLUMN_CATALOG, columnLabelKey, ResultElement, toggleColumn,
+} from './work-item-columns';
 
 describe('cellValue', () => {
   const el:ResultElement = {
@@ -75,9 +77,14 @@ describe('toggleColumn', () => {
   });
 });
 
-describe('columnLabel', () => {
-  it('falls back to the id for unknown columns', () => {
-    expect(columnLabel('dueDate')).toBe('Finish date');
-    expect(columnLabel('storyPoints')).toBe('storyPoints');
+describe('columnLabelKey', () => {
+  it('returns the i18n key of catalog columns and null for unknown ones', () => {
+    expect(columnLabelKey('dueDate')).toBe('js.work_packages.properties.dueDate');
+    expect(columnLabelKey('id')).toBe('js.work_item_queries.columns.id');
+    expect(columnLabelKey('storyPoints')).toBeNull();
+  });
+
+  it('gives every catalog column a js.* key', () => {
+    expect(COLUMN_CATALOG.every((c) => c.labelKey.startsWith('js.'))).toBe(true);
   });
 });

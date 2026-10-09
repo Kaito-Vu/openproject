@@ -57,7 +57,9 @@ module API
             def check_project!(project_id)
               return if project_id.nil?
 
-              render_invalid("Project not found") unless Project.visible(current_user).exists?(id: project_id)
+              return if Project.visible(current_user).exists?(id: project_id)
+
+              render_invalid(I18n.t("work_item_queries.errors.project_not_found"))
             end
 
             def find_visible!
@@ -83,8 +85,7 @@ module API
                         end
               return if allowed
 
-              raise ::API::Errors::Unauthorized.new(message: "Sharing a query with everyone requires the " \
-                                                             "permission to manage public queries.")
+              raise ::API::Errors::Unauthorized.new(message: I18n.t("work_item_queries.errors.public_not_allowed"))
             end
 
             def run_query(wiq)
@@ -97,7 +98,7 @@ module API
             end
 
             def error_text(record)
-              record.errors.map { |e| "#{e.attribute} #{e.message}" }.to_sentence
+              record.errors.full_messages.to_sentence
             end
 
             def render_invalid(message)

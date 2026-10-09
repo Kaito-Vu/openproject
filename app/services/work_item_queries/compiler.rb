@@ -55,7 +55,7 @@ module WorkItemQueries
     end
 
     def call(tree)
-      problems = TreeValidator.errors(tree)
+      problems = TreeValidator.messages(tree)
       raise InvalidTree, problems.to_sentence if problems.any?
 
       sql = compile_group(tree, inside_or: false)
@@ -79,7 +79,7 @@ module WorkItemQueries
     def compile_condition(node, inside_or:)
       filter = build_filter(node)
       if inside_or && self.class.or_unsafe?(filter)
-        raise InvalidTree, "#{node['field']} cannot be used inside an OR group"
+        raise InvalidTree, I18n.t("work_item_queries.errors.or_unsafe", field: node["field"])
       end
 
       @leaves << filter
@@ -92,8 +92,9 @@ module WorkItemQueries
       filter.context = @query
       filter.operator = node["operator"]
       filter.values = node["values"]
-      raise InvalidTree, "invalid condition on #{node['field']}" unless filter.available? && filter.valid?
-      raise InvalidTree, "#{node['field']} is not supported in the query editor" if self.class.unsupported?(filter)
+      field = node["field"]
+      raise InvalidTree, I18n.t("work_item_queries.errors.invalid_condition", field:) unless filter.available? && filter.valid?
+      raise InvalidTree, I18n.t("work_item_queries.errors.unsupported_filter", field:) if self.class.unsupported?(filter)
 
       filter
     end
