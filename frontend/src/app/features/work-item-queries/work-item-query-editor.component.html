@@ -1,9 +1,18 @@
+<nav aria-label="Breadcrumb">
+  <a [href]="listUrl">Queries</a> &gt; <span aria-current="page">{{ name() || 'New query' }}</span>
+</nav>
+
 <div class="toolbar-items">
   <button type="button" class="button -primary" (click)="run()">Run query</button>
-  <button type="button" class="button" (click)="save()" [disabled]="saving()">Save</button>
+  <button type="button" class="button" (click)="save()" [disabled]="saving()">Save query</button>
   <button type="button" class="button" (click)="revert()">Revert</button>
+  <button type="button" class="button" (click)="exportCsv()" [disabled]="results().length === 0"
+    title="Exports the rows loaded by the last run (up to 500)">Export CSV (loaded rows)</button>
+  <button type="button" class="button" (click)="copyUrl()" [disabled]="currentId() === null">Copy URL</button>
   <button type="button" class="button" (click)="group()" [disabled]="selected().size < 2">Group</button>
 </div>
+
+<span role="status">@switch (copyState()) { @case ('copied') { Copied } @case ('failed') { Copy failed - clipboard not available } }</span>
 
 @if (loading()) {
   <p>Loading…</p>

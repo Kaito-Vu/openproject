@@ -50,6 +50,7 @@ RSpec.describe "Work item queries pages", type: :rails_request do
         get path
         expect(response).to have_http_status(:ok)
         expect(response.body).to include("opce-work-item-query-list")
+        expect(response.body).to match(%r{href="[^"]*/queries"})
       end
     end
   end

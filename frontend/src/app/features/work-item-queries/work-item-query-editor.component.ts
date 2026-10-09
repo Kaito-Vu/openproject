@@ -27,13 +27,14 @@
 
 import { HttpErrorResponse } from '@angular/common/http';
 import { finalize, Subscription } from 'rxjs';
-import { Component, ElementRef, Input, OnInit, inject, signal } from '@angular/core';
+import { Component, ElementRef, Input, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { populateInputsFromDataset } from 'core-app/shared/components/dataset-inputs';
 import {
   addCondition, Condition, emptyTree, group, Group, Path, removeAt, Row, rows, setOp, ungroup, updateCondition,
 } from './work-item-query-tree';
 import { applySaved, buildSavePayload, WorkItemQueryItem, WorkItemQueryService } from './work-item-query.service';
+import { toCsv } from './work-item-csv';
 import { ResultRow, WorkItemResultsComponent } from './work-item-results.component';
 import { WorkItemConditionRowComponent } from './work-item-condition-row.component';
 
@@ -43,7 +44,7 @@ import { WorkItemConditionRowComponent } from './work-item-condition-row.compone
   imports: [FormsModule, WorkItemResultsComponent, WorkItemConditionRowComponent],
   templateUrl: './work-item-query-editor.component.html',
 })
-export class WorkItemQueryEditorComponent implements OnInit {
+export class WorkItemQueryEditorComponent implements OnInit, OnDestroy {
   @Input() projectId:number|null = null;
 
   @Input() queryId:number|null = null;
@@ -67,9 +68,13 @@ export class WorkItemQueryEditorComponent implements OnInit {
 
   readonly selected = signal(new Set<string>());
 
-  currentId:number|null = null;
+  readonly currentId = signal<number|null>(null);
 
-  name = '';
+  readonly name = signal('');
+
+  readonly copyState = signal<'idle'|'copied'|'failed'>('idle');
+
+  private copyTimer?:ReturnType<typeof setTimeout>;
 
   readonly loading = signal(false);
 
@@ -96,6 +101,35 @@ export class WorkItemQueryEditorComponent implements OnInit {
       },
       error: (err:HttpErrorResponse) => { this.error.set((err.error as { message?:string }|null)?.message ?? 'Loading queries failed'); },
     });
+  }
+
+  ngOnDestroy():void { clearTimeout(this.copyTimer); }
+
+  get listUrl():string { return this.projectId ? `/projects/${this.projectId}/queries` : '/queries'; }
+
+  get editorPath():string { return `${this.listUrl}/editor`; }
+
+  exportCsv():void {
+    const url = URL.createObjectURL(new Blob([toCsv(this.results())], { type: 'text/csv;charset=utf-8' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${this.name() || 'query'}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  copyUrl():void {
+    const id = this.currentId();
+    if (id == null) { return; }
+    const done = (state:'copied'|'failed'):void => {
+      this.copyState.set(state);
+      clearTimeout(this.copyTimer);
+      this.copyTimer = setTimeout(() => { this.copyState.set('idle'); }, 2000);
+    };
+    navigator.clipboard.writeText(`${window.location.origin}${this.editorPath}?id=${id}`)
+      .then(() => { done('copied'); }, () => { done('failed'); });
   }
 
   get rows():Row[] { return rows(this.tree()); }
@@ -159,23 +193,28 @@ export class WorkItemQueryEditorComponent implements OnInit {
   toggleOp(row:Row):void { this.tree.update((t) => setOp(t, row.parentPath, row.parentOp === 'and' ? 'or' : 'and')); }
 
   save():void {
-    const name = this.name || (window.prompt('Query name') ?? '');
+    const name = this.name() || (window.prompt('Query name') ?? '');
     if (!name) { return; }
-    this.name = name;
+    this.name.set(name);
     const item = buildSavePayload(
       { name, mode: this.mode(), project_id: this.acrossProjects() ? null : this.projectId, tree: this.tree() },
-      this.currentId != null ? this.lastLoaded : null,
+      this.currentId() != null ? this.lastLoaded : null,
     );
     if (this.saving()) { return; }
     this.saving.set(true);
     const token = this.loadToken;
-    const req = this.currentId != null ? this.service.update(this.currentId, item) : this.service.create(item);
+    const id = this.currentId();
+    const req = id != null ? this.service.update(id, item) : this.service.create(item);
     req.pipe(finalize(() => { this.saving.set(false); })).subscribe({
       next: (saved) => {
         const next = applySaved(
-          { currentId: this.currentId, lastLoaded: this.lastLoaded, loadToken: this.loadToken }, token, saved,
+          { currentId: this.currentId(), lastLoaded: this.lastLoaded, loadToken: this.loadToken }, token, saved,
         );
-        this.currentId = next.currentId;
+        const wasNew = this.currentId() == null;
+        this.currentId.set(next.currentId);
+        if (wasNew && next.currentId != null) {
+          window.history.replaceState(null, '', `${this.editorPath}?id=${next.currentId}`);
+        }
         this.lastLoaded = next.lastLoaded;
         this.service.list().subscribe((res) => { this.saved = res.items; });
       },
@@ -186,8 +225,8 @@ export class WorkItemQueryEditorComponent implements OnInit {
   load(item:WorkItemQueryItem):void {
     this.loadToken += 1;
     this.lastLoaded = item;
-    this.currentId = item.id ?? null;
-    this.name = item.name;
+    this.currentId.set(item.id ?? null);
+    this.name.set(item.name);
     this.mode.set(item.mode);
     this.acrossProjects.set(item.project_id == null);
     this.tree.set(structuredClone(item.tree));

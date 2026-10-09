@@ -32,6 +32,8 @@ class WorkItemQueriesController < ApplicationController
   before_action :load_and_authorize_in_optional_project
   authorization_checked! :index, :editor
 
+  menu_item :work_item_queries
+
   def index; end
 
   def editor; end
