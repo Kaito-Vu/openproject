@@ -75,6 +75,7 @@ module API
       mount ::API::V3::ProjectPhases::ProjectPhasesAPI
       mount ::API::V3::Projects::Statuses::StatusesAPI
       mount ::API::V3::Queries::QueriesAPI
+      mount ::API::V3::WorkItemQueries::WorkItemQueriesAPI
       mount ::API::V3::Render::RenderAPI
       mount ::API::V3::Relations::RelationsAPI
       mount ::API::V3::Reminders::RemindersAPI
