@@ -44,6 +44,7 @@
 .wiq-btn:hover:not(:disabled) { background: var(--bgColor-neutral-muted, #eaeef2); }
 .wiq-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .wiq-btn svg { flex: none; display: block; }
+.wiq-btn, .wiq-icon-btn { margin: 0; line-height: 1; vertical-align: middle; }
 .wiq-icon-btn svg { display: block; }
 .wiq-btn--primary {
   background: var(--bgColor-success-emphasis, #1f883d);
@@ -73,6 +74,7 @@
 
 /* ---------- form controls ---------- */
 .wiq-control {
+  margin: 0;
   width: 100%;
   min-width: 0;
   height: 32px;
@@ -153,7 +155,8 @@ select.wiq-control:disabled { cursor: not-allowed; opacity: 0.6; }
   text-align: center;
 }
 .wiq-empty strong { color: var(--wiq-fg); font-size: 16px; }
-.wiq-empty svg { margin-bottom: 8px; color: var(--wiq-border); }
+.wiq-empty > svg { margin-bottom: 8px; color: var(--wiq-border); }
+.wiq-empty-cta { margin-top: 14px; }
 
 .wiq-sr-only {
   position: absolute;

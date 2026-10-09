@@ -38,7 +38,11 @@
         <div class="wiq-empty">
           <svg width="40" height="40" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><rect x="2" y="2.5" width="12" height="11" rx="1.5"/><path d="M2 6h12M6 6v7.5"/></svg>
           <strong>No queries yet</strong>
-          <span>Create one with New query.</span>
+          <span>Save a set of filters as a query to reuse it and share it with your team.</span>
+          <button type="button" class="wiq-btn wiq-btn--primary wiq-empty-cta" (click)="newQuery()">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg>
+            Create your first query
+          </button>
         </div>
       </div>
     } @else if (v.my.length + v.shared.length === 0) {

@@ -23,12 +23,16 @@
 .wiq-tabs button.is-active { background: var(--wiq-bg); color: var(--wiq-fg); box-shadow: 0 1px 2px rgba(31, 35, 40, 0.15); }
 .wiq-tabs button:focus-visible { outline: 2px solid var(--focus-outlineColor, #0969da); }
 
-.wiq-search { position: relative; display: block; width: 280px; max-width: 100%; }
-.wiq-search svg { position: absolute; top: 9px; left: 10px; color: var(--wiq-fg-muted); pointer-events: none; }
+.wiq-search { display: grid; align-items: center; width: 280px; max-width: 100%; margin: 0; }
+.wiq-search > * { grid-area: 1 / 1; }
+.wiq-search svg { z-index: 1; justify-self: start; margin-left: 10px; color: var(--wiq-fg-muted); pointer-events: none; }
 .wiq-search input {
   width: 100%;
   height: 32px;
+  margin: 0;
   padding: 0 10px 0 32px;
+  line-height: normal;
+  box-sizing: border-box;
   border: 1px solid var(--control-borderColor-rest, var(--wiq-border));
   border-radius: var(--wiq-radius);
   background: var(--wiq-bg);

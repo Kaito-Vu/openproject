@@ -1,6 +1,7 @@
 :host { display: block; min-width: 0; width: 100%; }
 .box {
   position: relative;
+  margin: 0;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -15,7 +16,7 @@
 .box:hover { border-color: var(--wiq-fg-muted); }
 .box.is-open, .box:focus-visible { border-color: var(--wiq-accent); outline: 2px solid var(--wiq-accent-soft); }
 .placeholder { padding-left: 4px; color: var(--wiq-fg-muted); }
-.caret { position: absolute; top: 10px; right: 10px; color: var(--wiq-fg-muted); pointer-events: none; }
+.caret { position: absolute; top: 0; bottom: 0; right: 10px; display: block; margin: auto 0; color: var(--wiq-fg-muted); pointer-events: none; }
 .chip {
   display: inline-flex;
   align-items: center;
