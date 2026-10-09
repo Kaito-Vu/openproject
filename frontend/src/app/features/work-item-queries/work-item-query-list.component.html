@@ -1,0 +1,59 @@
+<h1>Queries</h1>
+
+<div class="toolbar-items">
+  <button type="button" class="button" [class.-active]="tab() === 'favorites'" [attr.aria-pressed]="tab() === 'favorites'" (click)="tab.set('favorites')">Favorites</button>
+  <button type="button" class="button" [class.-active]="tab() === 'all'" [attr.aria-pressed]="tab() === 'all'" (click)="tab.set('all')">All</button>
+  <button type="button" class="button -primary" (click)="newQuery()">New query</button>
+  <input type="search" placeholder="Filter by keywords" aria-label="Filter by keywords" [ngModel]="keyword()" (ngModelChange)="keyword.set($event)" />
+</div>
+
+@if (error(); as message) {
+  <div class="op-toast -error" role="alert">{{ message }}</div>
+}
+
+@if (loading()) {
+  <p>Loading…</p>
+} @else {
+  @let v = view();
+  @if (items().length === 0) {
+    <p>No queries yet - create one with New query</p>
+  } @else if (v.my.length + v.shared.length === 0) {
+    <p>{{ keyword().trim() ? 'No matches' : 'No favorites yet' }}</p>
+  } @else {
+    <table class="generic-table">
+      <thead>
+        <tr><th scope="col">Title</th><th scope="col">Last modified by</th></tr>
+      </thead>
+      @for (section of [{ key: 'my', label: 'My Queries', rows: v.my }, { key: 'shared', label: 'Shared Queries', rows: v.shared }]; track section.key) {
+        <tbody>
+          <tr>
+            <th scope="colgroup" colspan="2">
+              <button type="button" class="button -transparent" [attr.aria-expanded]="!collapsed()[section.key]" (click)="toggleSection(section.key)">
+                <span aria-hidden="true">{{ collapsed()[section.key] ? '▸' : '▾' }}</span>
+                {{ section.label }} ({{ section.rows.length }})
+              </button>
+            </th>
+          </tr>
+          @if (!collapsed()[section.key]) {
+            @for (item of section.rows; track item.id) {
+              <tr>
+                <td>
+                  <span aria-hidden="true">{{ item.mode === 'tree' ? '⌥' : '☰' }}</span>
+                  <a href="#" (click)="$event.preventDefault(); open(item)">{{ item.name }}</a>
+                  <button type="button" class="button -transparent" [attr.aria-pressed]="item.favorite" [attr.aria-label]="(item.favorite ? 'Remove from favorites: ' : 'Add to favorites: ') + item.name" (click)="toggleFavorite(item)">{{ item.favorite ? '★' : '☆' }}</button>
+                  @if (isOwn(item)) {
+                    <button type="button" class="button -transparent" [attr.aria-label]="'Delete ' + item.name" (click)="remove(item)">🗑</button>
+                  }
+                </td>
+                <td>
+                  <span class="avatar" aria-hidden="true">{{ initials(item.updated_by_name) }}</span>
+                  {{ item.updated_by_name }} updated {{ item.updated_at | date:'shortDate' }}
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      }
+    </table>
+  }
+}

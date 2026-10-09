@@ -33,6 +33,7 @@ import { Group } from './work-item-query-tree';
 export interface WorkItemQueryItem {
   id?:number; name:string; mode:'flat'|'tree'; public:boolean; project_id:number|null;
   columns:string[]; sort_criteria:string[][]; tree:Group;
+  user_id?:number; favorite?:boolean; updated_at?:string; updated_by_name?:string;
 }
 
 export interface EditorState {
@@ -82,6 +83,11 @@ export class WorkItemQueryService {
 
   update(id:number, patch:Partial<WorkItemQueryItem>):Observable<WorkItemQueryItem> {
     return this.http.patch<WorkItemQueryItem>(`${this.base}/${id}`, patch);
+  }
+
+  setFavorite(id:number, on:boolean):Observable<void> {
+    const url = `${this.base}/${id}/favorite`;
+    return on ? this.http.put<void>(url, {}) : this.http.delete<void>(url);
   }
 
   remove(id:number):Observable<void> { return this.http.delete<void>(`${this.base}/${id}`); }
