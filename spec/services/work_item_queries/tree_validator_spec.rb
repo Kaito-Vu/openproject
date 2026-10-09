@@ -65,7 +65,7 @@ RSpec.describe WorkItemQueries::TreeValidator do
   it "rejects trees deeper than MAX_DEPTH" do
     # nest(n) wraps a leaf in n-1 groups; with the root that makes n groups deep.
     deep = { "op" => "and", "children" => [nest(WorkItemQuery::MAX_DEPTH + 1)] } # 6 groups
-    expect(described_class.errors(deep)).not_to be_empty
+    expect(described_class.errors(deep)).to include(a_string_matching(/deeper/))
     ok = { "op" => "and", "children" => [nest(WorkItemQuery::MAX_DEPTH)] } # 5 groups
     expect(described_class.errors(ok)).to be_empty
   end
@@ -73,5 +73,33 @@ RSpec.describe WorkItemQueries::TreeValidator do
   it "rejects more than MAX_CONDITIONS conditions" do
     tree = { "op" => "and", "children" => Array.new(WorkItemQuery::MAX_CONDITIONS + 1) { leaf } }
     expect(described_class.errors(tree)).not_to be_empty
+  end
+
+  it "accepts exactly MAX_CONDITIONS conditions" do
+    tree = { "op" => "and", "children" => Array.new(WorkItemQuery::MAX_CONDITIONS) { leaf } }
+    expect(described_class.errors(tree)).to be_empty
+  end
+
+  it "rejects nil and non-Hash roots" do
+    expect(described_class.errors(nil)).not_to be_empty
+    expect(described_class.errors([])).not_to be_empty
+  end
+
+  it "rejects non-array children and non-Hash children" do
+    expect(described_class.errors({ "op" => "and", "children" => "x" })).not_to be_empty
+    expect(described_class.errors({ "op" => "and", "children" => ["x"] })).not_to be_empty
+  end
+
+  it "rejects non-string field, operator and values" do
+    [{ "field" => 5, "operator" => "=", "values" => [] },
+     { "field" => "status", "operator" => 5, "values" => [] },
+     { "field" => "status", "operator" => "=", "values" => ["1", nil] },
+     { "field" => "status", "operator" => "=", "values" => [{ "a" => 1 }] }].each do |bad|
+      expect(described_class.errors({ "op" => "and", "children" => [bad] })).not_to be_empty
+    end
+  end
+
+  it "does not blow the stack on absurdly deep input" do
+    expect(described_class.errors(nest(10_000))).not_to be_empty
   end
 end

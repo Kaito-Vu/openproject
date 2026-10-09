@@ -31,6 +31,8 @@ module WorkItemQueries
   module TreeValidator
     module_function
 
+    def present_string?(value) = value.is_a?(String) && value.present?
+
     # Returns a list of human readable problems; empty means valid.
     def errors(tree)
       problems = []
@@ -38,13 +40,16 @@ module WorkItemQueries
       walk = lambda do |node, depth|
         if node.is_a?(Hash) && node.key?("children")
           problems << "unknown op #{node['op'].inspect}" unless %w[and or].include?(node["op"])
-          problems << "group nested deeper than #{WorkItemQuery::MAX_DEPTH}" if depth > WorkItemQuery::MAX_DEPTH
+          if depth > WorkItemQuery::MAX_DEPTH
+            problems << "group nested deeper than #{WorkItemQuery::MAX_DEPTH}"
+            next
+          end
           children = node["children"]
           children.is_a?(Array) ? children.each { |c| walk.call(c, depth + 1) } : problems << "children must be an array"
         elsif node.is_a?(Hash) && node.key?("field")
           count += 1
-          problems << "condition needs field and operator" if node["field"].blank? || node["operator"].blank?
-          problems << "values must be an array" unless node["values"].is_a?(Array)
+          problems << "condition needs field and operator" unless present_string?(node["field"]) && present_string?(node["operator"])
+          problems << "values must be an array of strings" unless node["values"].is_a?(Array) && node["values"].all?(String)
         else
           problems << "node must be a group or a condition"
         end
