@@ -656,6 +656,9 @@ Rails.application.routes.draw do
     # work as a catchall for everything under /wiki
     get "wiki" => "wiki#show"
 
+    get "queries" => "work_item_queries#index", as: :work_item_queries
+    get "queries/editor" => "work_item_queries#editor", as: :work_item_query_editor
+
     resources :work_packages, only: %i[index show] do
       collection do
         get "/report/:detail" => "work_packages/reports#report_details"
@@ -1228,6 +1231,9 @@ Rails.application.routes.draw do
       end
     end
   end
+
+  get "queries" => "work_item_queries#index", as: :work_item_queries
+  get "queries/editor" => "work_item_queries#editor", as: :work_item_query_editor
 
   resources :work_packages, only: %i[index show new] do
     concerns :shareable

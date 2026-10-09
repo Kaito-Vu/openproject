@@ -96,6 +96,7 @@ import {
   OpBasicRangeDatePickerComponent,
 } from 'core-app/shared/components/datepicker/basic-range-date-picker/basic-range-date-picker.component';
 import { GlobalSearchInputComponent } from 'core-app/core/global_search/input/global-search-input.component';
+import { WorkItemQueryEditorComponent } from 'core-app/features/work-item-queries/work-item-query-editor.component';
 import {
   OpAutocompleterComponent,
 } from 'core-app/shared/components/autocompleter/op-autocompleter/op-autocompleter.component';
@@ -360,6 +361,7 @@ export class OpenProjectModule implements DoBootstrap {
     registerCustomElement('opce-basic-single-date-picker', OpBasicSingleDatePickerComponent, { injector });
     registerCustomElement('opce-range-date-picker', OpBasicRangeDatePickerComponent, { injector });
     registerCustomElement('opce-global-search', GlobalSearchInputComponent, { injector });
+    registerCustomElement('opce-work-item-query-editor', WorkItemQueryEditorComponent, { injector });
     registerCustomElement('opce-autocompleter', OpAutocompleterComponent, { injector });
     registerCustomElement('opce-project-autocompleter', ProjectAutocompleterComponent, { injector });
     registerCustomElement('opce-members-autocompleter', MembersAutocompleterComponent, { injector });

@@ -338,6 +338,7 @@ Rails.application.reloader.to_prepare do
                        journals: %i[index],
                        work_packages: %i[show index split_view show_conflict_flash_message share_upsell],
                        work_packages_api: [:get],
+                       work_item_queries: %i[index editor],
                        "work_packages/reports": %i[report report_details],
                        "work_packages/activities_tab": %i[index page_streams item_actions update_streams update_sorting
                                                           update_filter],

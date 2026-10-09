@@ -4679,6 +4679,8 @@ en:
   label_with_criteria: "With criteria"
   label_without_criteria: "Without criteria"
   label_work: "Work"
+  label_work_item_queries: "Queries"
+  label_work_item_query_editor: "Query editor"
   label_work_package: "Work package"
   label_work_package_attachments: "Work package attachments"
   label_work_package_category_new: "New category"

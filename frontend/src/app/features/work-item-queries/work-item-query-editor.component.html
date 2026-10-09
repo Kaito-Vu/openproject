@@ -1,0 +1,51 @@
+<div class="toolbar-items">
+  <button type="button" class="button -primary" (click)="run()">Run query</button>
+  <button type="button" class="button" (click)="save()">Save</button>
+  <button type="button" class="button" (click)="revert()">Revert</button>
+  <button type="button" class="button" (click)="group()" [disabled]="selected.size < 2">Group</button>
+</div>
+
+@if (error) {
+  <div class="op-toast -error">{{ error }}</div>
+}
+
+<label>
+  Type of query
+  <select [(ngModel)]="mode">
+    <option value="flat">Flat</option>
+    <option value="tree">Tree</option>
+  </select>
+</label>
+
+<label>
+  <input type="checkbox" [(ngModel)]="acrossProjects" />
+  Query across projects
+</label>
+
+@for (row of rows; track row.path.join('.')) {
+  <div class="op-wiq-row" [style.margin-left.px]="row.depth * 24" [style.border-left]="row.depth ? '2px solid #ccc' : 'none'">
+    @if (row.indexInParent > 0) {
+      <select [ngModel]="row.parentOp" (ngModelChange)="toggleOp(row)">
+        <option value="and">And</option>
+        <option value="or">Or</option>
+      </select>
+    }
+    <input
+      type="checkbox"
+      [checked]="selected.has(row.path.join('.'))"
+      (change)="toggleSelected(row.path, $any($event.target).checked)"
+    />
+    <op-work-item-condition-row
+      [condition]="row.node"
+      (changed)="update(row.path, $event)"
+      (removed)="remove(row.path)"
+    />
+    @if (row.depth > 0) {
+      <a href="#" (click)="$event.preventDefault(); ungroup(row.parentPath)">Ungroup</a>
+    }
+  </div>
+}
+
+<a href="#" (click)="$event.preventDefault(); add()">Add new clause</a>
+
+<op-work-item-results [rows]="results" [mode]="mode" />
