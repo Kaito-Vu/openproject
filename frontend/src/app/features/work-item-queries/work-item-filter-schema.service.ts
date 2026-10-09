@@ -28,7 +28,9 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { catchError, map, Observable, shareReplay, throwError } from 'rxjs';
-import { AllowedValues, FieldSchema, parseCollection, parseQueryForm } from './work-item-filter-schema';
+import {
+  AllowedValues, FieldSchema, parseCollection, parseQueryForm, queryFormBody,
+} from './work-item-filter-schema';
 
 // Caches per page: one query form request for all fields, one request per allowed-values collection.
 // Failed requests are dropped from the cache so the next row retries.
@@ -36,18 +38,22 @@ import { AllowedValues, FieldSchema, parseCollection, parseQueryForm } from './w
 export class WorkItemFilterSchemaService {
   private http = inject(HttpClient);
 
-  private fields$?:Observable<FieldSchema[]>;
+  private fields$ = new Map<number|null, Observable<FieldSchema[]>>();
 
   private allowed = new Map<string, Observable<AllowedValues>>();
 
-  // ponytail: global (project-less) filter set; scope by project via _links.project in the body if needed.
-  fields():Observable<FieldSchema[]> {
-    this.fields$ ??= this.http.post<unknown>('/api/v3/queries/form', {}).pipe(
-      map(parseQueryForm),
-      shareReplay(1),
-      catchError((err:unknown) => { this.fields$ = undefined; return throwError(() => err); }),
-    );
-    return this.fields$;
+  // Scoped to a project, the form also offers project-only filters and that project's custom fields.
+  fields(projectId:number|null = null):Observable<FieldSchema[]> {
+    let req = this.fields$.get(projectId);
+    if (!req) {
+      req = this.http.post<unknown>('/api/v3/queries/form', queryFormBody(projectId)).pipe(
+        map(parseQueryForm),
+        shareReplay(1),
+        catchError((err:unknown) => { this.fields$.delete(projectId); return throwError(() => err); }),
+      );
+      this.fields$.set(projectId, req);
+    }
+    return req;
   }
 
   allowedValues(href:string):Observable<AllowedValues> {

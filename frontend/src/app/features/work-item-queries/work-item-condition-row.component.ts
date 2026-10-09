@@ -107,8 +107,13 @@ export class WorkItemConditionRowComponent {
 
   readonly loadError = signal(false);
 
+  // Project the query runs in (null across projects): decides which filters the form offers.
+  readonly projectId = input<number|null>(null);
+
   readonly fields = toSignal(
-    this.schema.fields().pipe(catchError(() => { this.loadError.set(true); return of<FieldSchema[]>([]); })),
+    toObservable(this.projectId).pipe(switchMap((id) => this.schema.fields(id).pipe(
+      catchError(() => { this.loadError.set(true); return of<FieldSchema[]>([]); }),
+    ))),
     { initialValue: null },
   );
 

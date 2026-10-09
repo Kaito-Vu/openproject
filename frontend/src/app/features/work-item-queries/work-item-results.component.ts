@@ -27,9 +27,10 @@
 
 import { NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { cellValue, columnLabel, DEFAULT_COLUMNS, ResultElement } from './work-item-columns';
 
 export interface ResultRow {
-  id:number; subject:string; type:string; status:string; assignee:string; parentId:number|null; children:ResultRow[];
+  id:number; parentId:number|null; element:ResultElement; children:ResultRow[];
 }
 
 export function nestByParent(flat:Omit<ResultRow, 'children'>[]):ResultRow[] {
@@ -42,6 +43,7 @@ export function nestByParent(flat:Omit<ResultRow, 'children'>[]):ResultRow[] {
   return roots;
 }
 
+// Cells are computed from the raw element, so toggling a column shows it without re-running.
 @Component({
   selector: 'op-work-item-results',
   standalone: true,
@@ -50,7 +52,7 @@ export function nestByParent(flat:Omit<ResultRow, 'children'>[]):ResultRow[] {
   template: `
     <table class="generic-table">
       <thead>
-        <tr><th>ID</th><th>Type</th><th>Subject</th><th>Status</th><th>Assignee</th></tr>
+        <tr>@for (c of columns; track c) { <th>{{ label(c) }}</th> }</tr>
       </thead>
       <tbody>
         @for (row of (mode === 'tree' ? nested() : rows); track row.id) {
@@ -60,11 +62,9 @@ export function nestByParent(flat:Omit<ResultRow, 'children'>[]):ResultRow[] {
     </table>
     <ng-template #rowTpl let-row="row" let-depth="depth">
       <tr>
-        <td>{{ row.id }}</td>
-        <td>{{ row.type }}</td>
-        <td [style.padding-left.px]="depth * 16">{{ row.subject }}</td>
-        <td>{{ row.status }}</td>
-        <td>{{ row.assignee }}</td>
+        @for (c of columns; track c) {
+          <td [style.padding-left.px]="c === 'subject' && depth ? depth * 16 : null">{{ cell(row.element, c) }}</td>
+        }
       </tr>
       @if (mode === 'tree') {
         @for (child of row.children; track child.id) {
@@ -78,6 +78,12 @@ export class WorkItemResultsComponent {
   @Input() rows:ResultRow[] = [];
 
   @Input() mode:'flat'|'tree' = 'flat';
+
+  @Input() columns:string[] = DEFAULT_COLUMNS;
+
+  readonly cell = cellValue;
+
+  readonly label = columnLabel;
 
   nested():ResultRow[] { return nestByParent(this.rows); }
 }

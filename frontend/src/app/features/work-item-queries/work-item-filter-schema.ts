@@ -81,6 +81,11 @@ function parseOperator(link:Link, deps:Record<string, { values?:ValuesSchema }>)
   };
 }
 
+// Body for POST /api/v3/queries/form; without a project the form only knows global filters.
+export function queryFormBody(projectId:number|null):object {
+  return projectId == null ? {} : { _links: { project: { href: `/api/v3/projects/${projectId}` } } };
+}
+
 export function parseQueryForm(form:unknown):FieldSchema[] {
   const f = form as { _embedded?:{ schema?:{ _embedded?:{ filtersSchemas?:{ _embedded?:{ elements?:InstanceSchema[] } } } } } };
   const elements = f._embedded?.schema?._embedded?.filtersSchemas?._embedded?.elements ?? [];

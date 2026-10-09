@@ -29,6 +29,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Group } from './work-item-query-tree';
+import { ResultElement } from './work-item-columns';
 
 export interface WorkItemQueryItem {
   id?:number; name:string; mode:'flat'|'tree'; public:boolean; project_id:number|null;
@@ -37,20 +38,22 @@ export interface WorkItemQueryItem {
 }
 
 export interface EditorState {
-  name:string; mode:'flat'|'tree'; project_id:number|null; tree:Group;
+  name:string; mode:'flat'|'tree'; project_id:number|null; tree:Group; public:boolean; columns:string[];
 }
 
-// New queries get defaults; existing ones keep public/columns/sort_criteria from the loaded item.
+// sort_criteria is not edited in the UI: existing queries keep theirs, new ones get the default.
 export function buildSavePayload(state:EditorState, loaded:WorkItemQueryItem|null):WorkItemQueryItem {
-  return {
-    name: state.name,
-    mode: state.mode,
-    project_id: state.project_id,
-    tree: state.tree,
-    public: loaded?.public ?? false,
-    columns: loaded?.columns ?? ['id', 'type', 'subject', 'status', 'assignee'],
-    sort_criteria: loaded?.sort_criteria ?? [['id', 'asc']],
-  };
+  return { ...state, sort_criteria: loaded?.sort_criteria ?? [['id', 'asc']] };
+}
+
+// Project a query runs and saves in: none when "Query across projects" is checked, otherwise the
+// loaded query's own project, falling back to the page's project (new query, or a loaded global one).
+export function resolveProjectId(
+  acrossProjects:boolean,
+  loaded:Pick<WorkItemQueryItem, 'project_id'>|null,
+  pageProjectId:number|null,
+):number|null {
+  return acrossProjects ? null : (loaded?.project_id ?? pageProjectId);
 }
 
 export interface SaveState { currentId:number|null; lastLoaded:WorkItemQueryItem|null; loadToken:number; name:string }
@@ -61,11 +64,7 @@ export function applySaved(state:SaveState, tokenAtClick:number, saved:WorkItemQ
   return { ...state, currentId: saved.id ?? state.currentId, lastLoaded: saved, name: saved.name };
 }
 
-export interface ExecuteElement {
-  id:number; subject:string;
-  _links:{ type:{ title:string }; status:{ title:string }; assignee?:{ title:string }; parent?:{ href:string|null } };
-}
-export interface ExecuteResponse { _embedded:{ results:{ total?:number; _embedded:{ elements:ExecuteElement[] } } } }
+export interface ExecuteResponse { _embedded:{ results:{ total?:number; _embedded:{ elements:ResultElement[] } } } }
 
 @Injectable({ providedIn: 'root' })
 export class WorkItemQueryService {
@@ -74,6 +73,8 @@ export class WorkItemQueryService {
   private base = '/api/v3/work_item_queries';
 
   list():Observable<{ items:WorkItemQueryItem[] }> { return this.http.get<{ items:WorkItemQueryItem[] }>(this.base); }
+
+  get(id:number):Observable<WorkItemQueryItem> { return this.http.get<WorkItemQueryItem>(`${this.base}/${id}`); }
 
   execute(body:Partial<WorkItemQueryItem>&{ pageSize?:number }):Observable<ExecuteResponse> {
     return this.http.post<ExecuteResponse>(`${this.base}/execute`, body);

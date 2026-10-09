@@ -28,29 +28,38 @@
 import { toCsv } from './work-item-csv';
 
 describe('toCsv', () => {
-  const row = (over = {}) => ({ id: 1, type: 'Task', subject: 's', status: 'New', assignee: 'Ann', ...over });
+  const links = { type: { title: 'Task' }, status: { title: 'New' }, assignee: { title: 'Ann' } };
+  const row = (over = {}) => ({ element: { id: 1, subject: 's', _links: links, ...over } });
+  const csv = (rows:ReturnType<typeof row>[]) => toCsv(rows, ['id', 'type', 'subject', 'status', 'assignee']);
 
   it('writes a header and CRLF line ends', () => {
-    expect(toCsv([row()])).toBe('﻿id,type,subject,status,assignee\r\n1,Task,s,New,Ann\r\n');
+    expect(csv([row()])).toBe('﻿id,type,subject,status,assignee\r\n1,Task,s,New,Ann\r\n');
   });
 
   it('quotes commas, quotes and newlines', () => {
-    const csv = toCsv([row({ subject: 'a,"b"\nc' })]);
-    expect(csv).toContain('"a,""b""\nc"');
+    const out = csv([row({ subject: 'a,"b"\nc' })]);
+    expect(out).toContain('"a,""b""\nc"');
   });
 
   it('neutralises spreadsheet formulas', () => {
     [' =1+1', '=1+1', '+1', '-1', '@x', '\tx', '\rx'].forEach((v) => {
-      const cell = toCsv([row({ subject: v })]).split('\r\n')[1].split(',')[2];
+      const cell = csv([row({ subject: v })]).split('\r\n')[1].split(',')[2];
       expect(cell.replace(/^"/, '').startsWith("'")).toBe(true);
     });
   });
 
   it('starts with a UTF-8 BOM', () => {
-    expect(toCsv([]).startsWith('﻿')).toBe(true);
+    expect(csv([]).startsWith('﻿')).toBe(true);
   });
 
   it('keeps numeric ids untouched', () => {
-    expect(toCsv([row({ id: 42 })]).split('\r\n')[1].startsWith('42,')).toBe(true);
+    expect(csv([row({ id: 42 })]).split('\r\n')[1].startsWith('42,')).toBe(true);
+  });
+});
+
+describe('toCsv with selected columns', () => {
+  it('uses the given columns in the given order', () => {
+    const element = { id: 5, subject: 's', percentageDone: 40, _links: { priority: { title: 'High' } } };
+    expect(toCsv([{ element }], ['priority', 'percentageDone', 'id'])).toBe('﻿priority,percentageDone,id\r\nHigh,40%,5\r\n');
   });
 });

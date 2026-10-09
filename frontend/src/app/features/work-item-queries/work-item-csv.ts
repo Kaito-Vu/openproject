@@ -25,20 +25,19 @@
 // See COPYRIGHT and LICENSE files for more details.
 //++
 
+import { cellValue } from './work-item-columns';
 import { ResultRow } from './work-item-results.component';
 
-const COLUMNS = ['id', 'type', 'subject', 'status', 'assignee'] as const;
-
-function cell(value:string|number):string {
+function cell(value:string):string {
   let s = String(value);
   // Formula injection: spreadsheets evaluate cells whose first non-blank character is one of these.
-  if (typeof value === 'string' && (/^[\t\r]/.test(s) || /^[=+\-@]/.test(s.trimStart()))) { s = `'${s}`; }
+  if (/^[\t\r]/.test(s) || /^[=+\-@]/.test(s.trimStart())) { s = `'${s}`; }
   return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 
-// BOM so Excel opens the file as UTF-8.
-export function toCsv(rows:Pick<ResultRow, typeof COLUMNS[number]>[]):string {
-  const lines = [COLUMNS, ...rows.map((r) => COLUMNS.map((c) => r[c]))]
+// Same columns (and cell text) as the results table; BOM so Excel opens the file as UTF-8.
+export function toCsv(rows:Pick<ResultRow, 'element'>[], columns:string[]):string {
+  const lines = [columns, ...rows.map((r) => columns.map((c) => cellValue(r.element, c)))]
     .map((line) => `${line.map(cell).join(',')}\r\n`);
   return `\uFEFF${lines.join('')}`;
 }

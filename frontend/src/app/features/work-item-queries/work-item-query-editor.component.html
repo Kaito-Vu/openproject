@@ -10,7 +10,20 @@
     title="Exports the rows loaded by the last run (up to 500)">Export CSV (loaded rows)</button>
   <button type="button" class="button" (click)="copyUrl()" [disabled]="currentId() === null">Copy URL</button>
   <button type="button" class="button" (click)="group()" [disabled]="selected().size < 2">Group</button>
+  <button type="button" class="button" (click)="showColumns.set(!showColumns())" [attr.aria-expanded]="showColumns()">Column options</button>
 </div>
+
+@if (showColumns()) {
+  <fieldset class="op-wiq-columns">
+    <legend>Columns</legend>
+    @for (c of catalog; track c.id) {
+      <label>
+        <input type="checkbox" [checked]="columns().includes(c.id)" (change)="toggleColumn(c.id, $any($event.target).checked)" />
+        {{ c.label }}
+      </label>
+    }
+  </fieldset>
+}
 
 <span role="status">@switch (copyState()) { @case ('copied') { Copied } @case ('failed') { Copy failed - clipboard not available } }</span>
 
@@ -30,9 +43,14 @@
   </select>
 </label>
 
-<label>
-  <input type="checkbox" [(ngModel)]="acrossProjects" />
+<label [title]="hasOwnProject() ? '' : 'Neither the query nor this page has a project'">
+  <input type="checkbox" [(ngModel)]="acrossProjects" [disabled]="!hasOwnProject()" />
   Query across projects
+</label>
+
+<label [title]="publicDenied() ? 'You are not allowed to share queries with everyone' : ''">
+  <input type="checkbox" [(ngModel)]="isPublic" [disabled]="publicDenied()" />
+  Shared with everyone
 </label>
 
 @for (row of rows; track row.path.join('.')) {
@@ -45,11 +63,13 @@
     }
     <input
       type="checkbox"
+      aria-label="Select clause"
       [checked]="selected().has(row.path.join('.'))"
       (change)="toggleSelected(row.path, $any($event.target).checked)"
     />
     <op-work-item-condition-row
       [condition]="row.node"
+      [projectId]="queryProjectId()"
       (changed)="update(row.path, $event)"
       (removed)="remove(row.path)"
     />
@@ -65,4 +85,4 @@
   <p>Showing the first {{ results().length }} of {{ total() }} results</p>
 }
 
-<op-work-item-results [rows]="results()" [mode]="mode()" />
+<op-work-item-results [rows]="results()" [mode]="mode()" [columns]="columns()" />
