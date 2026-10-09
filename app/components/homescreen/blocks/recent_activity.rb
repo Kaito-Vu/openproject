@@ -28,50 +28,16 @@
 # See COPYRIGHT and LICENSE files for more details.
 #++
 
-require "open_project/static/homescreen"
-require "open_project/static/links"
+module Homescreen
+  module Blocks
+    class RecentActivity < DashboardBlock
+      def title
+        I18n.t("homescreen.dashboard.activity.title")
+      end
 
-OpenProject::Static::Homescreen.manage :blocks do |blocks|
-  blocks.push(
-    { name: "dashboard_kpis" },
-    { name: "my_work" },
-    { name: "projects_overview" },
-    { name: "favorite_projects" },
-    { name: "status_distribution" },
-    { name: "recent_activity" },
-    {
-      name: "administration",
-      if: Proc.new { User.current.admin? }
-    }
-  )
-end
-
-OpenProject::Static::Homescreen.manage :links do |links|
-  links.push(
-    {
-      label: :user_guides,
-      icon: "milestone",
-      url_key: :user_guides
-    },
-    {
-      label: :glossary,
-      icon: "op-glossar",
-      url_key: :glossary
-    },
-    {
-      label: :shortcuts,
-      icon: "op-shortcuts",
-      url_key: :shortcuts
-    },
-    {
-      label: :forums,
-      icon: "comment-discussion",
-      url_key: :forums
-    },
-    {
-      label: :impressum,
-      icon: "info",
-      url_key: :impressum
-    }
-  )
+      def events
+        @events ||= stats.recent_events
+      end
+    end
+  end
 end

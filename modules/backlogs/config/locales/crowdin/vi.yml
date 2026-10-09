@@ -137,9 +137,8 @@ vi:
         blankslate_description: Thiết lập ngày bắt đầu và kết thúc cho Sprint để tạo biểu đồ burndown.
         blankslate_title: Không có dữ liệu biểu đồ burndown
     estimation_unit: Đơn vị
-    excluded_work_package_types_caption: 'Chọn các Work package type muốn ẩn khỏi Backlog. Các mục thuộc loại được chọn sẽ không tự động xuất hiện trong Backlog, giúp đội ngũ tập trung vào những phần việc quan trọng hơn. Ví dụ: các loại như Epic hoặc Milestone được quản lý ở cấp cao hơn có thể được ẩn đi để giữ Backlog tập trung vào các hạng mục có thể thực hiện ngay.
-
-      '
+    excluded_work_package_types_caption: |
+      Chọn các loại work package cần ẩn khỏi backlog. Các mục thuộc loại đã chọn sẽ không tự động xuất hiện trong backlog, giúp backlog tập trung vào công việc quan trọng của nhóm. Ví dụ: các loại như Epic hoặc Milestone được quản lý ở cấp cao hơn có thể được ẩn để backlog chỉ còn các mục cần xử lý.
     finish_sprint_dialog_component:
       actions:
         move_to_bottom_of_backlog: Di chuyển chúng xuống cuối Backlog
@@ -249,7 +248,7 @@ vi:
         title: Chưa có Sprint nào
       button_new_sprint: Sprint mới
     statuses_considered_closed_caption: |
-      Chọn các status thể hiện trạng thái đã đóng hoặc đã hoàn thành trong quy trình của bạn. Chúng sẽ được coi là trạng thái "Đã đóng" trong các báo cáo (ví dụ: burndown) và khi lập kế hoạch Sprint. Chẳng hạn, các status như Done, Resolved hoặc Won't Fix đều có thể là một mục công việc đã đóng trong quy trình của bạn.
+      Chọn các trạng thái thể hiện công việc đã đóng hoặc hoàn thành trong quy trình của bạn. Các trạng thái này được coi là "Đã đóng" trong báo cáo (ví dụ: burndown) và khi lập kế hoạch sprint. Chẳng hạn, các trạng thái như Done, Resolved hoặc Won't Fix đều có thể là công việc đã đóng.
     story_points:
       other: '%{count} story point'
     types_and_statuses: Loại và status

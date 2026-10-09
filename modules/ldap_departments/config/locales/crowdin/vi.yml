@@ -63,7 +63,7 @@ vi:
         base_dn_text: |
           Nhập Base DN có các đơn vị tổ chức cần đồng bộ. Các OU con trực tiếp của nó sẽ trở thành phòng ban cấp cao nhất. Base DN này phải nằm dưới Base DN của kết nối LDAP đã chọn.
         guid_attribute_text: |
-          Tùy chọn. Thuộc tính LDAP chứa mã định danh duy nhất ổn định (ví dụ "objectGUID" hoặc "entryUUID"). Khi được đặt, phòng ban sẽ không bị ảnh hưởng khi OU bị đổi tên hoặc di chuyển. Để trống để đối chiếu theo DN.
+          Tùy chọn. Thuộc tính LDAP chứa mã định danh duy nhất ổn định (ví dụ "objectGUID" hoặc "entryUUID"). Khi đã đặt, phòng ban vẫn được giữ nguyên khi OU bị đổi tên hoặc di chuyển. Để trống để đối chiếu theo DN.
         ou_name_attribute_text: Thuộc tính LDAP dùng để đặt tên cho phòng ban (ví dụ "ou").
         sections:
           connection: Kết nối LDAP
@@ -75,7 +75,7 @@ vi:
         user_filter_string_text: |
           Tùy chọn. Bộ lọc LDAP RFC4515 để xác định các mục người dùng. Để trống để dùng bộ lọc của kết nối, hoặc bộ lọc person chung nếu chưa đặt.
       help_text: |
-        Module này phản chiếu cấu trúc đơn vị tổ chức (OU) của thư mục LDAP vào hệ thống phân cấp phòng ban của OpenProject. Mỗi OU dưới Base DN đã cấu hình sẽ trở thành một phòng ban, và người dùng được gán vào phòng ban của OU mà họ thuộc về. Các phòng ban được đồng bộ định kỳ thông qua cron job.
+        Module này phản chiếu cấu trúc đơn vị tổ chức (OU) trong thư mục LDAP vào cây phòng ban của OpenProject. Mỗi OU bên dưới Base DN đã cấu hình sẽ trở thành một phòng ban, và người dùng được gán vào phòng ban của OU chứa họ. Các phòng ban được đồng bộ định kỳ bằng cron job.
       no_results: Chưa cấu hình đồng bộ hóa phòng ban LDAP nào.
       plural: Đồng bộ hóa phòng ban LDAP
       singular: Đồng bộ hóa phòng ban LDAP

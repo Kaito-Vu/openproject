@@ -28,50 +28,25 @@
 # See COPYRIGHT and LICENSE files for more details.
 #++
 
-require "open_project/static/homescreen"
-require "open_project/static/links"
+module Homescreen
+  module Blocks
+    # Shared helpers for the dashboard blocks.
+    class DashboardBlock < Grids::WidgetComponent
+      def stats
+        @stats ||= DashboardStats.new
+      end
 
-OpenProject::Static::Homescreen.manage :blocks do |blocks|
-  blocks.push(
-    { name: "dashboard_kpis" },
-    { name: "my_work" },
-    { name: "projects_overview" },
-    { name: "favorite_projects" },
-    { name: "status_distribution" },
-    { name: "recent_activity" },
-    {
-      name: "administration",
-      if: Proc.new { User.current.admin? }
-    }
-  )
-end
+      def wp_list_path(*filters)
+        helpers.work_packages_path(query_props: { f: filters }.to_json)
+      end
 
-OpenProject::Static::Homescreen.manage :links do |links|
-  links.push(
-    {
-      label: :user_guides,
-      icon: "milestone",
-      url_key: :user_guides
-    },
-    {
-      label: :glossary,
-      icon: "op-glossar",
-      url_key: :glossary
-    },
-    {
-      label: :shortcuts,
-      icon: "op-shortcuts",
-      url_key: :shortcuts
-    },
-    {
-      label: :forums,
-      icon: "comment-discussion",
-      url_key: :forums
-    },
-    {
-      label: :impressum,
-      icon: "info",
-      url_key: :impressum
-    }
-  )
+      def my_open_filters
+        [{ n: "assignee", o: "=", v: ["me"] }, { n: "status", o: "o", v: [] }]
+      end
+
+      def due_between_filter(from, to)
+        { n: "dueDate", o: "<>d", v: [from&.iso8601.to_s, to&.iso8601.to_s] }
+      end
+    end
+  end
 end

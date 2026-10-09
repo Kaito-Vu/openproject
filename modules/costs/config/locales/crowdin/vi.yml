@@ -190,7 +190,7 @@ vi:
       time_entry_time_restrictions: Hạn chế mục thời gian
     upsell:
       time_entry_time_restrictions:
-        description: Cải thiện việc theo dõi thời gian bằng cách cho phép hoặc bắt buộc nhập thời gian bắt đầu và kết thúc chính xác, đồng thời đặt giới hạn về thời điểm và lượng thời gian mà thành viên dự án có thể ghi nhận.
+        description: Cải thiện việc theo dõi thời gian bằng cách cho phép hoặc bắt buộc nhập chính xác giờ bắt đầu và kết thúc, đồng thời giới hạn thời điểm và lượng thời gian mà thành viên dự án có thể ghi nhận.
   group_by_others: Không thuộc nhóm nào
   label_available_cost_types_projects: Dự án có loại chi phí khả dụng
   label_between: Giữa
@@ -304,7 +304,7 @@ vi:
   setting_time_entries_max_hours_per_entry: Số giờ tối đa mỗi mục thời gian
   setting_time_entries_max_hours_per_entry_caption: Giới hạn số giờ tối đa của một mục thời gian. Giá trị 0 nghĩa là không giới hạn.
   setting_time_entries_past_month_grace_days: Thời gian gia hạn cho các tháng trước
-  setting_time_entries_past_month_grace_days_caption: Xác định số ngày người dùng có khi bắt đầu tháng mới để ghi nhận mục thời gian cho tháng trước. Giá trị 5 cho phép người dùng ghi nhận thời gian cho tháng trước đến hết ngày 5 của tháng hiện tại. Giá trị 0 nghĩa là không có thời gian gia hạn.
+  setting_time_entries_past_month_grace_days_caption: Số ngày người dùng được ghi nhận mục thời gian cho tháng trước, tính từ đầu tháng mới. Giá trị 5 cho phép ghi nhận thời gian của tháng trước đến hết ngày 5 của tháng hiện tại. Giá trị 0 nghĩa là không có thời gian gia hạn.
   setting_time_entries_prohibit_logging_for_past_months: Không cho phép ghi nhận cho các tháng trước
   setting_time_entries_prohibit_logging_for_past_months_caption: Giới hạn việc thêm, thay đổi và xóa mục thời gian trong tháng hiện tại. Thời gian đã ghi nhận ở các tháng trước không thể sửa đổi được nữa.
   setting_time_entries_prohibit_logging_on_non_working_days: Không cho phép ghi nhận thời gian vào ngày không làm việc

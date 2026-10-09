@@ -28,50 +28,30 @@
 # See COPYRIGHT and LICENSE files for more details.
 #++
 
-require "open_project/static/homescreen"
-require "open_project/static/links"
+module Homescreen
+  module Blocks
+    class DashboardKpis < DashboardBlock
+      def title
+        I18n.t("homescreen.dashboard.kpis.title")
+      end
 
-OpenProject::Static::Homescreen.manage :blocks do |blocks|
-  blocks.push(
-    { name: "dashboard_kpis" },
-    { name: "my_work" },
-    { name: "projects_overview" },
-    { name: "favorite_projects" },
-    { name: "status_distribution" },
-    { name: "recent_activity" },
-    {
-      name: "administration",
-      if: Proc.new { User.current.admin? }
-    }
-  )
-end
+      def wrapper_arguments
+        { full_width: true }
+      end
 
-OpenProject::Static::Homescreen.manage :links do |links|
-  links.push(
-    {
-      label: :user_guides,
-      icon: "milestone",
-      url_key: :user_guides
-    },
-    {
-      label: :glossary,
-      icon: "op-glossar",
-      url_key: :glossary
-    },
-    {
-      label: :shortcuts,
-      icon: "op-shortcuts",
-      url_key: :shortcuts
-    },
-    {
-      label: :forums,
-      icon: "comment-discussion",
-      url_key: :forums
-    },
-    {
-      label: :impressum,
-      icon: "info",
-      url_key: :impressum
-    }
-  )
+      # @return [Array<Hash>] key, value, href and optional danger flag per card
+      def cards
+        today = stats.today
+        [
+          { key: :assigned, value: stats.assigned_open.count, href: wp_list_path(*my_open_filters) },
+          { key: :overdue, value: stats.overdue.count, danger: true,
+            href: wp_list_path(*my_open_filters, due_between_filter(nil, today - 1)) },
+          { key: :due_soon,
+            value: stats.assigned_open.where(due_date: today..stats.due_soon_until).count,
+            href: wp_list_path(*my_open_filters, due_between_filter(today, stats.due_soon_until)) },
+          { key: :projects, value: stats.projects.count, href: helpers.projects_path }
+        ]
+      end
+    end
+  end
 end

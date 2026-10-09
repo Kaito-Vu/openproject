@@ -67,21 +67,21 @@ vi:
       resource_management: Quản lý nguồn lực
     upsell:
       resource_management:
-        description: Lập kế hoạch và cân bằng khối lượng công việc của nhóm với bảng lập kế hoạch nguồn lực. Phân bổ nhân sự cho work package, theo dõi năng lực theo thời gian và nhận biết ngay tình trạng phân bổ quá tải hoặc thiếu hụt.
+        description: Lập kế hoạch và cân đối khối lượng công việc của nhóm bằng resource planner. Phân bổ nhân sự cho work package, theo dõi năng lực theo thời gian và nhận biết ngay tình trạng quá tải hoặc thiếu việc.
         title: Quản lý nguồn lực
   label_resource_management: Quản lý nguồn lực
   permission_allocate_user_resources: Phân bổ nguồn lực người dùng
-  permission_allocate_user_resources_explanation: Cho phép người dùng tạo, cập nhật và xóa phân bổ nguồn lực trong bảng lập kế hoạch nguồn lực. Bao gồm việc gán người dùng (hoặc bộ lọc người dùng) vào bảng lập kế hoạch và điều chỉnh thời gian phân bổ cũng như khoảng ngày.
+  permission_allocate_user_resources_explanation: Cho phép người dùng tạo, cập nhật và xóa phân bổ nguồn lực trong resource planner, bao gồm gán người dùng (hoặc bộ lọc người dùng) vào planner và điều chỉnh thời gian phân bổ cũng như khoảng ngày.
   permission_assign_users_to_generic_allocations: Gán người dùng vào các phân bổ chung
   permission_assign_users_to_generic_allocations_explanation: Cho phép người dùng sử dụng view Nhân sự để gán người dùng thực vào các phân bổ nguồn lực chung (dựa trên bộ lọc) chưa có người dùng. Không cho phép tạo hoặc chỉnh sửa phân bổ.
   permission_manage_public_global_resource_planners: Quản lý bảng lập kế hoạch nguồn lực toàn cục công khai
-  permission_manage_public_global_resource_planners_explanation: Cho phép người dùng công khai bảng lập kế hoạch nguồn lực toàn cục của mình và quản lý các bảng toàn cục mà người dùng khác đã chia sẻ công khai. Không cho phép xem các bảng lập kế hoạch nguồn lực toàn cục chưa được chia sẻ công khai.
+  permission_manage_public_global_resource_planners_explanation: Cho phép người dùng công khai resource planner toàn cục của mình và quản lý các resource planner toàn cục mà người dùng khác đã chia sẻ công khai. Không cho phép xem các resource planner toàn cục chưa được chia sẻ công khai.
   permission_manage_public_resource_planners: Quản lý bảng lập kế hoạch nguồn lực công khai
-  permission_manage_public_resource_planners_explanation: Cho phép người dùng tạo và quản lý bảng lập kế hoạch nguồn lực công khai. Họ có thể xem, tạo, quản lý và công khai các bảng lập kế hoạch nguồn lực của chính mình. Không cho phép xem các bảng do người dùng khác tạo mà chưa được chia sẻ công khai.
+  permission_manage_public_resource_planners_explanation: Cho phép người dùng tạo và quản lý resource planner công khai, gồm xem, tạo, quản lý và công khai planner của chính mình. Không cho phép xem planner do người dùng khác tạo mà chưa được chia sẻ công khai.
   permission_view_global_resource_planners: Xem bảng lập kế hoạch nguồn lực toàn cục
-  permission_view_global_resource_planners_explanation: Cho phép người dùng truy cập phần lập kế hoạch nguồn lực toàn cục, nơi có thể lập kế hoạch chung cho nguồn lực và phân bổ từ nhiều dự án. Họ có thể tạo và quản lý bảng toàn cục của mình và xem các bảng công khai. Người dùng chỉ thấy những dự án, nguồn lực và phân bổ mà họ được phép xem.
+  permission_view_global_resource_planners_explanation: Cho phép người dùng truy cập phần resource planner toàn cục, nơi có thể lập kế hoạch chung cho nguồn lực và phân bổ từ nhiều dự án. Họ có thể tạo và quản lý planner toàn cục của mình và xem các planner công khai. Người dùng chỉ thấy những dự án, nguồn lực và phân bổ mà họ được phép xem.
   permission_view_resource_planners: Xem bảng lập kế hoạch nguồn lực
-  permission_view_resource_planners_explanation: Cho phép người dùng truy cập bảng lập kế hoạch nguồn lực. Họ có thể tạo và quản lý bảng của mình và xem các bảng công khai. Không cho phép xem các bảng do người dùng khác tạo mà chưa được chia sẻ công khai.
+  permission_view_resource_planners_explanation: Cho phép người dùng truy cập resource planner, tạo và quản lý planner của mình và xem các planner công khai. Không cho phép xem planner do người dùng khác tạo mà chưa được chia sẻ công khai.
   plugin_openproject_resource_management:
     description: Provides quản lý tài nguyên (resource management) and capacity planning.
     name: OpenProject Resource Management
@@ -159,7 +159,7 @@ vi:
     favorite_caption: Đặt view này làm yêu thích để thêm vào phần trên cùng của thanh bên.
     filters:
       resource_management_enabled: Đã bật quản lý nguồn lực
-    global_public_caption: Công khai View này cho tất cả những người được phép xem bảng lập kế hoạch nguồn lực toàn cục. Việc này không ảnh hưởng đến khả năng hiển thị của Work package, vốn vẫn phụ thuộc vào quyền của từng người dùng.
+    global_public_caption: Công khai view này cho tất cả những người được phép xem resource planner toàn cục. Việc này không ảnh hưởng đến khả năng hiển thị của work package, vốn vẫn phụ thuộc vào quyền của từng người dùng.
     label_edit_resource_planner: Chỉnh sửa bảng lập kế hoạch nguồn lực
     label_new_resource_planner: Bảng lập kế hoạch nguồn lực mới
     label_resource_planner: Resource Planner

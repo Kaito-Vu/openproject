@@ -50,9 +50,9 @@ vi:
           '
         filter_string_text: Nhập Filter LDAP RFC4515 trả về các nhóm trong LDAP của bạn để đồng bộ hóa với OpenProject.
         group_name_attribute_text: Nhập thuộc tính của nhóm LDAP được sử dụng để đặt tên nhóm OpenProject.
-        member_lookup_attribute_text: 'Leave empty to use the default reverse lookup: OpenProject searches for users whose memberOf attribute matches the group DN. This requires the memberOf attribute to be present on user entries (Active Directory, OpenLDAP with memberof overlay). Set this to the attribute name on group entries that lists member DNs to use forward lookup instead. Examples: "uniqueMember" (groupOfUniqueNames), "member" (groupOfNames). Use this for LDAP servers that do not maintain the memberOf attribute on user entries.
-
-          '
+        member_lookup_attribute_text: |
+          Để trống để dùng cách tra cứu ngược mặc định: OpenProject tìm những người dùng có thuộc tính memberOf khớp với DN của nhóm. Cách này yêu cầu thuộc tính memberOf có trên các mục người dùng (Active Directory, OpenLDAP có memberof overlay).
+          Để dùng tra cứu xuôi, hãy nhập tên thuộc tính trên mục nhóm có liệt kê DN của các thành viên. Ví dụ: "uniqueMember" (groupOfUniqueNames), "member" (groupOfNames). Dùng cho các máy chủ LDAP không duy trì thuộc tính memberOf trên mục người dùng.
       label_n_groups_found:
         one: 1 nhóm được tìm thấy bởi Filter
         other: "%{count} nhóm được Filter tìm thấy"
@@ -74,16 +74,16 @@ vi:
 
           '
       help_text_html: |
-        Module này cho phép bạn thiết lập đồng bộ hóa giữa nhóm LDAP và nhóm OpenProject.
+        Module này cho phép bạn thiết lập đồng bộ giữa nhóm LDAP và nhóm OpenProject.
         <br/>
         Mặc định, OpenProject dùng <strong>tra cứu ngược</strong>: tìm những người dùng có thuộc tính <em>memberOf</em> khớp với DN của nhóm.
-        Cách này yêu cầu thuộc tính <em>memberOf</em> có trên các mục người dùng (Active Directory, OpenLDAP với memberof overlay).
+        Cách này yêu cầu thuộc tính <em>memberOf</em> có trên các mục người dùng (Active Directory, OpenLDAP có memberof overlay).
         <br/>
         Nếu máy chủ LDAP của bạn không duy trì <em>memberOf</em> trên các mục người dùng (ví dụ dùng <em>groupOfUniqueNames</em> với <em>uniqueMember</em>),
-        bạn có thể cấu hình <strong>tra cứu xuôi</strong> bằng cách đặt <em>Thuộc tính thành viên nhóm</em> trên bộ lọc đồng bộ hóa.
+        bạn có thể dùng <strong>tra cứu xuôi</strong> bằng cách đặt <em>Thuộc tính thành viên nhóm</em> trên bộ lọc đồng bộ.
         <br/>
-        Các nhóm được đồng bộ hàng giờ thông qua cron job.
-        [Vui lòng xem tài liệu của chúng tôi về chủ đề này](docs_url).
+        Các nhóm được đồng bộ hàng giờ bằng cron job.
+        [Vui lòng xem tài liệu về chủ đề này](docs_url).
       no_members: Nhóm này chưa có thành viên đồng bộ nào.
       no_results: Không tìm thấy nhóm được đồng bộ hóa nào.
       plural: Nhóm LDAP được đồng bộ hóa

@@ -76,7 +76,7 @@ vi:
         show:
           description: Chọn bật hoặc tắt wiki dự án
       oauth_application_info_component:
-        confirm_replace_oauth_application: Hành động này sẽ đặt lại thông tin xác thực OAuth hiện tại. Sau khi xác nhận, bạn sẽ phải nhập lại thông tin xác thực trong hệ thống XWiki của mình và tất cả người dùng sẽ phải ủy quyền lại. Bạn có chắc muốn tiếp tục không?
+        confirm_replace_oauth_application: Thao tác này sẽ đặt lại thông tin xác thực OAuth hiện tại. Sau khi xác nhận, bạn phải nhập lại thông tin xác thực trong XWiki của mình và tất cả người dùng phải ủy quyền lại. Bạn có chắc muốn tiếp tục không?
         label_oauth_client_id: OAuth Client ID
         replace_oauth_application: Thay thế ứng dụng OAuth của OpenProject
       oauth_client_info_component:

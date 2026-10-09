@@ -1,0 +1,14 @@
+<%= widget_wrapper do |container| %>
+  <% container.with_body do %>
+    <div class="op-dashboard-kpis">
+      <% cards.each do |card| %>
+        <%= link_to card[:href],
+                    class: class_names("op-dashboard-kpi", "-danger" => card[:danger] && card[:value].positive?),
+                    data: { "test-selector": "dashboard-kpi-#{card[:key]}" } do %>
+          <span class="op-dashboard-kpi--value"><%= card[:value] %></span>
+          <span class="op-dashboard-kpi--label"><%= t("homescreen.dashboard.kpis.#{card[:key]}") %></span>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

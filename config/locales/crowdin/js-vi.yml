@@ -26,8 +26,8 @@ vi:
       type_form:
         edit_query: Chỉnh sửa Query
       work_packages_settings:
-        warning_progress_calculation_mode_change_from_field_to_status_html: Việc thay đổi chế độ tính toán tiến độ từ dựa trên công việc sang dựa trên Status sẽ khiến tất cả các giá trị <i>% Hoàn thành</i> hiện có bị mất và được thay thế bằng các giá trị được liên kết với từng Status. Các giá trị hiện tại cho <i>Công việc còn lại</i> cũng có thể được tính toán lại để phản ánh sự thay đổi này. Hành động này không thể đảo ngược.
-        warning_progress_calculation_mode_change_from_status_to_field_html: Việc thay đổi chế độ tính toán tiến độ từ dựa trên Status sang dựa trên công việc sẽ làm cho trường <i>% Hoàn thành</i> có thể chỉnh sửa tự do. Nếu bạn tùy ý nhập các giá trị cho <i>Work</i> hoặc <i>Công việc còn lại</i>, thì chúng cũng sẽ được liên kết với <i>% Hoàn thành</i>. Việc thay đổi <i>Công việc còn lại</i> sau đó có thể cập nhật <i>% Hoàn thành</i>.
+        warning_progress_calculation_mode_change_from_field_to_status_html: Đổi chế độ tính tiến độ từ dựa trên công việc sang dựa trên trạng thái sẽ làm mất mọi giá trị <i>% Hoàn thành</i> hiện có và thay bằng giá trị gắn với từng trạng thái. Các giá trị <i>Công việc còn lại</i> hiện có cũng có thể được tính lại cho phù hợp. Thao tác này không thể hoàn tác.
+        warning_progress_calculation_mode_change_from_status_to_field_html: Đổi chế độ tính tiến độ từ dựa trên trạng thái sang dựa trên công việc sẽ cho phép chỉnh sửa tự do trường <i>% Hoàn thành</i>. Nếu bạn nhập giá trị cho <i>Công việc</i> hoặc <i>Công việc còn lại</i>, chúng cũng sẽ liên kết với <i>% Hoàn thành</i>. Khi đó, đổi <i>Công việc còn lại</i> có thể cập nhật <i>% Hoàn thành</i>.
       working_days:
         add_non_working_day: Ngày không làm việc
         already_added_error: Ngày không làm việc cho ngày này đã tồn tại. Chỉ có thể có một ngày không làm việc được tạo cho mỗi ngày duy nhất.
@@ -239,8 +239,8 @@ vi:
         wiki_page_include:
           button: Bao gồm các nội dung của một trang wiki khác
           hint: |
-            Bao gồm nội dung của một trang wiki khác bằng cách chỉ định tiêu đề hoặc phần mở rộng của nó.
-            Bạn có thể bao gồm trang wiki của một dự án khác bằng cách phân tách chúng bằng dấu hai chấm như ví dụ sau.
+            Chèn nội dung của một trang wiki khác bằng cách nhập tiêu đề hoặc slug của trang.
+            Để chèn trang wiki của dự án khác, hãy ngăn cách bằng dấu hai chấm như ví dụ sau.
           not_set: "(Trang chưa được thiết lập)"
           page: Trang Wiki
           text: "[Placeholder] Bao gồm trang wiki của"
@@ -678,11 +678,11 @@ vi:
       steps:
         boards:
           add: Bấm vào biểu tượng dấu cộng (+) để <b>tạo thẻ mới</b> hoặc <b>thêm thẻ hiện có</b> vào danh sách trên bảng.
-          drag: Kéo và thả thẻ của bạn trong danh sách nhất định để sắp xếp lại chúng hoặc di chuyển chúng sang danh sách khác. <br> Bạn có thể nhấp vào biểu tượng thông tin (i) ở góc trên bên phải hoặc nhấp đúp vào thẻ để mở thông tin chi tiết.
+          drag: Kéo thả thẻ trong một danh sách để sắp xếp lại, hoặc sang danh sách khác để di chuyển. <br> Bạn có thể nhấp vào biểu tượng thông tin (i) ở góc trên bên phải hoặc nhấp đúp vào thẻ để mở chi tiết.
           lists_basic: Tại đây, bạn có thể tạo nhiều danh sách (cột) trong bảng linh hoạt của mình.
           lists_kanban: 'Tại đây bạn có thể tạo nhiều danh sách (cột) trong bảng của mình. Ví dụ: tính năng này cho phép bạn tạo <b>Kanban board</b>.'
           overview: Chọn <b>boards</b> để thay đổi View và quản lý dự án của bạn bằng View bảng linh hoạt.
-        help_menu: Menu Trợ giúp (?) cung cấp <b>các tài nguyên trợ giúp bổ sung</b>. Tại đây bạn có thể tìm thấy hướng dẫn người dùng, video hướng dẫn hữu ích và nhiều hơn nữa. <br> Chúc bạn làm việc vui vẻ với OpenProject!
+        help_menu: Menu Trợ giúp (?) cung cấp <b>thêm tài nguyên trợ giúp</b>. Tại đây bạn có thể tìm hướng dẫn sử dụng, video hướng dẫn hữu ích và nhiều nội dung khác. <br> Chúc bạn làm việc hiệu quả với OpenProject!
         members: Mời <b>thành viên</b> mới tham gia dự án của bạn.
         quick_add_button: Nhấp vào biểu tượng dấu cộng (+) trong điều hướng tiêu đề để <b>tạo dự án mới</b> hoặc để <b>mời đồng nghiệp</b>.
         sidebar_arrow: Sử dụng mũi tên quay lại ở góc trên cùng bên trái để quay lại <b>menu chính</b> của dự án.
@@ -690,17 +690,17 @@ vi:
           add_assignee: Để bắt đầu, hãy thêm người được phân công vào người lập kế hoạch nhóm.
           add_existing: Tìm kiếm các Work package hiện có và kéo chúng vào bảng lập kế hoạch nhóm để phân công ngay cho một thành viên trong nhóm cũng như xác định ngày bắt đầu và ngày kết thúc.
           calendar: Bảng kế hoạch hàng tuần hoặc hai tuần một lần hiển thị tất cả các Work package được giao cho các thành viên trong nhóm của bạn.
-          card: Kéo các Work package theo chiều ngang để di chuyển chúng tới hoặc lui theo thời gian, kéo các cạnh để thay đổi ngày bắt đầu và ngày kết thúc, thậm chí kéo chúng theo chiều dọc đến một hàng khác để gán chúng cho thành viên khác.
+          card: Kéo work package theo chiều ngang để dời sớm hoặc muộn hơn, kéo các cạnh để đổi ngày bắt đầu và kết thúc, hoặc kéo theo chiều dọc sang hàng khác để giao cho thành viên khác.
           overview: Công cụ lập kế hoạch nhóm cho phép bạn phân công nhiệm vụ cho các thành viên trong nhóm một cách trực quan và có được cái nhìn tổng quan về ai đang làm việc gì.
-        welcome: Hãy tham gia chuyến tham quan giới thiệu dài ba phút để tìm hiểu <b>tính năng quan trọng nhất</b>. <br> Chúng tôi khuyên bạn nên hoàn thành các bước cho đến hết. Bạn có thể bắt đầu lại chuyến tham quan bất cứ lúc nào.
+        welcome: Hãy tham gia chuyến giới thiệu ba phút để tìm hiểu các <b>tính năng quan trọng nhất</b>. <br> Chúng tôi khuyên bạn nên hoàn thành đến bước cuối. Bạn có thể bắt đầu lại chuyến giới thiệu bất cứ lúc nào.
         wiki: Trong <b>wiki</b> bạn có thể ghi lại và chia sẻ kiến ​​thức cùng với nhóm của mình.
         wp:
           back_button: Sử dụng mũi tên quay lại ở góc trên cùng bên trái để thoát và quay lại danh sách Work package.
           create_button: Nút <b>+ Create</b> sẽ thêm Work package mới vào dự án của bạn.
           full_view: View <b>chi tiết Work package</b> cung cấp tất cả thông tin liên quan liên quan đến Work package nhất định, chẳng hạn như mô tả, Status, Priority, hoạt động, sự phụ thuộc và nhận xét.
           gantt_menu: Tạo lịch trình và mốc thời gian của dự án một cách dễ dàng bằng cách sử dụng mô-đun Gantt chart.
-          list: Tổng quan về gói <b>work</b> này cung cấp danh sách tất cả công việc trong dự án của bạn, chẳng hạn như nhiệm vụ, Milestone, giai đoạn, v.v. <br> Các Work package có thể được tạo và chỉnh sửa trực tiếp từ View này. Để truy cập chi tiết của một Work package cụ thể, chỉ cần nhấp đúp vào hàng của nó.
-          timeline: Tại đây, bạn có thể <b>chỉnh sửa kế hoạch dự án của mình</b>, tạo các Work package mới, chẳng hạn như nhiệm vụ, mốc quan trọng, giai đoạn, v.v., cũng như <b>thêm các phần phụ thuộc</b>. Tất cả thành viên trong nhóm có thể xem và cập nhật kế hoạch mới nhất bất cứ lúc nào.
+          list: Trang tổng quan <b>work</b> package này liệt kê toàn bộ công việc trong dự án của bạn, như nhiệm vụ, milestone, giai đoạn, v.v. <br> Bạn có thể tạo và chỉnh sửa work package trực tiếp từ đây. Để xem chi tiết một work package, chỉ cần nhấp đúp vào hàng của nó.
+          timeline: Tại đây bạn có thể <b>chỉnh sửa kế hoạch dự án</b>, tạo work package mới như nhiệm vụ, milestone, giai đoạn, v.v., và <b>thêm quan hệ phụ thuộc</b>. Mọi thành viên trong nhóm đều có thể xem và cập nhật kế hoạch mới nhất bất cứ lúc nào.
           toggler: Bây giờ chúng ta hãy xem phần <b>work package</b>, phần này sẽ cung cấp cho bạn cái nhìn chi tiết hơn về công việc của bạn.
     open_project_storage_modal:
       waiting_subtitle:
@@ -1059,9 +1059,8 @@ vi:
         insert_columns: Chèn cột
         move_column_left: Di chuyển cột sang trái
         move_column_right: Di chuyển cột sang phải
-        public_text: 'Xuất bản View này, cho phép người dùng khác truy cập vào View của bạn. Người dùng có quyền ''Quản lý View công khai'' có thể sửa đổi hoặc xóa Query công khai. Điều này không ảnh hưởng đến khả năng hiển thị của kết quả Work package trong View đó và tùy thuộc vào quyền của họ, người dùng có thể thấy các kết quả khác nhau.
-
-          '
+        public_text: |
+          Công khai view này để người dùng khác có thể truy cập. Người dùng có quyền 'Quản lý view công khai' có thể sửa hoặc xóa query công khai. Việc này không ảnh hưởng đến khả năng hiển thị của các work package trong view, và tùy theo quyền của mình, mỗi người dùng có thể thấy kết quả khác nhau.
         rename_query_placeholder: Tên của trình bày
         sort_ascending: Sắp xếp tăng dần
         sort_descending: Sắp xếp giảm dần

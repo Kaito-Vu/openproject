@@ -28,50 +28,26 @@
 # See COPYRIGHT and LICENSE files for more details.
 #++
 
-require "open_project/static/homescreen"
-require "open_project/static/links"
+module Homescreen
+  module Blocks
+    class ProjectsOverview < DashboardBlock
+      LIMIT = 8
 
-OpenProject::Static::Homescreen.manage :blocks do |blocks|
-  blocks.push(
-    { name: "dashboard_kpis" },
-    { name: "my_work" },
-    { name: "projects_overview" },
-    { name: "favorite_projects" },
-    { name: "status_distribution" },
-    { name: "recent_activity" },
-    {
-      name: "administration",
-      if: Proc.new { User.current.admin? }
-    }
-  )
-end
+      def title
+        I18n.t("homescreen.dashboard.projects.title")
+      end
 
-OpenProject::Static::Homescreen.manage :links do |links|
-  links.push(
-    {
-      label: :user_guides,
-      icon: "milestone",
-      url_key: :user_guides
-    },
-    {
-      label: :glossary,
-      icon: "op-glossar",
-      url_key: :glossary
-    },
-    {
-      label: :shortcuts,
-      icon: "op-shortcuts",
-      url_key: :shortcuts
-    },
-    {
-      label: :forums,
-      icon: "comment-discussion",
-      url_key: :forums
-    },
-    {
-      label: :impressum,
-      icon: "info",
-      url_key: :impressum
-    }
-  )
+      def projects
+        @projects ||= stats.projects.reorder(:name).limit(LIMIT).to_a
+      end
+
+      def progress
+        @progress ||= stats.project_progress(projects.map(&:id))
+      end
+
+      def overdue_counts
+        @overdue_counts ||= stats.overdue_per_project(projects.map(&:id))
+      end
+    end
+  end
 end

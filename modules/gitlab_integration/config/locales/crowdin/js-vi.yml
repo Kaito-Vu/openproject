@@ -43,9 +43,9 @@ vi:
           title: Mã nhanh cho Git
         title: Merge các yêu cầu
       tab_issue:
-        empty: Chưa có vấn đề nào được liên kết. Liên kết một vấn đề hiện có bằng cách sử dụng mã <code>OP#%{wp_id}</code> (hoặc <code>PP#%{wp_id}_</code> đối với các liên kết riêng tư) trong tiêu đề/mô tả vấn đề hoặc tạo một vấn đề mới.
+        empty: Chưa có issue nào được liên kết. Hãy liên kết issue có sẵn bằng cách dùng mã <code>OP#%{wp_id}</code> (hoặc <code>PP#%{wp_id}</code> cho liên kết riêng tư) trong tiêu đề/mô tả của issue, hoặc tạo issue mới.
       tab_mrs:
-        empty: Chưa có Merge request nào được liên kết. Liên kết MR hiện có bằng cách sử dụng mã <code>OP#%{wp_id}</code> (hoặc <code>PP#%{wp_id}_</code> cho các liên kết riêng tư) trong tiêu đề/mô tả MR hoặc tạo MR mới.
+        empty: Chưa có merge request nào được liên kết. Hãy liên kết MR có sẵn bằng cách dùng mã <code>OP#%{wp_id}</code> (hoặc <code>PP#%{wp_id}</code> cho liên kết riêng tư) trong tiêu đề/mô tả của MR, hoặc tạo MR mới.
       updated_on: Đã cập nhật vào
       work_packages:
         tab_name: GitLab

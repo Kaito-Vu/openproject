@@ -1405,7 +1405,7 @@ module Settings
         ].freeze
       },
       user_default_timezone: {
-        default: nil,
+        default: "Asia/Ho_Chi_Minh",
         format: :string,
         allowed: ActiveSupport::TimeZone.all.map { |tz| tz.tzinfo.canonical_identifier }.sort.uniq + [nil]
       },

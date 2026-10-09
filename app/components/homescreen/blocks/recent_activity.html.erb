@@ -1,0 +1,26 @@
+<%= widget_wrapper do |container| %>
+  <% if events.empty? %>
+    <% container.with_body(classes: "op-widget-box--empty") do %>
+      <%= render(Primer::Beta::Blankslate.new(test_selector: "recent-activity-widget-empty")) do |component|
+            component.with_visual_icon(icon: :history)
+            component.with_heading(tag: :h3).with_content(t("homescreen.dashboard.activity.empty"))
+          end %>
+    <% end %>
+  <% else %>
+    <% events.each do |event| %>
+      <% container.with_row do %>
+        <div class="op-dashboard-activity" data-test-selector="recent-activity-row">
+          <% if event.event_path %>
+            <%= link_to event.event_title.to_s.squish, event.event_path %>
+          <% else %>
+            <%= event.event_title.to_s.squish %>
+          <% end %>
+          <span class="op-dashboard-meta"><%= helpers.format_time(event.event_datetime) %></span>
+        </div>
+      <% end %>
+    <% end %>
+    <% container.with_footer do %>
+      <%= render(Primer::Beta::Link.new(href: helpers.activities_path)) { t(:label_activity) } %>
+    <% end %>
+  <% end %>
+<% end %>

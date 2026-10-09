@@ -59,7 +59,7 @@ vi:
         placeholder_none: Hiện tại không có nhóm nào phù hợp với mẫu này.
         title: Tên nhóm được trích xuất
       match_preview_dialog_component:
-        description: Điều này cho phép bạn kiểm tra mẫu biểu thức chính quy của mình dựa trên dữ liệu mẫu để xác minh rằng tên nhóm bạn muốn trích xuất thực sự được trích xuất đúng cách. Bạn có thể sửa đổi mẫu của mình tại đây nhưng chuỗi thử nghiệm và các kết quả khớp sẽ không được lưu cùng với cấu hình.
+        description: Cho phép bạn kiểm tra biểu thức chính quy với dữ liệu mẫu để xác nhận tên nhóm cần trích xuất được lấy đúng. Bạn có thể sửa biểu thức tại đây, nhưng chuỗi thử và kết quả khớp sẽ không được lưu cùng cấu hình.
         group_names_description: Nhập một tên nhóm trên mỗi dòng giống như tên xuất hiện trong xác nhận quyền sở hữu OIDC để xem các mẫu biểu thức chính quy của bạn ảnh hưởng đến chúng như thế nào.
         group_names_label: Tên nhóm thử nghiệm
         show_button: Mẫu thử nghiệm
@@ -76,7 +76,7 @@ vi:
       display_name: Tên của nhà cung cấp. Điều này sẽ được hiển thị dưới dạng nút đăng nhập và trong danh sách các nhà cung cấp.
       endpoint_url: URL điểm cuối do nhà cung cấp OpenID Connect cung cấp cho bạn
       group_regexes: Một mẫu biểu thức chính quy trên mỗi dòng. Vui lòng đọc [the documentation](docs_url) để biết thêm thông tin về cách thực hiện việc này.
-      group_regexes_detail_html: Có thể định nghĩa các mẫu bằng biểu thức chính quy để khớp tên nhóm từ claim groups. Ví dụ, nhập mẫu <code>^Level1/Level2/([\w/]+)$</code> sẽ trích xuất nhóm “Groupname/SubGroup” từ phản hồi chứa “Level1/Level2/GroupName/SubGroup”. Nếu không có mẫu nào khớp, nhóm sẽ bị bỏ qua. Để trống để đồng bộ tất cả nhóm theo tên đầy đủ.
+      group_regexes_detail_html: 'Có thể định nghĩa các mẫu bằng biểu thức chính quy để khớp tên nhóm từ claim groups. Ví dụ: mẫu <code>^Level1/Level2/([\w/]+)$</code> sẽ trích xuất nhóm “Groupname/SubGroup” từ phản hồi chứa “Level1/Level2/GroupName/SubGroup”. Nếu không có mẫu nào khớp, nhóm sẽ bị bỏ qua. Để trống để đồng bộ tất cả nhóm theo tên đầy đủ.'
       group_regexes_testing: Nhấp vào 'Mẫu thử nghiệm' để kiểm tra mẫu biểu thức chính quy của bạn dựa trên thông tin người dùng OIDC mẫu.
       group_sync: Tự động trích xuất và đồng bộ hóa thông tin thành viên nhóm từ nhà cung cấp danh tính.
       groups_claim: Chỉ định tên của xác nhận quyền sở hữu dự kiến ​​sẽ cho biết tên nhóm mà người dùng là thành viên.

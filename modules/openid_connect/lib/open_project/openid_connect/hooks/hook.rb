@@ -55,6 +55,10 @@ module OpenProject::OpenIDConnect
           )
         end
 
+        if access_token && session["omniauth.oidc_sync_avatar"]
+          OpenIDConnect::EntraAvatarSyncService.new(user).call(access_token:)
+        end
+
         groups_claim = session["omniauth.oidc_groups"]
         OpenIDConnect::Groups::SyncService.new(user:).call(groups_claim:) unless groups_claim.nil?
       end
@@ -70,6 +74,8 @@ module OpenProject::OpenIDConnect
           session["omniauth.oidc_access_token"] = context.dig(:auth_hash, :credentials, :token)
           session["omniauth.oidc_refresh_token"] = context.dig(:auth_hash, :credentials, :refresh_token)
           session["omniauth.oidc_expires_in"] = parse_expires_in(context.dig(:auth_hash, :credentials, :expires_in))
+
+          session["omniauth.oidc_sync_avatar"] = provider.oidc_provider == "microsoft_entra"
 
           if provider.sync_groups
             session["omniauth.oidc_groups"] = context.dig(:auth_hash, :extra, :raw_info, provider.groups_claim)

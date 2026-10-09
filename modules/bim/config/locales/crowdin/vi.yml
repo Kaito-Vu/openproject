@@ -146,8 +146,8 @@ vi:
   permission_manage_bcf: Nhập và quản lý các vấn đề trong BCF
   permission_manage_bcf_explanation: |
     Cho phép quản lý các vấn đề BCF, bao gồm nhập và cập nhật hàng loạt.
-    Việc nhập BCF ánh xạ siêu dữ liệu tệp tới các tài nguyên của dự án và có thể tạo hoặc cập nhật Work package
-    và bình luận bằng tác giả và dấu thời gian từ tệp được nhập, về thực chất là hành động thay mặt người dùng.
+    Khi nhập BCF, metadata của tệp được ánh xạ tới các tài nguyên của dự án, và có thể tạo hoặc cập nhật work package
+    và bình luận theo tác giả và dấu thời gian trong tệp đã nhập, tức là hành động thay mặt người dùng.
   permission_manage_ifc_models: Nhập và quản lý các mô hình IFC
   permission_view_ifc_models: Xem các mô hình IFC
   permission_view_linked_issues: Xem các vấn đề trong BCF

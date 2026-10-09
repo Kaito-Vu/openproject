@@ -46,7 +46,7 @@ vi:
   notice_developer_strategy_otp: 'Chiến lược của nhà phát triển đã tạo mật khẩu một lần sau: %{token} (Kênh: %{channel})'
   notice_phone_number_format: 'Vui lòng nhập số theo định dạng sau: +XX XXXXXXXXX.'
   plugin_openproject_two_factor_authentication:
-    description: Plugin OpenProject này xác thực người dùng của bạn bằng xác thực hai yếu tố bằng mật khẩu một lần thông qua tiêu chuẩn TOTP (Google Authenticator) hoặc gửi đến điện thoại di động của người dùng qua SMS hoặc cuộc gọi thoại.
+    description: Plugin OpenProject này xác thực người dùng bằng xác thực hai yếu tố, dùng mật khẩu một lần theo chuẩn TOTP (Google Authenticator) hoặc gửi đến điện thoại của người dùng qua SMS hoặc cuộc gọi thoại.
     name: Xác thực hai yếu tố OpenProject
   text_otp_not_receive: Các phương pháp xác minh khác
   text_send_otp_again: 'Gửi lại mật khẩu một lần bằng cách:'
@@ -165,9 +165,8 @@ vi:
       label_active_strategies: Chiến lược 2FA đang dùng
       label_enforced: Bắt buộc sử dụng 2FA
       label_remember: Nhớ Đăng nhập của Tôi
-      text_configuration: 'Lưu ý: Các giá trị này đại diện cho cấu hình phạm vi ứng dụng hiện tại. Bạn không thể tắt được thi hành bởi cấu hình cài đặt hoặc thay đổi chiến lược hoạt động hiện nay, kể từ khi họ yêu cầu khởi động lại máy chủ.
-
-        '
+      text_configuration: |
+        Lưu ý: Các giá trị này là cấu hình hiện hành của toàn ứng dụng. Bạn không thể tắt các cài đặt do cấu hình áp đặt hoặc thay đổi các phương thức đang hoạt động, vì cần khởi động lại máy chủ.
       text_configuration_guide: Để biết thêm chi tiết, hãy kiểm tra hướng dẫn cấu hình.
       text_enforced: Cho phép thiết đặt này để buộc tất cả người dùng để đăng ký thiết bị 2FA trên đăng nhập tiếp theo của họ. Có thể chỉ bị tắt khi không được thi hành bởi cấu hình.
       text_remember: |

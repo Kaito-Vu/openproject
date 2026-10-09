@@ -28,50 +28,29 @@
 # See COPYRIGHT and LICENSE files for more details.
 #++
 
-require "open_project/static/homescreen"
-require "open_project/static/links"
+module Homescreen
+  module Blocks
+    class MyWork < DashboardBlock
+      LIMIT = 5
 
-OpenProject::Static::Homescreen.manage :blocks do |blocks|
-  blocks.push(
-    { name: "dashboard_kpis" },
-    { name: "my_work" },
-    { name: "projects_overview" },
-    { name: "favorite_projects" },
-    { name: "status_distribution" },
-    { name: "recent_activity" },
-    {
-      name: "administration",
-      if: Proc.new { User.current.admin? }
-    }
-  )
-end
+      def title
+        I18n.t("homescreen.dashboard.my_work.title")
+      end
 
-OpenProject::Static::Homescreen.manage :links do |links|
-  links.push(
-    {
-      label: :user_guides,
-      icon: "milestone",
-      url_key: :user_guides
-    },
-    {
-      label: :glossary,
-      icon: "op-glossar",
-      url_key: :glossary
-    },
-    {
-      label: :shortcuts,
-      icon: "op-shortcuts",
-      url_key: :shortcuts
-    },
-    {
-      label: :forums,
-      icon: "comment-discussion",
-      url_key: :forums
-    },
-    {
-      label: :impressum,
-      icon: "info",
-      url_key: :impressum
-    }
-  )
+      # @return [Array<Hash>] key and up to LIMIT work packages for each deadline group
+      def groups
+        @groups ||= {
+          overdue: stats.overdue,
+          today: stats.due_today,
+          soon: stats.due_soon
+        }.map do |key, scope|
+          { key:, work_packages: scope.includes(:project, :status).reorder(:due_date, :id).limit(LIMIT).to_a }
+        end
+      end
+
+      def empty?
+        groups.all? { |group| group[:work_packages].empty? }
+      end
+    end
+  end
 end

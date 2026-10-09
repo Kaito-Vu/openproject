@@ -1,0 +1,20 @@
+<%= widget_wrapper do |container| %>
+  <% if distribution.empty? %>
+    <% container.with_body(classes: "op-widget-box--empty") do %>
+      <%= render(Primer::Beta::Blankslate.new(test_selector: "status-distribution-widget-empty")) do |component|
+            component.with_visual_icon(icon: :graph)
+            component.with_heading(tag: :h3).with_content(t("homescreen.dashboard.status.empty"))
+          end %>
+    <% end %>
+  <% else %>
+    <% distribution.each do |status, count| %>
+      <% container.with_row do %>
+        <div class="op-dashboard-project" data-test-selector="status-distribution-row">
+          <span><%= status.name %></span>
+          <progress value="<%= count %>" max="<%= total %>" aria-label="<%= status.name %>"><%= count %></progress>
+          <span class="op-dashboard-meta"><%= count %></span>
+        </div>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

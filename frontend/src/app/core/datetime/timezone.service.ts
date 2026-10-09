@@ -42,7 +42,12 @@ export class TimezoneService {
    * Returns the user's configured timezone or guesses it through moment
    */
   public userTimezone():string {
-    return this.configurationService.isTimezoneSet() ? this.configurationService.timezone() : moment.tz.guess();
+    if (this.configurationService.isTimezoneSet()) {
+      return this.configurationService.timezone();
+    }
+
+    // Client machine timezone, falling back to the instance default (Asia/Ho_Chi_Minh)
+    return moment.tz.guess() || this.configurationService.defaultTimezone() || 'Asia/Ho_Chi_Minh';
   }
 
   /**

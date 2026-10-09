@@ -74,9 +74,9 @@ vi:
         title: Vô hiệu hóa cộng tác thời gian thực
       enable_text_collaboration:
         description: |-
-          Sau khi được bật, nhiều người dùng sẽ có thể làm việc cùng nhau trên một tài liệu cùng một lúc.
-          Tất cả các tài liệu mới sẽ dựa trên trình chỉnh sửa mới (BlockNote) và sẽ yêu cầu kết nối hoạt động với
-          Máy chủ hocuspocus.
+          Sau khi bật, nhiều người dùng có thể cùng làm việc trên một tài liệu cùng lúc.
+          Tất cả tài liệu mới sẽ dùng trình soạn thảo mới (BlockNote) và cần kết nối với một
+          máy chủ Hocuspocus đang hoạt động.
         heading: Cộng tác thời gian thực chưa được bật
         primary_action: Cho phép cộng tác theo thời gian thực
         success: Cộng tác thời gian thực đã được kích hoạt.

@@ -538,7 +538,7 @@ vi:
   placeholder_meeting_template_select_project_first: Hãy chọn dự án trước
   placeholder_section_select_meeting_first: Lựa chọn Meeting là bắt buộc trước tiên
   plugin_openproject_meeting:
-    description: Mô-đun này bổ sung thêm các chức năng hỗ trợ các Meeting dự án cho OpenProject. Các Meeting có thể được lên lịch bằng cách chọn những người được mời từ cùng một dự án để tham gia Meeting. Một chương trình nghị sự có thể được tạo và gửi cho những người được mời. Sau Meeting, người tham dự có thể được chọn và biên bản có thể được tạo dựa trên chương trình nghị sự. Cuối cùng, biên bản có thể được gửi đến tất cả những người tham dự và những người được mời.
+    description: Module này bổ sung chức năng hỗ trợ cuộc họp dự án cho OpenProject. Bạn có thể lên lịch cuộc họp và chọn người được mời từ cùng dự án. Chương trình nghị sự có thể được tạo và gửi cho người được mời. Sau cuộc họp, bạn có thể chọn người tham dự và tạo biên bản dựa trên chương trình nghị sự. Cuối cùng, biên bản có thể được gửi đến tất cả người tham dự và người được mời.
     name: Meeting dự án mở
   project_module_meetings: Các Meeting
   recurring_meeting:
@@ -621,19 +621,16 @@ vi:
       blankslate:
         desc: Bạn có thể mở Meeting đã lên kế hoạch theo cách thủ công bằng cách nhấp vào nút 'Mở' bên dưới
         title: Hiện tại không có Meeting mở nào
-      subtitle: 'Các Meeting mở có các chương trình nghị sự có thể được chỉnh sửa và hiển thị trong phần ''Meeting của tôi'' của người dùng cá nhân. Những thay đổi đối với mẫu chuỗi Meeting không ảnh hưởng đến các lần diễn ra Meeting đã mở.
-
-        '
+      subtitle: |
+        Cuộc họp đã mở có chương trình nghị sự có thể chỉnh sửa và hiển thị trong mục "Cuộc họp của tôi" của từng người dùng. Thay đổi trên mẫu của chuỗi cuộc họp không ảnh hưởng đến các lần họp đã mở.
       title: Đã mở chương trình làm việc
     planned:
       blankslate:
-        desc: 'Không có Meeting bổ sung nào được lên kế hoạch trong loạt bài này. Để lên lịch các Meeting bổ sung hoặc mở rộng chuỗi Meeting, hãy chuyển đến mẫu và chỉnh sửa chi tiết Meeting để thay đổi ngày, tần suất hoặc khoảng thời gian kết thúc.
-
-          '
+        desc: |
+          Chuỗi này chưa có cuộc họp nào được lên kế hoạch thêm. Để lên lịch thêm hoặc kéo dài chuỗi, hãy vào mẫu và chỉnh sửa chi tiết cuộc họp để thay đổi ngày kết thúc, tần suất hoặc khoảng lặp.
         title: Không còn Meeting theo kế hoạch
-      subtitle: 'Các Meeting sau đây được lên kế hoạch trong lịch họp định kỳ nhưng vẫn chưa mở. Mỗi khi Meeting theo kế hoạch bắt đầu, Meeting tiếp theo sẽ tự động được mở cho bạn. Bạn cũng có thể mở các Meeting đã lên kế hoạch theo cách thủ công để nhập mẫu và bắt đầu chỉnh sửa chương trình nghị sự.
-
-        '
+      subtitle: |
+        Các cuộc họp sau đã được lên kế hoạch trong lịch họp định kỳ nhưng chưa mở. Mỗi khi một cuộc họp theo kế hoạch bắt đầu, cuộc họp tiếp theo sẽ tự động được mở. Bạn cũng có thể mở thủ công các cuộc họp theo kế hoạch để nhập mẫu và bắt đầu chỉnh sửa chương trình nghị sự.
       title: Đã lên kế hoạch
     scheduled_delete_dialog:
       confirm_button: Hủy lần xuất hiện
@@ -652,9 +649,8 @@ vi:
       description: 'Mẫu này sẽ được sử dụng bất cứ khi nào các Meeting mới trong chuỗi được tạo. Bạn có thể thêm các mục chương trình nghị sự, người tham gia và Attachment vào mẫu này.
 
         '
-      draft_banner_html: 'Bạn hiện đang chỉnh sửa mẫu chuỗi Meeting: %{link}. Mọi Meeting mới diễn ra trong chuỗi Meeting sẽ sử dụng mẫu này. Những thay đổi sẽ không ảnh hưởng đến các Meeting trong quá khứ hoặc đã được tạo. Sẽ không có lời mời qua email nào được gửi ở chế độ nháp hiện tại này cho đến khi bạn mở Meeting đầu tiên.
-
-        '
+      draft_banner_html: |
+        Bạn đang chỉnh sửa mẫu của chuỗi cuộc họp: %{link}. Mọi cuộc họp mới trong chuỗi sẽ dùng mẫu này. Thay đổi sẽ không ảnh hưởng đến các cuộc họp trước đó hoặc đã tạo. Ở chế độ nháp này, sẽ không có email mời nào được gửi cho đến khi bạn mở cuộc họp đầu tiên.
       label_edit_template: Chỉnh sửa mẫu
       label_view_template: Xem mẫu
     time_zone_difference_banner:

@@ -45,8 +45,8 @@ vi:
     delete_confirmation: Bạn có chắc chắn muốn xoá tài khoản chứ?
     deletion_info:
       data_consequences:
-        other: Tất cả dữ liệu cụ thể của người dùng sẽ bị xóa. Hoạt động của người dùng trong các View được chia sẻ như Work package và Meeting sẽ không bị xóa mà thay vào đó sẽ được liên kết với một 'Người dùng đã xóa' chung không thể liên kết với tài khoản ban đầu.
-        self: Tất cả dữ liệu cụ thể của người dùng sẽ bị xóa. Hoạt động của bạn trong các View được chia sẻ như Work package và Meeting sẽ không bị xóa mà thay vào đó sẽ được liên kết với một 'Người dùng đã xóa' chung không thể liên kết với tài khoản ban đầu của bạn.
+        other: Toàn bộ dữ liệu riêng của người dùng sẽ bị xóa. Hoạt động của người dùng trong các view dùng chung như work package và cuộc họp sẽ không bị xóa mà được gán cho một 'Người dùng đã xóa' chung, không thể liên kết lại với tài khoản gốc.
+        self: Toàn bộ dữ liệu riêng của bạn sẽ bị xóa. Hoạt động của bạn trong các view dùng chung như work package và cuộc họp sẽ không bị xóa mà được gán cho một 'Người dùng đã xóa' chung, không thể liên kết lại với tài khoản gốc của bạn.
       heading: Xóa tài khoản của %{name}?
       login_consequences:
         other: Tài khoản này sẽ ngay lập tức bị xóa khỏi hệ thống và người dùng sẽ không thể đăng nhập bằng thông tin đăng nhập của mình nữa.
@@ -62,9 +62,8 @@ vi:
     error_self_registration_disabled: 'Đăng ký người dùng bị vô hiệu hóa trên hệ thống này. Xin vui lòng hỏi người quản trị để tạo ra một tài khoản cho bạn.
 
       '
-    error_self_registration_limited_provider: 'Đăng ký người dùng bị giới hạn đối với nhà cung cấp dịch vụ đăng nhập một lần ''%{name}''. Vui lòng yêu cầu quản trị viên kích hoạt tài khoản cho bạn hoặc thay đổi giới hạn tự đăng ký cho nhà cung cấp này.
-
-      '
+    error_self_registration_limited_provider: |
+      Việc đăng ký người dùng bị giới hạn đối với nhà cung cấp đăng nhập một lần (SSO) '%{name}'. Vui lòng nhờ quản trị viên kích hoạt tài khoản cho bạn hoặc thay đổi giới hạn tự đăng ký của nhà cung cấp này.
     login_with_auth_provider: Hoặc đăng nhập bằng tài khoản hiện tại
     omniauth_direct_login_continue: Tiếp tục đăng nhập
     omniauth_direct_login_redirecting: Đang chuyển bạn đến nhà cung cấp danh tính…
@@ -1040,7 +1039,7 @@ vi:
               cannot_add_child_because_of_lack_of_permission: Không thể thêm con vì bạn không có quyền chỉnh sửa Work package đã chọn.
               format: "%{message}"
             identifier:
-              must_not_be_changed: 'Must not be changed manually. Work package identifiers are allocated automatically and resolved through the alias table, so changing them by hand breaks links and identifier history. If this change is deliberate, save with `save(context: :%{context})` and keep the work_package_semantic_aliases table consistent.'
+              must_not_be_changed: 'không được thay đổi thủ công. Mã định danh work package được cấp phát tự động và phân giải qua bảng bí danh, nên sửa tay sẽ làm hỏng liên kết và lịch sử mã định danh. Nếu thay đổi này là có chủ ý, hãy lưu bằng `save(context: :%{context})` và giữ bảng work_package_semantic_aliases nhất quán.'
               semantic_identifier_incomplete: And sequence_number must both be set at the same time.
             parent:
               cannot_be_in_another_project: Không thể có trong một dự án khác.
@@ -1451,7 +1450,7 @@ vi:
       title: Nhập dữ liệu
     info:
       database_deprecation_html: |
-        Bắt đầu từ OpenProject 16.0, cần có PostgreSQL 16 để sử dụng OpenProject. Bản cài đặt của bạn vẫn hoạt động với cơ sở dữ liệu hiện tại, nhưng có thể phát sinh lỗi không tương thích trong các bản phát hành sau. <br/> Chúng tôi đã chuẩn bị [hướng dẫn nâng cấp cho mọi phương thức cài đặt](upgrade_guide). Bạn có thể nâng cấp trước bản phát hành tiếp theo bất cứ lúc nào bằng cách làm theo hướng dẫn.
+        Từ OpenProject 16.0, bạn cần PostgreSQL 16 để chạy OpenProject. Bản cài đặt hiện tại vẫn hoạt động với cơ sở dữ liệu cũ, nhưng có thể gặp lỗi không tương thích ở các bản phát hành sau. <br/> Chúng tôi đã soạn [hướng dẫn nâng cấp cho mọi cách cài đặt](upgrade_guide). Bạn có thể nâng cấp trước bản phát hành tiếp theo bất cứ lúc nào theo hướng dẫn này.
     jemalloc_allocator: Bộ cấp phát bộ nhớ Jemalloc
     jira:
       actions:
@@ -1601,9 +1600,8 @@ vi:
           import_dialog:
             confirm: Tôi hiểu và đã có bản sao lưu
             confirm_button: Bắt đầu nhập
-            description: 'Imports change your OpenProject cấu hình. After the import you will have the opportunity to review the changes. While in review, you have an option to revert or approve the import. After approving the import reverting will no longer be possible. Therefore, please, make sure that you have [a backup of your OpenProject instance](link) before proceeding.
-
-              '
+            description: |
+              Việc nhập sẽ thay đổi cấu hình OpenProject của bạn. Sau khi nhập, bạn có thể xem lại các thay đổi. Trong lúc xem lại, bạn có thể hoàn tác hoặc chấp thuận bản nhập. Sau khi chấp thuận, bạn sẽ không thể hoàn tác nữa. Vì vậy, vui lòng đảm bảo bạn đã có [bản sao lưu OpenProject](link) trước khi tiếp tục.
             title: Hãy đảm bảo bạn đã có bản sao lưu!
           parts:
             issues:
@@ -1763,7 +1761,7 @@ vi:
         unknown_name: Không rõ
     journal_aggregation:
       caption_with_maximum: |
-        Các thao tác của người dùng trên work package (đổi mô tả, status, giá trị hoặc viết bình luận) sẽ được gộp lại nếu thực hiện trong khoảng thời gian này. Cài đặt này cũng quyết định độ trễ của thông báo và [webhook](webhook_link). Tối đa là %{max} phút.
+        Các thao tác của người dùng trên work package (đổi mô tả, trạng thái, giá trị hoặc viết bình luận) sẽ được gộp lại nếu thực hiện trong khoảng thời gian này. Cài đặt này cũng quyết định độ trễ của thông báo và [webhook](webhook_link). Tối đa là %{max} phút.
     labels:
       delete_dialog_component:
         confirmation: Tôi hiểu rằng thao tác này không thể hoàn tác
@@ -1902,7 +1900,7 @@ vi:
           Chọn mục này nếu các MCP client kết nối tới instance này không hỗ trợ nội dung có cấu trúc. Phản hồi của công cụ chỉ chứa nội dung văn bản thuần và bỏ qua phiên bản có cấu trúc.
         tool_response_format_content_only_label: Chỉ nội dung
         tool_response_format_full_caption: |
-          Tùy chọn tương thích nhất. Phản hồi của công cụ gồm cả nội dung thông thường và nội dung có cấu trúc, để MCP client chọn định dạng muốn đọc. Điều này có thể làm tăng số token mà mô hình ngôn ngữ phải xử lý, từ đó có thể tăng chi phí và giảm hiệu năng.
+          Tùy chọn tương thích nhất. Phản hồi của công cụ gồm cả nội dung thông thường và nội dung có cấu trúc, để MCP client tự chọn định dạng muốn đọc. Tùy chọn này có thể làm tăng số token mà mô hình ngôn ngữ phải xử lý, dẫn đến chi phí cao hơn và hiệu năng thấp hơn.
         tool_response_format_full_label: Đầy đủ
         tool_response_format_structured_only_caption: |
           Chọn mục này nếu bạn chắc chắn các MCP client kết nối tới instance này hỗ trợ nội dung có cấu trúc. Phản hồi của công cụ chỉ gồm nội dung có cấu trúc và bỏ qua phiên bản văn bản.
@@ -1931,7 +1929,7 @@ vi:
         confirm_button: Bỏ giữ chỗ mã định danh
         description: Việc bỏ giữ chỗ mã định danh dự án này không thể hoàn tác. Các liên kết và tích hợp bên ngoài đang dùng mã này sẽ không còn hoạt động, và tên này sẽ sẵn sàng cho bất kỳ dự án mới nào sử dụng.
         description_with_work_packages:
-          other: Việc bỏ giữ chỗ mã định danh dự án này (và %{count} mã định danh work package của nó) không thể hoàn tác. Các liên kết và tích hợp bên ngoài đang dùng mã này sẽ không còn hoạt động, và tên này sẽ sẵn sàng cho bất kỳ dự án mới nào sử dụng.
+          other: Bỏ giữ chỗ mã định danh dự án này (và %{count} mã định danh work package của nó) không thể hoàn tác. Các liên kết và tích hợp bên ngoài đang dùng mã này sẽ ngừng hoạt động, và tên này sẽ được mở cho bất kỳ dự án mới nào sử dụng.
         heading: Bỏ giữ chỗ "%{identifier}"?
         title: Bỏ giữ chỗ mã định danh
       empty_body: Khi mã định danh của dự án thay đổi, mã cũ sẽ xuất hiện ở đây để bạn có thể bỏ giữ chỗ khi đã an toàn.
@@ -1966,7 +1964,7 @@ vi:
         auth_provider_description: Đây là dịch vụ mà người dùng được nhà cung cấp SCIM thêm vào sẽ sử dụng để xác thực trong OpenProject.
         authentication_method_description_html: Đây là cách ứng dụng khách SCIM xác thực tại OpenProject. Vui lòng đảm bảo rằng mã thông báo OAuth bao gồm phạm vi <code>scim_v2</code>.
         description: Vui lòng tham khảo [documentation on configuring SCIM clients](docs_url) của chúng tôi để biết thêm thông tin về các tùy chọn cấu hình này.
-        jwt_sub_description: 'Ví dụ: đối với Keycloak, đây là UUID của tài khoản dịch vụ được liên kết với máy khách SCIM. Hãy tham khảo [our documentation](docs_url) để tìm hiểu cách tìm xác nhận quyền sở hữu chủ đề cho trường hợp sử dụng của bạn.'
+        jwt_sub_description: Ví dụ, với Keycloak, đây là UUID của tài khoản dịch vụ gắn với máy khách SCIM. Vui lòng xem [tài liệu của chúng tôi](docs_url) để biết cách tìm subject claim cho trường hợp của bạn.
         name_description: Chọn một tên sẽ giúp các quản trị viên khác hiểu rõ hơn lý do tại sao ứng dụng khách này được định cấu hình.
       index:
         description: Các máy khách SCIM được định cấu hình ở đây có thể tương tác với API máy chủ OpenProject SCIM để cung cấp, cập nhật và hủy cấp phép các tài khoản và nhóm người dùng.
@@ -2027,7 +2025,7 @@ vi:
         dialog:
           checkbox_label: Tôi hiểu rằng thao tác này không thể hoàn tác
           confirm_button: Bật
-          description_html: Thao tác này sẽ chuyển trường Version hiện chỉ nhận một giá trị sang nhận nhiều giá trị. Không dữ liệu nào bị mất nhưng có thể ảnh hưởng đến các tích hợp tùy chỉnh. Vui lòng xem <a href="%{link}" target="_blank" rel="noopener">tài liệu</a> trước khi tiếp tục.
+          description_html: Thao tác này sẽ chuyển trường Phiên bản hiện chỉ nhận một giá trị sang nhận nhiều giá trị. Dữ liệu sẽ không bị mất nhưng có thể ảnh hưởng đến các tích hợp tùy chỉnh. Vui lòng xem <a href="%{link}" target="_blank" rel="noopener">tài liệu</a> trước khi tiếp tục.
           heading: Bật nhiều phiên bản mục tiêu?
           irreversible_notice: Sau khi bật, bạn sẽ không thể quay lại dùng một giá trị.
           title: Bật nhiều phiên bản mục tiêu
@@ -2062,7 +2060,7 @@ vi:
             other: '... và %{count} dự án nữa'
         banner:
           existing_identifiers_notice: |
-            Mã định danh hiện có của %{project_count} dự án không đáp ứng yêu cầu của mã định danh ngữ nghĩa theo dự án. OpenProject có thể tự động cập nhật để chúng hợp lệ như các ví dụ bên dưới. Nhấp "Chuyển đổi mã định danh" để cập nhật mã của mọi dự án theo cách này và bật mã định danh ngữ nghĩa theo dự án.
+            Mã định danh hiện có của %{project_count} dự án chưa đáp ứng yêu cầu của mã định danh ngữ nghĩa theo dự án. OpenProject có thể tự động cập nhật để chúng hợp lệ như các ví dụ bên dưới. Nhấp 'Chuyển đổi mã định danh' để cập nhật mã định danh của mọi dự án theo cách này và bật mã định danh ngữ nghĩa theo dự án.
         box_header:
           label_autofixed_suggestion: Mã định danh mới
           label_example_work_package_id: Example Work package (work package) ID
@@ -2097,7 +2095,7 @@ vi:
         types_caption: Thêm các loại work package mà thao tác này được phép dùng. Tất cả biến thể khả dụng sẽ tự động được bao gồm.
         usage_scope_caption: 'Bạn có thể giới hạn nơi thao tác này hiển thị: ở mọi nơi (bao gồm bình luận, wiki và custom field), cho mọi loại work package hoặc cho một số loại work package nhất định.'
       index:
-        description: Thao tác chuyển đổi văn bản cung cấp cho người dùng các thao tác dựa trên LLM để viết, sắp xếp và xem lại văn bản ở bất cứ đâu dùng trình soạn thảo văn bản định dạng, như mô tả work package, bình luận và trang wiki. Bạn tạo thao tác mới bằng prompt và hướng dẫn của riêng mình.
+        description: Thao tác chuyển đổi văn bản cung cấp cho người dùng các thao tác dùng LLM để viết, sắp xếp và rà soát văn bản ở mọi nơi có trình soạn thảo văn bản đa dạng thức, như mô tả work package, bình luận và trang wiki. Bạn tự tạo thao tác mới bằng prompt và hướng dẫn của riêng mình.
         label_add_action: Thao tác
         label_aria_add_action: Thêm thao tác chuyển đổi văn bản
       index_component:
@@ -2414,12 +2412,10 @@ vi:
       checkbox_confirmation_reset: Tôi hiểu rằng backup token hiện có sẽ bị vô hiệu hóa
       heading_create: Tạo mã thông báo dự phòng
       heading_reset: Đặt lại mã thông báo dự phòng
-      implications: 'Kích hoạt sao lưu sẽ cho phép bất kỳ người dùng nào có quyền và token sao lưu đều có thể tải xuống bản sao lưu có chứa tất cả dữ liệu của trang này. Nó cũng bao gồm dữ liệu của tất cả người dùng khác.
-
-        '
-      info: 'Bạn sẽ cần phải tạo một token sao lưu để có thể tạo bản sao lưu. Mỗi lần bạn muốn yêu cầu sao lưu, bạn sẽ phải cung cấp mã token này. Bạn có thể xóa mã token sao lưu để vô hiệu hóa các bản sao lưu cho người dùng này.
-
-        '
+      implications: |
+        Bật sao lưu sẽ cho phép bất kỳ người dùng nào có đủ quyền và token sao lưu này tải về bản sao lưu chứa toàn bộ dữ liệu của hệ thống OpenProject này, bao gồm cả dữ liệu của những người dùng khác.
+      info: |
+        Bạn cần tạo token sao lưu để có thể tạo bản sao lưu. Mỗi lần yêu cầu sao lưu, bạn phải cung cấp token này. Bạn có thể xóa token sao lưu để tắt tính năng sao lưu cho người dùng này.
       verification_html: |
         Nhập %{word} để xác nhận bạn muốn %{action} token sao lưu.
       verification_word_create: Tạo
@@ -2633,10 +2629,10 @@ vi:
             description: Thêm các mục vào danh sách này để tạo các mục con bên trong một mục khác
             title: Mục này không có bất kỳ cấp độ phân cấp nào dưới đây
           root:
-            description: Bắt đầu bằng cách thêm các mục vào Custom field của hệ thống phân cấp loại. Mỗi mục có thể được sử dụng để tạo một hệ thống phân cấp bên dưới nó. Để điều hướng và tạo các mục con bên trong hệ thống phân cấp, hãy nhấp vào mục đã tạo.
+            description: Hãy bắt đầu bằng cách thêm các mục vào custom field loại phân cấp. Mỗi mục có thể dùng để tạo một cấp bên dưới nó. Để di chuyển và tạo mục con trong phân cấp, hãy nhấp vào mục đã tạo.
             title: Danh sách các mục của bạn trống
         delete_dialog:
-          description: Hành động này sẽ xóa mục này và tất cả các mục phụ của nó mà không thể đảo ngược được. Mọi giá trị được chỉ định sẽ bị xóa vĩnh viễn. Nếu trường này là bắt buộc, việc xóa các mục có thể khiến các Work package hiện có trở nên không hợp lệ.
+          description: Thao tác này sẽ xóa vĩnh viễn mục và tất cả mục con của nó. Mọi giá trị đã gán sẽ bị xóa vĩnh viễn. Nếu trường này là bắt buộc, việc xóa mục có thể khiến các work package hiện có trở nên không hợp lệ.
           heading: Xóa mục Custom field?
           title: Xóa mục Custom field
         placeholder:
@@ -2664,7 +2660,7 @@ vi:
         role_field_caption: Role dự án này sẽ tự động được cấp cho bất kỳ người dùng nào được chỉ định cho thuộc tính dự án này
         role_field_label: Role dự án
         title: Phân công Role
-        warning: Tùy thuộc vào Role được chọn bên dưới, người dùng được chỉ định cho thuộc tính dự án này có thể nhận được nhiều quyền hơn đáng kể so với trước đây, bao gồm khả năng thêm thành viên mới và nâng cao Role của họ.
+        warning: Tùy theo role được chọn bên dưới, người dùng được gán cho thuộc tính dự án này có thể có nhiều quyền hơn đáng kể so với trước, bao gồm thêm thành viên mới và nâng role của họ.
     calculated_field_not_editable: Thuộc tính không thể chỉnh sửa. Giá trị này được tính toán tự động.
     confirm_destroy_option: Xóa một tùy chọn sẽ xóa tất cả các sự kiện của nó (ví dụ như trong các Work package). Bạn có chắc bạn muốn xóa bỏ nó?
     contained_in_type: Chứa trong loại
@@ -2688,7 +2684,7 @@ vi:
         project: Đánh dấu thuộc tính là có sẵn trong tất cả các dự án hiện có và mới.
       is_required:
         all: Đánh dấu Custom field theo yêu cầu. Điều này sẽ khiến bạn bắt buộc phải điền vào trường khi tạo tài nguyên mới. Các tài nguyên hiện có sẽ không yêu cầu giá trị khi được cập nhật.
-        project: Người dùng cần điền các thuộc tính bắt buộc khi tạo dự án nếu trường đang hoạt động (bộ 'Dành cho tất cả dự án' hoặc sao chép từ một dự án/mẫu trong đó trường đang hoạt động). Các dự án hiện tại sẽ không yêu cầu giá trị khi được cập nhật.
+        project: Người dùng phải điền các thuộc tính bắt buộc khi tạo dự án nếu trường đang hoạt động (đã đặt 'Cho tất cả dự án' hoặc sao chép từ dự án/mẫu có trường đang hoạt động). Các dự án hiện có không cần giá trị khi được cập nhật.
       min_max:
         all: 0 nghĩa là không giới hạn
         project: 0 nghĩa là không giới hạn
@@ -2861,9 +2857,8 @@ vi:
       title: Người dùng đã thuộc một phòng ban
   description_active: Đang hoạt động?
   description_attachment_toggle: Hiển thị/ẩn các đính kèm
-  description_autocomplete: 'Trường này sử dụng tính năng tự động hoàn thành. Trong khi nhập tiêu đề của Work package, bạn sẽ nhận được danh sách các ứng viên tiềm năng. Chọn một bằng cách sử dụng phím mũi tên lên và mũi tên xuống và chọn nó bằng tab hoặc enter. Ngoài ra, bạn có thể nhập trực tiếp số Work package.
-
-    '
+  description_autocomplete: |
+    Trường này hỗ trợ tự động hoàn thành. Khi bạn nhập tiêu đề work package, một danh sách gợi ý sẽ hiện ra. Dùng phím mũi tên lên/xuống để chọn, rồi nhấn Tab hoặc Enter để xác nhận. Bạn cũng có thể nhập trực tiếp số work package.
   description_available_columns: Cột có sẵn
   description_category_reassign: Chọn thể loại
   description_choose_project: Các dự án
@@ -2964,12 +2959,10 @@ vi:
       title:
         other: "%{count} ngày còn lại của %{trial_plan} mã thông báo dùng thử"
     trial:
-      already_retrieved: 'Mã thông báo doanh nghiệp dùng thử của bạn đã được truy xuất. Vui lòng kiểm tra email của bạn để biết mã thông báo được đính kèm. Vui lòng liên hệ với nhóm hỗ trợ của chúng tôi nếu bạn cần một cái mới.
-
-        '
-      confirmation_info: 'Chúng tôi đã gửi cho bạn email theo số %{date} tới %{email} kèm theo tất cả thông tin để bắt đầu dùng thử miễn phí OpenProject Enterprise. Vui lòng kiểm tra hộp thư đến của bạn và nhấp vào liên kết xác nhận được cung cấp để bắt đầu dùng thử miễn phí 14 ngày.
-
-        '
+      already_retrieved: |
+        Token Enterprise dùng thử của bạn đã được gửi trước đó. Vui lòng kiểm tra email để xem token đính kèm. Nếu cần token mới, vui lòng liên hệ nhóm hỗ trợ của chúng tôi.
+      confirmation_info: |
+        Chúng tôi đã gửi email đến %{email} vào ngày %{date} kèm đầy đủ thông tin để bắt đầu dùng thử miễn phí OpenProject Enterprise. Vui lòng kiểm tra hộp thư và nhấp vào liên kết xác nhận để bắt đầu 14 ngày dùng thử miễn phí.
       confirmation_subline: 'Vui lòng kiểm tra hộp thư đến của bạn và làm theo các bước để bắt đầu dùng thử miễn phí 14 ngày.
 
         '
@@ -3006,7 +2999,7 @@ vi:
       capture_external_links:
         description: Ngăn chặn các cuộc tấn công xã hội bằng cách phát hiện và cảnh báo về các liên kết bên ngoài trước khi người dùng truy cập vào chúng.
       custom_actions:
-        description: Hành động tùy chỉnh là các phím tắt bằng một cú nhấp chuột tới một tập hợp các hành động được xác định trước mà bạn có thể cung cấp trên các Work package nhất định dựa trên Status, Role, loại hoặc dự án.
+        description: Hành động tùy chỉnh là các phím tắt một lần nhấp, chạy một nhóm hành động định sẵn mà bạn có thể áp dụng cho một số work package theo trạng thái, role, loại hoặc dự án.
         title: Hành động tùy chỉnh
       custom_field_hierarchies:
         description: Các Custom field phân cấp cho phép tổ chức các cấu trúc phân cấp trong các Work package và dự án bằng cách sử dụng danh sách chọn nhiều cấp.
@@ -3023,9 +3016,8 @@ vi:
           related: Thêm bảng các Related work package
           rename: Đổi tên nhóm thuộc tính
       hide_banner: Ẩn biểu ngữ này
-      homescreen_description: 'Các gói doanh nghiệp mở rộng Version Cộng đồng của OpenProject với [Enterprise add-ons](enterprise_url) bổ sung và hỗ trợ chuyên nghiệp, lý tưởng cho các tổ chức chạy OpenProject trong môi trường quan trọng.
-
-        '
+      homescreen_description: |
+        Các gói Enterprise mở rộng bản Community của OpenProject với các [Enterprise add-ons](enterprise_url) bổ sung và hỗ trợ chuyên nghiệp, phù hợp cho tổ chức vận hành OpenProject trong môi trường trọng yếu.
       homescreen_subline: Bằng cách nâng cấp, bạn cũng sẽ hỗ trợ một dự án nguồn mở.
       internal_comments:
         description: Nhận xét nội bộ cho phép một nhóm nội bộ liên lạc riêng tư với nhau. Những thông tin này chỉ hiển thị với một số Role dự án nhất định và sẽ không bao giờ hiển thị công khai.
@@ -3041,9 +3033,8 @@ vi:
         description: Cho phép xác thực liền mạch và an toàn cho bộ lưu trữ Nextcloud của bạn bằng Đăng nhập một lần. Đơn giản hóa việc quản lý truy cập và nâng cao sự thuận tiện cho người dùng.
         title: Đăng nhập một lần để lưu trữ Nextcloud
       placeholder_users:
-        description: 'Người dùng giữ chỗ là một cách để gán các Work package cho những người dùng không thuộc dự án của bạn. Chúng có thể hữu ích trong nhiều tình huống khác nhau; ví dụ: nếu bạn cần theo dõi các nhiệm vụ cho một tài nguyên chưa được đặt tên hoặc chưa có sẵn hoặc nếu bạn không muốn cấp cho người đó quyền truy cập vào OpenProject nhưng vẫn muốn theo dõi các nhiệm vụ được giao cho họ.
-
-          '
+        description: |
+          Người dùng giữ chỗ giúp bạn gán work package cho những người không thuộc dự án. Tính năng này hữu ích trong nhiều tình huống, ví dụ khi cần theo dõi công việc của một nguồn lực chưa có tên hoặc chưa sẵn sàng, hoặc khi bạn không muốn cấp quyền truy cập OpenProject cho người đó nhưng vẫn muốn theo dõi công việc được giao cho họ.
         title: Người dùng giữ chỗ
       plan_name: "%{plan} kế hoạch doanh nghiệp"
       plan_text_html: Có sẵn bắt đầu với %{plan_name}.
@@ -3058,7 +3049,7 @@ vi:
       readonly_work_packages:
         description: Đánh dấu các Work package là chỉ đọc đối với các Status cụ thể.
       scim_api:
-        description: Tự động hóa việc quản lý người dùng trong OpenProject bằng cách Integration liền mạch các dịch vụ nhận dạng bên ngoài như Microsoft Entra hoặc Keycloak thông qua API máy chủ SCIM của chúng tôi. Có sẵn bắt đầu với gói doanh nghiệp Enterprise.
+        description: Tự động hóa việc quản lý người dùng trong OpenProject bằng cách tích hợp liền mạch các dịch vụ định danh bên ngoài như Microsoft Entra hoặc Keycloak qua SCIM Server API. Có từ gói Enterprise corporate.
         title: Khách hàng SCIM
       sso_auth_providers:
         description: Cho phép người dùng đăng nhập thông qua các nhà cung cấp SSO bên ngoài bằng SAML hoặc OpenID Connect để truy cập và Integration liền mạch với các hệ thống nhận dạng hiện có.
@@ -3125,7 +3116,7 @@ vi:
   error_journal_attribute_not_present: Tạp chí không chứa thuộc tính %{attribute}.
   error_menu_item_not_created: Không thể thêm mục trình đơn
   error_menu_item_not_saved: Không thể lưu mục trình đơn
-  error_migrations_are_pending: Bản cài đặt OpenProject của bạn có các migration cơ sở dữ liệu đang chờ chạy. Có thể bạn đã bỏ sót bước chạy migration trong lần nâng cấp gần nhất. Vui lòng xem hướng dẫn nâng cấp để nâng cấp bản cài đặt đúng cách.
+  error_migrations_are_pending: Bản cài đặt OpenProject của bạn có các migration cơ sở dữ liệu đang chờ chạy. Có thể bạn đã bỏ sót việc chạy migration ở lần nâng cấp gần nhất. Vui lòng xem hướng dẫn nâng cấp để nâng cấp bản cài đặt đúng cách.
   error_migrations_visit_upgrade_guides: Vui lòng truy cập tài liệu hướng dẫn nâng cấp của chúng tôi
   error_must_be_project_member: Phải là thành viên dự án
   error_no_default_work_package_status: Không có tình trạng mặc định được định nghĩa cho work package. Vui lòng kiểm tra cấu hình của bạn (đi đến "Quản lý-> các Status của work package").
@@ -3282,7 +3273,7 @@ vi:
     continue_button: Tiếp tục đến trang web bên ngoài
     continue_message: Bạn có chắc chắn muốn tiếp tục đến liên kết bên ngoài sau đây không?
     title: Rời khỏi OpenProject
-    warning_message: Bạn sắp rời khỏi OpenProject và truy cập vào một trang web bên ngoài. Xin lưu ý rằng các trang web bên ngoài không nằm dưới sự kiểm soát của chúng tôi và có thể có các chính sách bảo mật và an ninh khác nhau.
+    warning_message: Bạn sắp rời OpenProject để truy cập một trang web bên ngoài. Lưu ý rằng chúng tôi không kiểm soát các trang web bên ngoài, và chúng có thể có chính sách riêng tư và bảo mật khác.
   extraction:
     available:
       catdoc: Catdoc có sẵn (không bắt buộc)
@@ -3468,8 +3459,33 @@ vi:
     views:
       favoured: Đánh dấu View này là yêu thích và thêm vào thanh bên View đã lưu ở bên trái.
       project: "%{plural} luôn gắn liền với một dự án. Ở đây bạn chỉ có thể chọn các dự án có mô-đun %{plural} đang hoạt động. Sau khi tạo %{singular} bạn có thể thêm các Work package từ các dự án khác vào đó.\n"
-      public: Xuất bản View này, cho phép người dùng khác truy cập vào View của bạn. Người dùng có quyền 'Quản lý View công khai' có thể sửa đổi hoặc xóa Query công khai. Điều này không ảnh hưởng đến khả năng hiển thị của kết quả Work package trong View đó và tùy thuộc vào quyền của họ, người dùng có thể thấy các kết quả khác nhau.
+      public: Công khai view này để người dùng khác có thể truy cập. Người dùng có quyền 'Quản lý view công khai' có thể sửa hoặc xóa query công khai. Điều này không ảnh hưởng đến việc hiển thị các work package trong view; tùy theo quyền của mình, mỗi người có thể thấy kết quả khác nhau.
   homescreen:
+    dashboard:
+      kpis:
+        title: Tổng quan
+        assigned: Được giao cho tôi
+        overdue: Quá hạn
+        due_soon: Đến hạn trong 7 ngày tới
+        projects: Dự án của tôi
+      my_work:
+        title: Công việc và deadline của tôi
+        overdue: Quá hạn
+        today: Đến hạn hôm nay
+        soon: Đến hạn trong tuần
+        empty: Không có công việc nào của bạn sắp đến hạn
+        view_all: Xem tất cả công việc đang mở của tôi
+      projects:
+        title: Tiến độ dự án
+        progress: Tiến độ
+        overdue: "%{count} quá hạn"
+        empty: Bạn chưa tham gia dự án nào đang hoạt động
+      status:
+        title: Công việc của tôi theo trạng thái
+        empty: Chưa có công việc nào được giao cho bạn
+      activity:
+        title: Hoạt động gần đây
+        empty: Chưa có hoạt động nào gần đây
     additional:
       favorite_projects:
         no_results: Bạn chưa có dự án yêu thích nào
@@ -3547,16 +3563,15 @@ vi:
       status_excluded_from_totals_set_to_true_message: Hiện đã bị loại khỏi tổng số thứ bậc
       status_percent_complete_changed: "% Hoàn thành đã thay đổi từ %{old_value}% thành %{new_value}%"
       system_update:
-        file_links_journal: 'Từ giờ trở đi, hoạt động liên quan đến liên kết tệp (tệp được lưu trữ trong bộ nhớ ngoài) sẽ xuất hiện tại đây trong tab Hoạt động. Phần sau đây thể hiện hoạt động liên quan đến các liên kết đã tồn tại:
-
-          '
+        file_links_journal: |
+          Từ nay, hoạt động liên quan đến liên kết tệp (tệp lưu ở kho lưu trữ bên ngoài) sẽ hiện tại đây trong tab Hoạt động. Phần dưới đây là hoạt động của các liên kết đã tồn tại từ trước:
         progress_calculation_adjusted: Tính toán tiến độ tự động <a href="%{href}" target="_blank">được điều chỉnh với cập nhật Version</a>.
         progress_calculation_adjusted_from_disabled_mode: Tính toán tiến độ tự động <a href="%{href}" target="_blank">được đặt thành chế độ dựa trên công việc và điều chỉnh với cập nhật Version</a>.
         scheduling_mode_adjusted: Chế độ lập lịch tự động điều chỉnh khi cập nhật Version.
         sprint_migration: Phiên bản '%{version_name}' đã được sao chép thành sprint.
         stale_target_versions_removed: Đã tự động gỡ phiên bản mục tiêu lỗi thời. Phiên bản này đã bị thêm lại không đúng khi bật nhiều phiên bản mục tiêu.
         target_versions_repaired: Các phiên bản mục tiêu đã được tự động đồng bộ với trường Version trước khi bật nhiều phiên bản mục tiêu.
-        totals_removed_from_childless_work_packages: Tổng số công việc và tiến độ tự động bị xóa cho các Work package không có cha với <a href="%{href}" target="_blank">cập nhật Version</a>. Đây là một nhiệm vụ bảo trì và có thể được bỏ qua một cách an toàn.
+        totals_removed_from_childless_work_packages: Tổng công việc và tiến độ đã tự động bị xóa khỏi các work package không phải work package cha, trong <a href="%{href}" target="_blank">bản cập nhật phiên bản</a>. Đây là tác vụ bảo trì và có thể bỏ qua.
       total_percent_complete_mode_changed_to_simple_average: Giá trị công việc của Child work package bị bỏ qua.
       total_percent_complete_mode_changed_to_work_weighted_average: Các Child work package không có Công việc sẽ bị bỏ qua.
       unaccessable_work_package_changed: Bằng cách thay đổi Related work package
@@ -3742,9 +3757,8 @@ vi:
   label_custom_export_cover_text_color: Màu văn bản
   label_custom_export_font_bold: In đậm
   label_custom_export_font_bold_italic: In nghiêng đậm
-  label_custom_export_font_instructions: 'Tải lên và quản lý phông chữ TrueType (.ttf) tùy chỉnh được sử dụng trong bản xuất PDF của bạn. Để có kết quả tốt nhất, hãy sử dụng các tệp phù hợp từ cùng một họ phông chữ. Nếu không có phông chữ nào được cung cấp thì phông chữ NotoSans mặc định sẽ được sử dụng.
-
-    '
+  label_custom_export_font_instructions: |
+    Tải lên và quản lý các phông chữ TrueType (.ttf) tùy chỉnh dùng cho bản xuất PDF. Để đạt kết quả tốt nhất, hãy dùng các tệp khớp nhau cùng một họ phông. Nếu không có phông nào, hệ thống sẽ dùng phông NotoSans mặc định.
   label_custom_export_font_italic: Nghiêng
   label_custom_export_font_regular: Chính quy
   label_custom_export_footer: Hình ảnh chân trang xuất tùy chỉnh
@@ -3783,7 +3797,7 @@ vi:
   label_deleted_version: (phiên bản đã xóa)
   label_departments: Tổ chức
   label_departments_description_html: |
-    Xác định cơ cấu công ty của bạn bằng cách tạo các phòng ban và phòng ban con theo cấp bậc. Điều này giúp phản ánh quan hệ báo cáo và duy trì cái nhìn tổng quan rõ ràng, có cấu trúc về tổ chức của bạn trong OpenProject. Bạn cũng có thể nhập cơ cấu tổ chức hiện có thông qua [đồng bộ phòng ban LDAP](ldap_docs_article).
+    Xác định cơ cấu công ty bằng cách tạo phòng ban và phòng ban con theo cấp bậc. Nhờ đó bạn phản ánh được quan hệ báo cáo và có cái nhìn tổng quan rõ ràng, có cấu trúc về tổ chức ngay trong OpenProject. Bạn cũng có thể nhập cơ cấu tổ chức sẵn có qua [đồng bộ phòng ban LDAP](ldap_docs_article).
   label_descending: Giảm dần
   label_details: Chi tiết
   label_development_roadmap: Lộ trình phát triển
@@ -3908,7 +3922,7 @@ vi:
   label_integrations: Tích hợp
   label_interface: Giao diện
   label_interface_colors: Màu sắc giao diện
-  label_interface_colors_description: Những màu này kiểm soát giao diện của ứng dụng. Nếu bạn sửa đổi chúng, chủ đề sẽ tự động được thay đổi thành Chủ đề tùy chỉnh nhưng chúng tôi không thể đảm bảo việc tuân thủ mức độ tương phản tối thiểu về khả năng truy cập (WCAG 2.1).
+  label_interface_colors_description: Các màu này quyết định giao diện của ứng dụng. Nếu bạn chỉnh sửa, chủ đề sẽ tự động chuyển thành Chủ đề tùy chỉnh, và chúng tôi không thể đảm bảo đáp ứng mức tương phản tối thiểu về khả năng truy cập (WCAG 2.1).
   label_internal: Nội bộ
   label_introduction_video: Video bắt đầu
   label_invitation: Thư mời
@@ -4379,11 +4393,11 @@ vi:
         OpenProject sẽ chỉ lọc tên người dùng được cung cấp trong cây con này.
         Ví dụ: ou=users,dc=example,dc=com
       filter_string: |
-        Thêm Filter RFC4515 tùy chọn để áp dụng cho kết quả trả về cho người dùng được lọc trong LDAP.
-        Điều này có thể được sử dụng để hạn chế nhóm người dùng được OpenProject tìm thấy để xác thực và đồng bộ hóa nhóm.
+        Thêm bộ lọc RFC4515 tùy chọn để áp dụng cho kết quả người dùng được lọc trong LDAP.
+        Bộ lọc này giúp giới hạn tập người dùng mà OpenProject tìm thấy để xác thực và đồng bộ nhóm.
       filter_string_concat: |
-        OpenProject sẽ luôn lọc thuộc tính đăng nhập do người dùng cung cấp để xác định bản ghi. Nếu bạn cung cấp Filter ở đây,
-        nó sẽ được nối với AND. Theo mặc định, tổng hợp (objectClass=*) sẽ được sử dụng làm Filter.
+        OpenProject luôn lọc theo thuộc tính đăng nhập do người dùng nhập để xác định bản ghi. Nếu bạn nhập bộ lọc ở đây,
+        nó sẽ được nối với điều kiện đó bằng AND. Mặc định sẽ dùng bộ lọc bao quát (objectClass=*).
       generic_map: |-
         84/5000
         Khóa thuộc tính trong LDAP được ánh xạ tới thuộc tính `%{attribute}` của OpenProject
@@ -4391,9 +4405,9 @@ vi:
       login_map: Khóa thuộc tính trong LDAP được sử dụng để xác định thông tin đăng nhập người dùng duy nhất. Thông thường, đây sẽ là `uid` hoặc` samAccountName`.
       name: Tên tùy ý của kết nối LDAP
       onthefly_register: |
-        Nếu bạn chọn hộp này, OpenProject sẽ tự động tạo người dùng mới từ các mục LDAP của họ
-        khi họ xác thực lần đầu bằng OpenProject.
-        Bỏ chọn mục này để chỉ cho phép các tài khoản hiện có trong OpenProject xác thực thông qua LDAP!
+        Nếu chọn ô này, OpenProject sẽ tự động tạo người dùng mới từ mục LDAP của họ
+        khi họ xác thực lần đầu với OpenProject.
+        Bỏ chọn để chỉ cho phép các tài khoản đã có trong OpenProject xác thực qua LDAP!
       system_user_dn_html: |
         Nhập DN của người dùng hệ thống được sử dụng để truy cập chỉ đọc.
         <br>
@@ -4408,8 +4422,8 @@ vi:
     sync_failed: 'Không thể đồng bộ hóa từ LDAP: %{message}.'
     system_account: Tài khoản hệ thống
     system_account_legend: |
-      OpenProject yêu cầu quyền truy cập chỉ đọc thông qua tài khoản hệ thống để tra cứu người dùng và nhóm trong cây LDAP của bạn.
-      Vui lòng chỉ định thông tin xác thực liên kết cho người dùng hệ thống đó trong phần sau.
+      OpenProject cần quyền truy cập chỉ đọc qua một tài khoản hệ thống để tra cứu người dùng và nhóm trong cây LDAP của bạn.
+      Vui lòng nhập thông tin bind cho tài khoản hệ thống đó ở phần sau.
     technical_warning: |
       Biểu mẫu LDAP này yêu cầu kiến ​​thức kỹ thuật về thiết lập LDAP/Active Directory của bạn.
       [Please visit our documentation for detailed instructions](docs_url).
@@ -4426,13 +4440,12 @@ vi:
     tls_options:
       tls_certificate_description: Nếu chứng chỉ máy chủ LDAP không có trong các nguồn tin cậy của hệ thống này, bạn có thể thêm chứng chỉ đó theo cách thủ công tại đây. Nhập chuỗi chứng chỉ PEM X509.
       verify_peer: Xác minh chứng chỉ SSL
-      verify_peer_description_html: 'Cho phép xác minh SSL nghiêm ngặt của chuỗi chứng chỉ tin cậy. <br> <strong>Cảnh báo:</strong> Việc bỏ chọn tùy chọn này sẽ tắt xác minh SSL của chứng chỉ máy chủ LDAP. Điều này làm lộ mối liên hệ của bạn với các cuộc tấn công của Man in the Middle.
-
-        '
+      verify_peer_description_html: |
+        Bật xác minh SSL nghiêm ngặt đối với chuỗi chứng chỉ tin cậy. <br> <strong>Cảnh báo:</strong> Bỏ chọn tùy chọn này sẽ tắt xác minh SSL của chứng chỉ máy chủ LDAP, khiến kết nối của bạn có nguy cơ bị tấn công man-in-the-middle.
     user_settings: Ánh xạ thuộc tính
     user_settings_legend: |
-      Các trường sau đây liên quan đến cách người dùng được tạo trong OpenProject từ các mục nhập LDAP và
-      thuộc tính LDAP nào được sử dụng để xác định thuộc tính của người dùng OpenProject (ánh xạ thuộc tính).
+      Các trường sau liên quan đến cách tạo người dùng trong OpenProject từ mục LDAP và
+      thuộc tính LDAP nào được dùng để xác định thuộc tính của người dùng OpenProject (ánh xạ thuộc tính).
   link: Liên kết
   links:
     configuration_guide: Hướng dẫn cấu hình
@@ -4609,10 +4622,10 @@ vi:
   mail_body_register_ending: Luôn kết nối! Trân trọng,
   mail_body_register_header_title: Email mời thành viên dự án
   mail_body_register_links_html: |
-    Vui lòng duyệt qua kênh youtube của chúng tôi (%{youtube_link}) nơi chúng tôi cung cấp hội thảo trên web (%{webinar_link})
-    và video “Bắt đầu” (%{get_started_link}) để thực hiện các bước đầu tiên của bạn trong OpenProject dễ dàng nhất có thể.
+    Mời bạn ghé kênh YouTube của chúng tôi (%{youtube_link}), nơi có webinar (%{webinar_link})
+    và các video “Bắt đầu” (%{get_started_link}) giúp bạn làm quen với OpenProject dễ dàng nhất.
     <br />
-    Nếu bạn có thêm bất kỳ câu hỏi nào, hãy tham khảo tài liệu của chúng tôi (%{documentation_link}) hoặc liên hệ với quản trị viên của bạn.
+    Nếu có thêm câu hỏi, hãy xem tài liệu của chúng tôi (%{documentation_link}) hoặc liên hệ quản trị viên của bạn.
   mail_body_register_user: Kính gửi %{name},
   mail_body_reminder: "%{count} Work package được giao cho bạn sẽ đến hạn trong %{days} ngày tới:"
   mail_body_wiki_page_added: Trang wiki '%{id}' đã được thêm bởi %{author}.
@@ -4769,7 +4782,7 @@ vi:
   my_account:
     access_tokens:
       access_tokens: Mã thông báo truy cập
-      description: Mã thông báo của nhà cung cấp được OpenProject phát hành, cho phép các ứng dụng khác truy cập vào nó. Mã thông báo của khách hàng được phát hành bởi các ứng dụng khác, cho phép OpenProject truy cập chúng.
+      description: Token nhà cung cấp do OpenProject phát hành, cho phép các ứng dụng khác truy cập OpenProject. Token máy khách do các ứng dụng khác phát hành, cho phép OpenProject truy cập các ứng dụng đó.
       headers:
         action: Hành động
         expiration: Hết hạn
@@ -4887,7 +4900,7 @@ vi:
         work_package_scheduled: Tất cả thay đổi ngày
       participating:
         assignee: Người được giao
-        description: Bạn sẽ luôn nhận được thông báo khi được nhắc đến và khi có thay đổi ở các work package bạn đang theo dõi. Các thông báo này không thể tắt. Tuy nhiên, bạn có thể chọn bật hoặc tắt thông báo về các thay đổi ở work package liên quan đến bạn (nơi bạn là người được giao, người chịu trách nhiệm hoặc được chia sẻ với bạn).
+        description: Bạn luôn nhận được thông báo khi được nhắc đến và khi có thay đổi ở các work package bạn theo dõi; các thông báo này không thể tắt. Tuy nhiên, bạn có thể bật hoặc tắt thông báo về thay đổi ở các work package liên quan đến bạn (khi bạn là người được giao, người chịu trách nhiệm hoặc được chia sẻ).
         mentioned: Được nhắc đến
         responsible: Người chịu trách nhiệm
         shared: Được chia sẻ với tôi
@@ -4896,7 +4909,7 @@ vi:
         watched: Đang theo dõi
       project_specific_settings:
         add_button: Thêm thông báo theo dự án
-        description: Bạn có thể tinh chỉnh cài đặt thông báo để chỉ nhận thông báo về một số sự kiện nhất định trong các dự án cụ thể. Hãy thêm một dự án bên dưới và chọn những sự kiện sẽ gửi thông báo cho bạn. Các cài đặt theo dự án này sẽ ghi đè cài đặt mặc định ở trên.
+        description: Bạn có thể tinh chỉnh cài đặt thông báo để chỉ nhận thông báo về một số sự kiện trong các dự án cụ thể. Hãy thêm dự án bên dưới và chọn sự kiện sẽ gửi thông báo cho bạn. Các cài đặt theo dự án này sẽ ghi đè cài đặt mặc định ở trên.
         dialog_title: Thêm thông báo theo dự án
         list_header: Các dự án có thông báo riêng
         title: Thông báo theo dự án
@@ -5070,9 +5083,8 @@ vi:
         '
     authorization_error: Đã xảy ra lỗi ủy quyền.
     client_credentials: Người dùng được sử dụng cho thông tin xác thực của Khách hàng
-    client_credentials_impersonation_html: 'Theo mặc định, OpenProject cung cấp ủy quyền OAuth 2.0 thông qua %{authorization_code_flow_link}. Bạn có thể tùy ý bật %{client_credentials_flow_link}, nhưng bạn phải cung cấp người dùng mà yêu cầu của họ sẽ được thực hiện thay mặt họ.
-
-      '
+    client_credentials_impersonation_html: |
+      Theo mặc định, OpenProject cung cấp ủy quyền OAuth 2.0 qua %{authorization_code_flow_link}. Bạn có thể bật thêm %{client_credentials_flow_link}, nhưng phải chỉ định người dùng mà các yêu cầu sẽ được thực hiện thay mặt.
     client_credentials_impersonation_set_to: Người dùng thông tin đăng nhập của khách hàng được đặt thành
     client_credentials_impersonation_warning: 'Lưu ý: Khách hàng sử dụng luồng ''Thông tin xác thực khách hàng'' trong ứng dụng này sẽ có các quyền của người dùng này'
     client_id: ID người dùng
@@ -5116,7 +5128,8 @@ vi:
       oauth_returned_json_error: OAuth2 trả về lỗi JSON
       oauth_returned_standard_error: OAuth2 trả về lỗi nội bộ
       oauth_state_not_present: Không tìm thấy 'Status' OAuth2 trong điểm cuối 'gọi lại' (redirect_uri).
-      oauth_state_not_present_explanation: "'Status' được sử dụng để chỉ ra cho OpenProject nơi tiếp tục sau khi ủy quyền OAuth2 thành công. 'Status' bị thiếu là lỗi nội bộ có thể xuất hiện trong quá trình thiết lập. Vui lòng liên hệ với quản trị viên hệ thống của bạn.\n"
+      oauth_state_not_present_explanation: |
+        'state' cho OpenProject biết nơi cần tiếp tục sau khi ủy quyền OAuth2 thành công. Thiếu 'state' là lỗi nội bộ, có thể xảy ra trong lúc thiết lập. Vui lòng liên hệ quản trị viên hệ thống của bạn.
       rack_oauth2:
         client_secret_invalid: Bí mật của ứng dụng khách không hợp lệ (client_secret_invalid)
         invalid_client: Máy chủ ủy quyền OAuth2 không nhận ra OpenProject (invalid_client).
@@ -5398,9 +5411,9 @@ vi:
       show_all_matching_users: Hiển thị tất cả %{count} người dùng phù hợp
     delete_tooltip: Xóa người dùng giữ chỗ
     deletion_info:
-      data_consequences: 'Tất cả các lần xuất hiện của người dùng giữ chỗ (ví dụ: với tư cách là người được chuyển nhượng, người chịu trách nhiệm hoặc giá trị người dùng khác) sẽ được chỉ định lại cho tài khoản có tên "Người dùng đã xóa". Vì dữ liệu của mọi tài khoản đã xóa được gán lại cho tài khoản này nên sẽ không thể phân biệt dữ liệu người dùng đã tạo với dữ liệu của tài khoản đã xóa khác.
-
-        '
+      data_consequences: |
+        Mọi vị trí có người dùng giữ chỗ này (ví dụ: người được giao, người chịu trách nhiệm hoặc các giá trị người dùng khác) sẽ được gán lại cho tài khoản "Người dùng đã xóa".
+        Vì dữ liệu của mọi tài khoản đã xóa đều được gán cho tài khoản này, bạn sẽ không thể phân biệt dữ liệu của người dùng này với dữ liệu của tài khoản đã xóa khác.
       heading: Xóa người dùng giữ chỗ %{name}?
       title: Xóa người dùng giữ chỗ %{name}
     right_to_manage_members_missing: 'Bạn không được phép xóa người dùng giữ chỗ. Bạn không có quyền quản lý thành viên cho tất cả các dự án mà người dùng giữ chỗ là thành viên.
@@ -5553,13 +5566,13 @@ vi:
       change_identifier_warning: |
         Thao tác này sẽ thay đổi vĩnh viễn mã định danh và URL của tất cả work package trong dự án này. Tuy nhiên, các mã định danh và URL cũ vẫn sẽ tiếp tục hoạt động.
       creation_wizard:
-        enabled_because_required_html: Thuộc tính dự án này không thể bị tắt cho yêu cầu khởi tạo dự án này vì nó được đặt là bắt buộc. Quản trị viên của hệ thống có thể thay đổi trong <a href=%{admin_settings_url} target="_blank">cài đặt quản trị</a>.
+        enabled_because_required_html: Không thể tắt thuộc tính dự án này cho yêu cầu khởi tạo dự án vì nó được đặt là bắt buộc. Quản trị viên hệ thống có thể thay đổi trong <a href=%{admin_settings_url} target="_blank">cài đặt quản trị</a>.
         errors:
-          no_status_when_submitted: Failed to enable project initiation request because Work package (work package) type %{type} requires at least one status associated with it. Please enable at least one status workflow for this Work package (work package) type.
-          no_work_package_type: Failed to enable project initiation request because it requires at least one active Work package (work package) type and this project has none. Please add at least one Work package (work package) type to this project.
+          no_status_when_submitted: Không thể bật yêu cầu khởi tạo dự án vì loại work package %{type} cần ít nhất một trạng thái liên kết. Vui lòng bật ít nhất một quy trình trạng thái cho loại work package này.
+          no_work_package_type: Không thể bật yêu cầu khởi tạo dự án vì cần ít nhất một loại work package đang hoạt động mà dự án này chưa có. Vui lòng thêm ít nhất một loại work package vào dự án.
         export:
           description_attachment_export: Tài liệu đầu ra được tạo sẽ được lưu dưới dạng tệp đính kèm PDF vào work package của tài liệu đầu ra.
-          description_file_link_export: Work package của tài liệu đầu ra sẽ có liên kết tệp tới một tệp PDF lưu trong kho lưu trữ tệp bên ngoài. Yêu cầu có kho lưu trữ tệp hoạt động với thư mục dự án được quản lý tự động cho dự án này. Hiện chỉ hỗ trợ kho lưu trữ tệp Nextcloud.
+          description_file_link_export: Work package sản phẩm đầu ra sẽ có liên kết tệp đến một PDF lưu trong kho lưu trữ tệp bên ngoài. Cần có kho lưu trữ tệp hoạt động với thư mục dự án được quản lý tự động cho dự án này. Hiện chỉ hỗ trợ kho lưu trữ tệp Nextcloud.
           description_file_storage_selection: Chọn Repository tệp bên ngoài được định cấu hình sẽ được sử dụng.
           external_file_storage: Lưu trữ tập tin bên ngoài
           label_artifact_export: Xuất tài liệu đầu ra
@@ -5585,7 +5598,7 @@ vi:
         filter:
           label: Tìm kiếm giai đoạn dự án
         header:
-          description_html: Các giai đoạn hoạt động của dự án xác định chu kỳ sống của dự án và được định nghĩa trong <a href=%{admin_settings_url} target="_blank">cài đặt quản trị</a>. Các giai đoạn được kích hoạt sẽ được hiển thị trong <a href=%{overview_url} target="_blank">tổng quan dự án</a>.
+          description_html: Các giai đoạn đang hoạt động xác định vòng đời của dự án và được thiết lập trong <a href=%{admin_settings_url} target="_blank">cài đặt quản trị</a>. Các giai đoạn đã bật sẽ hiển thị trong <a href=%{overview_url} target="_blank">tổng quan dự án</a>.
           title: Vòng đời dự án
         non_defined: Hiện tại không có giai đoạn nào được xác định.
         section_header: Giai đoạn
@@ -5606,7 +5619,7 @@ vi:
         filter:
           label: Tìm kiếm thuộc tính dự án
         header:
-          description_html: Các thuộc tính dự án này sẽ được hiển thị trên <a href=%{overview_url} target="_blank">Dashboard dự án</a> của bạn dưới các phần tương ứng của chúng. Bạn có thể bật hoặc tắt các thuộc tính cá nhân. Các thuộc tính và phần của dự án được xác định trong <a href=%{admin_settings_url} target="_blank">cài đặt quản trị</a> bởi quản trị viên của Version.
+          description_html: 'Các thuộc tính dự án này sẽ hiển thị trên <a href=%{overview_url} target="_blank">trang tổng quan dự án</a>, trong phần tương ứng. Bạn có thể bật hoặc tắt từng thuộc tính. Thuộc tính và phần của dự án do quản trị viên hệ thống thiết lập trong <a href=%{admin_settings_url} target="_blank">cài đặt quản trị</a>. '
           title: Các thuộc tính dự án
         is_for_all_blank_slate:
           description: Thuộc tính dự án này được bật trong tất cả các dự án vì tùy chọn "Dành cho tất cả dự án" được chọn. Nó không thể bị vô hiệu hóa đối với các dự án riêng lẻ.
@@ -5617,9 +5630,8 @@ vi:
 
           '
         title: Công khai dự án này?
-      public_warning: 'Dự án này là công khai. Bất kỳ ai có quyền truy cập vào Version này đều có thể xem và tương tác với dự án này tùy thuộc vào Role và các quyền liên quan của họ. Các tiểu dự án không bị ảnh hưởng và có cài đặt riêng.
-
-        '
+      public_warning: |
+        Dự án này là công khai. Bất kỳ ai có quyền truy cập hệ thống này đều có thể xem và tương tác với dự án, tùy theo role và quyền của họ. Các dự án con không bị ảnh hưởng và có cài đặt riêng.
       storage:
         no_results_title_text: Không có dung lượng đĩa ghi bổ sung nào được sử dụng bởi dự án này.
       subitems:
@@ -5634,9 +5646,8 @@ vi:
       template:
         enable_failed: Không bật được chế độ mẫu.
         members:
-          excluded_roles_caption: 'Khi tạo dự án mới từ mẫu này, các Role đã chọn ở trên sẽ bị bỏ qua. Điều này cho phép bạn chọn thành viên nào sẽ bị loại trừ dựa trên Role dự án của họ. Sau đó, người dùng có thể truy cập mẫu cho mục đích xem mà không được cấp quyền truy cập vào các dự án mới được tạo từ mẫu đó.
-
-            '
+          excluded_roles_caption: |
+            Khi tạo dự án mới từ mẫu này, các role đã chọn ở trên sẽ bị bỏ qua. Nhờ đó bạn chọn được thành viên nào bị loại trừ theo role dự án. Những người này vẫn có thể xem mẫu mà không được cấp quyền vào các dự án mới tạo từ mẫu.
           excluded_roles_label: Các Role cần loại trừ khi áp dụng mẫu
         menu_title: Mẫu
         title: Cài đặt mẫu
@@ -5751,14 +5762,14 @@ vi:
       access_permission: Quyền của bạn đối với Repository này
       base_url_text: |-
         URL gốc dùng để tạo URL checkout (ví dụ: https://myserver.example.org/repos/).
-        Lưu ý: URL gốc chỉ được dùng để viết lại URL checkout cho các Repository được quản lý. Các Repository khác không bị thay đổi.
+        Lưu ý: URL gốc chỉ dùng để viết lại URL checkout của các repository được quản lý. Các repository khác không bị thay đổi.
       default_instructions:
         git: |-
           Dữ liệu chứa trong Repository này có thể được tải xuống máy tính của bạn bằng Git.
           Vui lòng tham khảo tài liệu của Git nếu bạn cần thêm thông tin về quy trình thanh toán và các khách hàng hiện có.
         subversion: |-
-          Dữ liệu chứa trong Repository này có thể được tải xuống máy tính của bạn bằng Subversion.
-          Vui lòng tham khảo tài liệu của Subversion nếu bạn cần thêm thông tin về quy trình thanh toán và các khách hàng hiện có.
+          Bạn có thể tải dữ liệu trong repository này về máy bằng Subversion.
+          Nếu cần thêm thông tin về quy trình checkout và các client khả dụng, vui lòng xem tài liệu của Subversion.
       enable_instructions_text: Hiển thị hướng dẫn thanh toán được xác định bên dưới trên tất cả các trang liên quan đến Repository.
       instructions: Hướng dẫn thanh toán
       not_available: Hướng dẫn thanh toán không được xác định cho Repository này. Hãy yêu cầu quản trị viên của bạn kích hoạt chúng cho Repository này trong cài đặt hệ thống.
@@ -5795,7 +5806,7 @@ vi:
     git:
       instructions:
         managed_url: Đây là URL của Repository Git (cục bộ) được quản lý.
-        path: Chỉ định đường dẫn đến repository Git của bạn (ví dụ, %{example_path}). Bạn cũng có thể sử dụng các remote repositories mà được nhân bản với một bản sao cục bộ bằng cách sử dụng một giá trị bắt đầu với http(s) :// hoặc file://.
+        path: 'Nhập đường dẫn đến Git repository cục bộ của bạn (ví dụ: %{example_path}). Bạn cũng có thể dùng repository từ xa, được clone về bản sao cục bộ, bằng giá trị bắt đầu với http(s):// hoặc file://.'
         path_encoding: 'Ghi đè mã hóa đường dẫn Git (Mặc định: UTF-8)'
       local_introduction: Nếu bạn có Repository Git cục bộ hiện có, bạn có thể liên kết nó với OpenProject để truy cập nó từ bên trong ứng dụng.
       local_title: Liên kết Repository Git cục bộ hiện có
@@ -5828,8 +5839,8 @@ vi:
       setup_documentation_details_link_text: Thiết lập Repository tập tin
       show_warning_details: Để sử dụng bộ lưu trữ tệp này, hãy nhớ kích hoạt mô-đun và bộ lưu trữ cụ thể trong cài đặt dự án của từng dự án mong muốn.
       update_timeout: |-
-        Giữ thông tin dung lượng ổ đĩa cần thiết cuối cùng cho Repository trong N phút.
-        Vì việc tính dung lượng đĩa cần thiết của Repository có thể tốn kém nên hãy tăng giá trị này để giảm tác động đến hiệu suất.
+        Giữ thông tin dung lượng đĩa cần thiết gần nhất của repository trong N phút.
+        Vì việc tính dung lượng đĩa của repository có thể tốn tài nguyên, hãy tăng giá trị này để giảm ảnh hưởng đến hiệu năng.
     subversion:
       existing_introduction: Nếu bạn có Repository Subversion hiện có, bạn có thể liên kết nó với OpenProject để truy cập nó từ bên trong ứng dụng.
       existing_title: Repository Subversion hiện có
@@ -5912,7 +5923,7 @@ vi:
     Đặt đường dẫn mặc định để chuyển hướng người dùng sau khi đăng nhập, nếu không có liên kết quay lại. Nếu không đặt, sẽ chuyển hướng về trang chủ. <br/> Ví dụ: %{example_code}
   setting_ai_text_transform_actions_enabled: Bật các thao tác chuyển đổi văn bản
   setting_allowed_link_protocols: Giao thức liên kết được phép
-  setting_allowed_link_protocols_text_html: 'Cho phép các giao thức này được hiển thị dưới dạng liên kết trong mô tả Work package, trường văn bản dài và nhận xét. Ví dụ: %{tel_code} hoặc %{element_code}. Nhập một giao thức trên mỗi dòng. <br/> Giao thức %{http_code}, %{https_code} và %{mailto_code} luôn được cho phép.'
+  setting_allowed_link_protocols_text_html: 'Cho phép các giao thức này hiển thị dưới dạng liên kết trong mô tả work package, trường văn bản dài và bình luận. Ví dụ: %{tel_code} hoặc %{element_code}. Nhập mỗi giao thức một dòng. <br/> Các giao thức %{http_code}, %{https_code} và %{mailto_code} luôn được cho phép.'
   setting_antivirus_scan_action: Hành động tập tin bị nhiễm
   setting_antivirus_scan_mode: Chế độ quét
   setting_api_tokens_enabled: Bật API token
@@ -5929,25 +5940,22 @@ vi:
   setting_apiv3_docs_enabled_instructions_html: 'Nếu trang tài liệu được kích hoạt, bạn có thể xem tài liệu APIv3 tương tác tại <a href="%{link}" target="_blank">%{link}</a>.
 
     '
-  setting_apiv3_docs_enabled_instructions_warning: 'Xin lưu ý rằng việc bật tài liệu API trên hệ thống sản xuất có thể làm lộ thông tin nhạy cảm hoặc vô tình làm mất dữ liệu khi bạn không cẩn thận. Chúng tôi khuyên bạn chỉ nên bật cài đặt này cho mục đích phát triển.
-
-    '
+  setting_apiv3_docs_enabled_instructions_warning: |
+    Lưu ý rằng bật tài liệu API trên hệ thống production có thể làm lộ thông tin nhạy cảm hoặc gây mất dữ liệu ngoài ý muốn nếu thiếu cẩn thận. Chúng tôi khuyên chỉ bật cài đặt này cho mục đích phát triển.
   setting_apiv3_max_page_size: Kích thước trang API tối đa
   setting_apiv3_max_page_size_instructions: 'Đặt kích thước trang tối đa mà API sẽ phản hồi. Sẽ không thể thực hiện các yêu cầu API trả về nhiều giá trị hơn trên một trang.
 
     '
-  setting_apiv3_max_page_size_warning: 'Vui lòng chỉ thay đổi giá trị này nếu bạn chắc chắn tại sao mình cần nó. Việc đặt thành giá trị cao sẽ dẫn đến tác động đáng kể đến hiệu suất, trong khi giá trị thấp hơn tùy chọn trên mỗi trang sẽ gây ra lỗi trong View phân trang.
-
-    '
+  setting_apiv3_max_page_size_warning: |
+    Chỉ thay đổi giá trị này khi bạn hiểu rõ lý do cần làm vậy. Đặt giá trị cao sẽ ảnh hưởng đáng kể đến hiệu năng, còn giá trị thấp hơn các tùy chọn số mục mỗi trang sẽ gây lỗi ở các view phân trang.
   setting_apiv3_write_readonly_attributes: Viết quyền truy cập vào các thuộc tính chỉ đọc
   setting_apiv3_write_readonly_attributes_additional_html: |
     Để biết thêm về các thuộc tính và tài nguyên được hỗ trợ, vui lòng xem [tài liệu API](api_documentation_link).
   setting_apiv3_write_readonly_attributes_instructions: 'Nếu được bật, API sẽ cho phép quản trị viên ghi các thuộc tính tĩnh chỉ đọc trong quá trình tạo, chẳng hạn như createAt và tác giả.
 
     '
-  setting_apiv3_write_readonly_attributes_warning: 'Cài đặt này có một trường hợp sử dụng chẳng hạn như nhập dữ liệu nhưng cho phép quản trị viên mạo danh việc tạo các mục như những người dùng khác. Tuy nhiên, tất cả các yêu cầu tạo đang được ghi lại với tác giả thực sự.
-
-    '
+  setting_apiv3_write_readonly_attributes_warning: |
+    Cài đặt này hữu ích cho các trường hợp như nhập dữ liệu, nhưng cho phép quản trị viên giả danh người dùng khác khi tạo mục. Tuy nhiên, mọi yêu cầu tạo đều được ghi lại với tác giả thật.
   setting_app_subtitle: Phụ đề ứng dụng
   setting_app_title: Tiêu đề ứng dụng
   setting_attachment_max_size: Attachment tối đa. kích cỡ
@@ -5963,9 +5971,8 @@ vi:
   setting_capture_external_links_require_login: Yêu cầu người dùng phải đăng nhập
   setting_capture_external_links_require_login_text: |
     Khi bật, người dùng muốn nhấp vào liên kết bên ngoài cần đăng nhập trước khi có thể tiếp tục.
-  setting_capture_external_links_text: 'Khi tính năng này được kích hoạt, tất cả các liên kết ngoài trong văn bản định dạng sẽ được chuyển hướng qua một trang cảnh báo trước khi rời khỏi ứng dụng. Điều này giúp bảo vệ người dùng khỏi các trang web bên ngoài có thể chứa mã độc hại.
-
-    '
+  setting_capture_external_links_text: |
+    Khi bật, mọi liên kết ngoài trong văn bản định dạng sẽ chuyển qua một trang cảnh báo trước khi rời khỏi ứng dụng. Việc này giúp bảo vệ người dùng khỏi các trang web bên ngoài có thể độc hại.
   setting_collaborative_editing_hocuspocus_secret: Bí mật máy chủ Hocuspocus
   setting_collaborative_editing_hocuspocus_url: URL máy chủ Hocuspocus
   setting_column_options: Các cột liệt kê Work package mặc định
@@ -5981,7 +5988,7 @@ vi:
   setting_cross_project_work_package_relations: Cho phép quan hệ Work package giữa các dự án
   setting_csv_escape_formulas: Escape công thức trong tệp xuất CSV
   setting_csv_escape_formulas_text: |
-    Escape các công thức bảng tính trong tệp xuất CSV bằng cách thêm dấu nháy đơn vào đầu các ô bắt đầu bằng ký tự như =, +, - hoặc @. Điều này giúp giảm nguy cơ tấn công chèn công thức CSV khi mở tệp đã xuất trong các ứng dụng bảng tính như Excel. Đổi lại, giá trị chuỗi trong CSV sẽ bị thay đổi, vì vậy bạn có thể muốn tắt tùy chọn này nếu các công cụ phía sau yêu cầu giá trị ô gốc chính xác, không bị escape.
+    Thoát các công thức bảng tính trong tệp CSV xuất ra bằng cách thêm dấu nháy đơn vào đầu các ô bắt đầu bằng ký tự như =, +, - hoặc @. Cách này giảm nguy cơ chèn công thức CSV khi mở tệp đã xuất trong các ứng dụng bảng tính như Excel. Đổi lại, giá trị chuỗi trong CSV sẽ bị thay đổi, nên bạn có thể tắt tùy chọn này nếu công cụ xử lý sau cần giá trị ô gốc, chưa được thoát.
   setting_date_format: Ngày
   setting_default_language: Ngôn ngữ mặc định
   setting_default_projects_modules: Các mô-đun được bật mặc định cho các dự án mới
@@ -6084,9 +6091,8 @@ vi:
   setting_self_registration_manual_activation_caption: 'Người dùng có thể tự đăng ký. Tài khoản của họ ở Status chờ xử lý cho đến khi quản trị viên hoặc người dùng có quyền toàn cầu tạo hoặc quản lý người dùng kích hoạt chúng.
 
     '
-  setting_self_registration_warning: 'Người dùng sẽ có thể kích hoạt tài khoản của riêng họ. Xin lưu ý rằng điều này sẽ cấp cho họ quyền truy cập vào tất cả các dự án công cộng và nội dung của chúng. Hãy đảm bảo rằng không có dữ liệu nhạy cảm hoặc riêng tư nào bị lộ trong các dự án công cộng.
-
-    '
+  setting_self_registration_warning: |
+    Người dùng sẽ có thể tự kích hoạt tài khoản của mình. Lưu ý rằng khi đó họ sẽ truy cập được mọi dự án công khai và nội dung của các dự án này. Vui lòng đảm bảo không có dữ liệu nhạy cảm hoặc riêng tư nào nằm trong các dự án công khai.
   setting_sendmail_arguments: Đối số cho sendmail
   setting_sendmail_location: Vị trí của tệp thực thi sendmail (đường dẫn)
   setting_session_ttl: Thời gian hết hạn phiên sau khi không hoạt động
@@ -6121,9 +6127,8 @@ vi:
   setting_welcome_text: Văn bản chặn chào mừng
   setting_welcome_title: Tiêu đề khối chào mừng
   setting_work_package_done_ratio: Chế độ tính toán tiến độ
-  setting_work_package_done_ratio_explanation_html: 'Ở chế độ <b>work-based</b>, % Hoàn thành có thể được đặt tùy ý thành bất kỳ giá trị nào. Nếu bạn tùy ý nhập một giá trị cho Công việc, Công việc còn lại sẽ tự động được bắt nguồn. Trong chế độ <b>dựa trên Status</b>, mỗi Status có một giá trị % Hoàn thành được liên kết với Status đó. Việc thay đổi Status sẽ thay đổi % Hoàn thành.
-
-    '
+  setting_work_package_done_ratio_explanation_html: |
+    Ở chế độ <b>dựa trên công việc</b>, % Hoàn thành có thể đặt tự do thành bất kỳ giá trị nào. Nếu bạn nhập giá trị cho Công việc, Công việc còn lại sẽ được tự động tính. Ở chế độ <b>dựa trên trạng thái</b>, mỗi trạng thái có một giá trị % Hoàn thành đi kèm. Đổi trạng thái sẽ đổi % Hoàn thành.
   setting_work_package_done_ratio_field: Dựa trên công việc
   setting_work_package_done_ratio_field_caption_html: "<i>% Hoàn thành</i> có thể được đặt tùy ý thành bất kỳ giá trị nào. Nếu bạn tùy ý nhập giá trị cho <i>Work</i>, <i>Công việc còn lại</i> sẽ tự động được dẫn xuất."
   setting_work_package_done_ratio_status: Dựa trên Status
@@ -6136,7 +6141,7 @@ vi:
   setting_work_packages_identifier_classic: Dãy số thứ tự toàn hệ thống (mặc định)
   setting_work_packages_identifier_classic_caption: 'Mỗi work package nhận một số thứ tự bắt đầu từ 1 (ví dụ: #1234). Các số này là duy nhất trong toàn hệ thống và giữ nguyên ngay cả khi work package được chuyển giữa các dự án.'
   setting_work_packages_identifier_semantic: Mã định danh ngữ nghĩa theo dự án
-  setting_work_packages_identifier_semantic_caption: 'Mỗi dự án có một mã định danh dự án duy nhất đứng trước một con số (ví dụ: PROJ-11). Việc đánh số của mỗi dự án bắt đầu từ 1. Nếu work package được chuyển sang dự án khác, một mã định danh mới sẽ được tạo nhưng mã cũ vẫn tiếp tục hoạt động.'
+  setting_work_packages_identifier_semantic_caption: 'Mỗi dự án có một mã định danh dự án riêng, đứng trước một con số (ví dụ: PROJ-11). Số thứ tự của mỗi dự án bắt đầu từ 1. Nếu một work package được chuyển sang dự án khác, một mã định danh mới sẽ được tạo nhưng mã cũ vẫn dùng được.'
   setting_work_packages_projects_export_limit: Work package / Giới hạn xuất dự án
   setting_work_packages_projects_export_limit_text: |
     Số lượng work package hoặc dự án tối đa có thể đưa vào một lần xuất. Các lần xuất lớn hơn sẽ bị cắt bớt theo giới hạn này.
@@ -6145,23 +6150,20 @@ vi:
     antivirus:
       actions:
         delete: Xóa tập tin
-        instructions_html: 'Chọn hành động để thực hiện đối với các tệp có virus đã được phát hiện: <br/> <ul> <li><strong>%{quarantine_option}</strong>: Cách ly tệp, ngăn chặn người dùng truy cập vào nó. Các quản trị viên có thể xem và xóa các tệp đã cách ly trong quản trị.</li> <li><strong>%{delete_option}</strong>: Xóa tệp ngay lập tức.</li> </ul>
-
-          '
+        instructions_html: |
+          Chọn hành động áp dụng cho các tệp bị phát hiện có virus: <br/> <ul> <li><strong>%{quarantine_option}</strong>: Cách ly tệp, không cho người dùng truy cập. Quản trị viên có thể xem và xóa các tệp bị cách ly trong phần quản trị.</li> <li><strong>%{delete_option}</strong>: Xóa tệp ngay lập tức.</li> </ul>
         quarantine: Cách ly tập tin
       clamav_ping_failed: Không thể kết nối trình nền ClamAV. Hãy kiểm tra kỹ cấu hình và thử lại.
       modes:
         clamav_host_html: 'Nhập tên máy chủ và cổng vào trình nền Clamd được phân tách bằng dấu hai chấm. ví dụ: %{example}'
         clamav_socket_html: 'Nhập ổ cắm vào daemon ngao, ví dụ: %{example}'
-        description_html: 'Chọn chế độ mà Integration trình quét antivirus nên hoạt động. <br/> <ul> <li><strong>%{disabled_option}</strong>: Các tệp tải lên sẽ không được quét virus.</li> <li><strong>%{socket_option}</strong>: Bạn đã thiết lập ClamAV trên cùng một máy chủ với OpenProject và daemon quét clamd đang chạy nền</li> <li><strong>%{host_option}</strong>: Bạn đang truyền tệp đến một máy chủ quét virus bên ngoài.</li> </ul>
-
-          '
+        description_html: |
+          Chọn chế độ hoạt động của tích hợp trình quét virus. <br/> <ul> <li><strong>%{disabled_option}</strong>: Không quét virus các tệp tải lên.</li> <li><strong>%{socket_option}</strong>: Bạn đã cài ClamAV trên cùng máy chủ với OpenProject và daemon quét clamd đang chạy nền.</li> <li><strong>%{host_option}</strong>: Bạn đang truyền tệp đến một máy chủ quét virus bên ngoài.</li> </ul>
       remaining_quarantined_files_html: 'Quét virus đã bị vô hiệu hóa. Có %{file_count} tệp vẫn còn trong cách ly. Để xem các tệp đã cách ly, vui lòng truy cập liên kết này: %{link}
 
         '
-      remaining_rescanned_files: 'Quét virus đã được kích hoạt thành công. Có %{file_count} đã được tải lên trước đó và vẫn cần được quét. Quá trình này đã được lên lịch ở chế độ nền. Các tập tin sẽ vẫn có thể truy cập được trong quá trình quét.
-
-        '
+      remaining_rescanned_files: |
+        Đã bật quét virus thành công. Có %{file_count} được tải lên trước đó và cần được quét. Quá trình này đã được lên lịch chạy nền. Các tệp vẫn truy cập được trong lúc quét.
       remaining_scan_complete_html: 'Các tập tin còn lại đã được quét. Có %{file_count} đang bị cách ly. Bạn đang được chuyển hướng đến trang cách ly. Sử dụng trang này để xóa hoặc ghi đè các tập tin đã cách ly.
 
         '
@@ -6171,40 +6173,36 @@ vi:
       show_work_package_attachments: 'Việc tắt tùy chọn này sẽ ẩn danh sách Attachment trên tab tệp Work package cho các dự án mới. Các Attachment trong phần mô tả của Work package sẽ vẫn được tải lên bộ lưu trữ Attachment nội bộ.
 
         '
-      whitelist_text_html: 'Xác định danh sách các phần mở rộng tệp hợp lệ và/hoặc loại mime cho các tệp được tải lên. <br/> Nhập phần mở rộng tệp (ví dụ: <code>%{ext_example}</code>) hoặc loại mime (ví dụ: <code>%{mime_example}</code>). <br/> Để trống để cho phép tải lên mọi loại tệp. Cho phép nhiều giá trị (mỗi giá trị một dòng).
-
-        '
+      whitelist_text_html: |
+        Xác định danh sách đuôi tệp và/hoặc kiểu MIME hợp lệ cho các tệp tải lên. <br/> Nhập đuôi tệp (ví dụ: <code>%{ext_example}</code>) hoặc kiểu MIME (ví dụ: <code>%{mime_example}</code>). <br/> Để trống để cho phép tải lên mọi loại tệp. Có thể nhập nhiều giá trị (mỗi giá trị một dòng).
     authentication:
       login: Đăng nhập
-      omniauth_direct_login_hint_html: 'Nếu tùy chọn này đang hoạt động, yêu cầu đăng nhập sẽ chuyển hướng đến nhà cung cấp omniauth đã định cấu hình. Trang đăng nhập thả xuống và trang đăng nhập sẽ bị vô hiệu hóa. <br/> <strong>Lưu ý:</strong> Trừ khi bạn cũng tắt tính năng đăng nhập bằng mật khẩu, khi bật tùy chọn này, người dùng vẫn có thể đăng nhập nội bộ bằng cách truy cập trang đăng nhập <code>%{internal_path}</code>.
-
-        '
+      omniauth_direct_login_hint_html: |
+        Nếu bật tùy chọn này, yêu cầu đăng nhập sẽ được chuyển hướng đến nhà cung cấp omniauth đã cấu hình. Danh sách đăng nhập thả xuống và trang đăng nhập sẽ bị vô hiệu hóa. <br/> <strong>Lưu ý:</strong> Nếu bạn không tắt đăng nhập bằng mật khẩu, người dùng vẫn có thể đăng nhập nội bộ qua trang đăng nhập <code>%{internal_path}</code>.
       password_login_bypass_principal_ids_hint: |
-        Ngay cả khi đăng nhập bằng mật khẩu bị tắt, những người dùng và nhóm này vẫn có thể dùng mật khẩu để đăng nhập. Điều này hữu ích, chẳng hạn, khi nhà cung cấp danh tính không khả dụng. Nếu bạn thêm một nhóm, quyền truy cập sẽ được mở rộng cho tất cả người dùng trong nhóm đó.
+        Dù đăng nhập bằng mật khẩu đã bị tắt, những người dùng và nhóm này vẫn có thể dùng mật khẩu để đăng nhập. Điều này hữu ích, chẳng hạn khi nhà cung cấp danh tính không khả dụng. Nếu bạn thêm một nhóm, quyền này áp dụng cho mọi người dùng trong nhóm.
       password_login_configured_by_environment: |
         Các cài đặt sau được cấu hình qua môi trường và không thể chỉnh sửa tại đây:
       password_login_requires_sso_provider: |
         Không thể đặt hạn chế đăng nhập bằng mật khẩu vì hiện chưa có nhà cung cấp SSO nào được bật. Hãy cấu hình và bật một nhà cung cấp SSO trước khi thay đổi các cài đặt này.
       registration: Đăng ký
-      remapping_existing_users_hint: 'Nếu được bật, sẽ cho phép mọi nhà cung cấp danh tính được định cấu hình đăng nhập người dùng hiện tại dựa trên tên người dùng của họ, ngay cả khi người dùng chưa từng đăng nhập thông qua nhà cung cấp đó trước đây. Điều này có thể hữu ích khi di chuyển Version OpenProject sang nhà cung cấp SSO mới, nhưng không được khuyến nghị khi sử dụng nhà cung cấp không được tất cả người dùng Version của bạn tin cậy.
-
-        '
+      remapping_existing_users_hint: |
+        Nếu bật, mọi nhà cung cấp danh tính đã cấu hình có thể đăng nhập cho người dùng hiện có dựa trên tên người dùng, kể cả khi họ chưa từng đăng nhập qua nhà cung cấp đó. Cách này hữu ích khi chuyển hệ thống OpenProject sang nhà cung cấp SSO mới, nhưng không nên dùng với nhà cung cấp mà không phải mọi người dùng trong hệ thống đều tin cậy.
       sso: Đăng nhập một lần (SSO)
     brute_force_prevention: Tự động chặn người dùng
     date_format:
       first_date_of_week_and_year_set: 'Nếu một trong hai tùy chọn "%{day_of_week_setting_name}" hoặc "%{first_week_setting_name}" được đặt thì tùy chọn còn lại cũng phải được đặt để tránh sự mâu thuẫn ở giao diện người dùng.
 
         '
-      first_week_of_year_text_html: 'Chọn ngày của tháng Một thuộc tuần đầu tiên của năm. Giá trị này cùng với ngày đầu tiên của tuần xác định tổng số tuần trong năm. Để biết thêm thông tin, vui lòng xem <a href="%{link}" target="_blank">tài liệu</a> của chúng tôi về chủ đề này.
-
-        '
+      first_week_of_year_text_html: |
+        Chọn ngày trong tháng Một thuộc tuần đầu tiên của năm. Giá trị này cùng với ngày đầu tuần quyết định tổng số tuần trong năm. Để biết thêm, vui lòng xem <a href="%{link}" target="_blank">tài liệu</a> về chủ đề này.
     errors:
       failed_to_update: 'Không thể cập nhật cài đặt ''%{name}'': %{message}'
       not_writable: Cài đặt này không thể ghi và chỉ có thể được thay đổi bởi quản trị viên hệ thống.
     experimental:
       feature_flags: Cờ tính năng
       save_confirmation: Thận trọng! Nguy cơ mất dữ liệu! Chỉ kích hoạt các tính năng thử nghiệm nếu bạn không ngại phá vỡ cài đặt OpenProject và mất tất cả dữ liệu của nó.
-      warning_toast: Cờ tính năng là cài đặt kích hoạt các tính năng vẫn đang được phát triển. Chúng chỉ được sử dụng cho mục đích thử nghiệm. Chúng sẽ không bao giờ được kích hoạt trên các bản cài đặt OpenProject chứa dữ liệu quan trọng. Những tính năng này rất có thể sẽ làm hỏng dữ liệu của bạn. Sử dụng chúng có nguy cơ của riêng bạn.
+      warning_toast: Feature flag là các cài đặt bật những tính năng còn đang phát triển. Chỉ dùng cho mục đích thử nghiệm và không bao giờ bật trên hệ thống OpenProject chứa dữ liệu quan trọng. Các tính năng này rất có thể làm hỏng dữ liệu của bạn. Bạn tự chịu rủi ro khi sử dụng.
     general: Chung
     highlighting:
       mode_long:
@@ -6214,10 +6212,10 @@ vi:
         status: Toàn bộ hàng theo Status
         type: Toàn bộ hàng theo loại
     icalendar:
-      enable_subscriptions_text_html: Cho phép người dùng với quyền cần thiết đăng ký các lịch OpenProject và truy cập thông tin Work package qua một ứng dụng lịch bên ngoài. <strong>Lưu ý:</strong> Vui lòng đọc về <a href="%{link}" target="_blank">đăng ký iCalendar</a> để hiểu các rủi ro bảo mật tiềm ẩn trước khi kích hoạt tính năng này.
+      enable_subscriptions_text_html: Cho phép người dùng có đủ quyền đăng ký theo dõi lịch OpenProject và xem thông tin work package qua ứng dụng lịch bên ngoài. <strong>Lưu ý:</strong> Vui lòng đọc về <a href="%{link}" target="_blank">đăng ký iCalendar</a> để hiểu các rủi ro bảo mật tiềm ẩn trước khi bật.
     language_name_being_default: "%{language_name} (mặc định)"
     notifications:
-      delay_minutes_explanation: Việc gửi email có thể bị trì hoãn để cho phép người dùng đã định cấu hình thông báo trong ứng dụng xác nhận thông báo trong ứng dụng trước khi thư được gửi đi. Người dùng đọc thông báo trong ứng dụng sẽ không nhận được email cho thông báo đã đọc.
+      delay_minutes_explanation: Có thể trì hoãn việc gửi email để người dùng đã cấu hình thông báo trong ứng dụng kịp xác nhận thông báo trong ứng dụng trước khi email được gửi. Người dùng đã đọc thông báo trong ứng dụng sẽ không nhận email cho thông báo đó.
       events_explanation: Quản lý sự kiện mà email được gửi đi. Các Work package được loại trừ khỏi danh sách này vì thông báo cho chúng có thể được cấu hình cụ thể cho từng người dùng.
     other: Khác
     passwords: Mật khẩu
@@ -6225,7 +6223,7 @@ vi:
       edit:
         description: Thay đổi đối với thuộc tính dự án này sẽ áp dụng cho tất cả các dự án đã bật nó. Không thể tắt thuộc tính bắt buộc riêng cho từng dự án.
       heading: Các thuộc tính dự án
-      heading_description: Các thuộc tính dự án này xuất hiện trong Dashboard của từng dự án. Bạn có thể thêm các thuộc tính mới, nhóm chúng thành các phần và sắp xếp lại chúng theo ý muốn. Các thuộc tính này có thể được bật hoặc tắt nhưng không được sắp xếp lại ở cấp dự án.
+      heading_description: Các thuộc tính dự án này hiển thị trong trang tổng quan của từng dự án. Bạn có thể thêm thuộc tính mới, nhóm chúng thành các phần và sắp xếp lại tùy ý. Ở cấp dự án, các thuộc tính này chỉ có thể bật hoặc tắt, không thể sắp xếp lại.
       label_add_attribute: Thêm thuộc tính dự án
       label_edit_section: Chỉnh sửa tiêu đề
       label_for_all_projects: Tất cả dự án
@@ -6249,11 +6247,11 @@ vi:
               label: Bảng điều khiển bên
     project_initiation_request:
       blankslate:
-        description: OpenProject có thể tạo trình hướng dẫn từng bước để giúp người quản lý dự án điền vào yêu cầu khởi tạo dự án. Bạn có thể chọn những thuộc tính dự án nào sẽ được đưa vào và những việc cần làm với tài liệu đầu ra. Kích hoạt nó ở đây để bắt đầu cấu hình trình hướng dẫn.
+        description: OpenProject có thể tạo một trình hướng dẫn từng bước giúp quản lý dự án điền yêu cầu khởi tạo dự án. Bạn có thể chọn các thuộc tính dự án cần đưa vào và cách xử lý tài liệu đầu ra. Hãy bật tại đây để bắt đầu cấu hình trình hướng dẫn.
         title: Yêu cầu bắt đầu không được kích hoạt
       disable_dialog:
         checkbox_message: Tôi hiểu rằng hành động này không thể đảo ngược
-        confirmation_message: Trình hướng dẫn yêu cầu khởi tạo sẽ không còn khả dụng cho các dự án mới dựa trên mẫu này nữa. Người quản lý dự án và chủ sở hữu dự án sẽ cần định cấu hình và điền thông tin liên quan theo cách thủ công trong phần Tổng quan về dự án.
+        confirmation_message: Trình hướng dẫn yêu cầu khởi tạo sẽ không còn khả dụng cho các dự án mới dựa trên mẫu này. Quản lý dự án và chủ dự án sẽ phải tự cấu hình và điền thông tin liên quan trong phần Tổng quan dự án.
         heading: Tắt yêu cầu bắt đầu dự án này?
         title: Tắt yêu cầu khởi tạo dự án
       header_description: |
@@ -6273,15 +6271,18 @@ vi:
         submitted_description: Nhấp vào nút bên dưới để chuyển đến Work package cho quá trình gửi bài.
       submission:
         assignee: Người được chuyển nhượng khi nộp
-        assignee_caption_html: Người dùng hoặc nhóm được gán cho thuộc tính dự án này cũng sẽ trở thành người được chuyển nhượng Work package mới. Danh sách này chỉ bao gồm các thuộc tính dự án đang hoạt động thuộc loại <i>User</i>.
+        assignee_caption_html: Người dùng hoặc nhóm được gán cho thuộc tính dự án này cũng sẽ là người được giao work package mới. Danh sách này chỉ gồm các thuộc tính dự án đang hoạt động thuộc loại <i>Người dùng</i>.
         confirmation_email_default: |-
           Xin chào,
 
           Bạn đã gửi yêu cầu bắt đầu dự án cho **%{project_name}**. Bây giờ nó đang chờ xem xét.
           Nhấp vào liên kết bên dưới để truy cập Work package với yêu cầu của bạn.
         confirmation_email_text: Văn bản email xác nhận
-        description: Khi người dùng gửi yêu cầu khởi tạo dự án, một work package mới sẽ được tạo kèm tài liệu đầu ra của yêu cầu dưới dạng tệp PDF. Các cài đặt bên dưới xác định loại, trạng thái và người được giao cho work package mới này.
-        description_template: "**This work package was automatically created upon completion of the %{wizard_name} workflow.** A PDF artefact containing all submitted information has been generated and attached to this work package for reference and audit purposes. If you need to update or re-run the initiation steps, you can reopen the wizard at any time by using the link below:\n"
+        description: Khi người dùng gửi yêu cầu khởi tạo dự án, một work package mới sẽ được tạo, kèm tài liệu của yêu cầu dưới dạng tệp PDF. Các cài đặt bên dưới xác định loại, trạng thái và người được giao của work package mới này.
+        description_template: |
+          **Work package này được tạo tự động khi hoàn tất quy trình %{wizard_name}.**
+          Một tài liệu PDF chứa toàn bộ thông tin đã gửi đã được tạo và đính kèm vào work package này để tham khảo và kiểm tra.
+          Nếu cần cập nhật hoặc chạy lại các bước khởi tạo, bạn có thể mở lại trình hướng dẫn bất cứ lúc nào qua liên kết bên dưới:
         send_confirmation_email: Gửi email xác nhận cho người dùng đã gửi yêu cầu bắt đầu dự án
         status_when_submitted: Status khi gửi
         status_when_submitted_caption: Status của Work package được tạo sẽ chuyển sang Status sau khi yêu cầu được gửi.
@@ -6301,7 +6302,7 @@ vi:
       finish_gate: Cổng kết thúc
       finish_gate_caption: Thêm một cổng có ngày kết thúc của giai đoạn
       heading: Vòng đời dự án
-      heading_description: Vòng đời dự án xác định các giai đoạn dự án có thể được sử dụng để lập kế hoạch dự án của bạn và sẽ xuất hiện trên Dashboard của từng dự án. Các thuộc tính này có thể được bật hoặc tắt nhưng không được sắp xếp lại ở cấp dự án.
+      heading_description: Vòng đời dự án xác định các giai đoạn dự án dùng để lập kế hoạch và sẽ hiển thị trong trang tổng quan của từng dự án. Ở cấp dự án, các giai đoạn này chỉ có thể bật hoặc tắt, không thể sắp xếp lại.
       label_add: Thêm
       label_add_description: Thêm định nghĩa giai đoạn dự án
       new:
@@ -6347,7 +6348,7 @@ vi:
       new:
         heading: Thuộc tính mới
       semantic_keys:
-        description: Một số thuộc tính không chỉ để lưu thông tin — ứng dụng dùng chúng để vận hành các tính năng cụ thể. Hãy chọn thuộc tính dùng cho từng mục đích bên dưới. Mỗi thuộc tính chỉ dùng cho một mục đích, và mỗi mục đích chỉ dùng một thuộc tính.
+        description: Một số thuộc tính không chỉ lưu thông tin mà còn được ứng dụng dùng để vận hành các tính năng cụ thể. Hãy chọn thuộc tính cho từng mục đích bên dưới. Mỗi thuộc tính chỉ dùng cho một mục đích và mỗi mục đích chỉ dùng một thuộc tính.
         descriptions:
           job_title: Chọn thuộc tính chứa chức danh của mỗi người dùng. Chức danh hiển thị cạnh tên họ ở nhiều nơi, chẳng hạn trên thẻ người dùng.
       tabs:
@@ -6357,7 +6358,7 @@ vi:
       activities:
         enable_internal_comments: Bật nhận xét nội bộ
         helper_text_html: |
-          Bình luận nội bộ cho phép nhóm nội bộ trao đổi riêng với nhau. Chỉ các role được chọn và có đủ quyền mới thấy các bình luận này, và chúng sẽ không hiển thị công khai. [Nhấp vào đây để tìm hiểu thêm](docs_url)
+          Bình luận nội bộ cho phép nhóm nội bộ trao đổi riêng với nhau. Chỉ các role được chọn và có đủ quyền mới xem được, và chúng không hiển thị công khai. [Nhấp vào đây để tìm hiểu thêm](docs_url)
       not_allowed_text: Bạn không có quyền cần thiết để xem trang này.
       work_package_identifier: Mã định danh work package
     working_days:
@@ -6452,10 +6453,10 @@ vi:
         package được tự động đặt theo giá trị này khi chọn trạng thái này.
         Bị bỏ qua ở chế độ dựa trên công việc.
       status_readonly_html: |
-        Chọn tùy chọn này để đánh dấu các Work package có Status này là chỉ đọc.
-        Không có thuộc tính nào có thể được thay đổi ngoại trừ Status.
+        Chọn tùy chọn này để đặt các work package có trạng thái này ở chế độ chỉ đọc.
+        Không thể thay đổi thuộc tính nào, trừ trạng thái.
         <br>
-        <strong>Lưu ý</strong>: Các giá trị được kế thừa (ví dụ: từ con cái hoặc quan hệ) sẽ vẫn được áp dụng.
+        <strong>Lưu ý</strong>: Các giá trị kế thừa (ví dụ: từ work package con hoặc quan hệ) vẫn được áp dụng.
     index:
       could_not_be_moved: Không thể di chuyển trạng thái.
       headers:
@@ -6470,7 +6471,7 @@ vi:
       sentence_connector: Và
       skip_last_comma: Sai
   text_access_token_hint: Mã thông báo truy cập cho phép bạn cấp cho các ứng dụng bên ngoài quyền truy cập vào tài nguyên trong OpenProject.
-  text_accessibility_hint: Chế độ trợ năng được thiết kế dành cho người dùng bị mù, khuyết tật vận động hoặc có thị lực kém. Đối với các yếu tố tập trung sau này được đánh dấu đặc biệt. Xin lưu ý rằng mô-đun Backlogs không khả dụng ở chế độ này.
+  text_accessibility_hint: Chế độ trợ năng dành cho người dùng khiếm thị, hạn chế vận động hoặc thị lực kém. Với nhóm sau, các phần tử đang được chọn sẽ được làm nổi bật. Lưu ý rằng module Backlogs không khả dụng ở chế độ này.
   text_analyze: 'Phân tích sâu hơn: %{subject}'
   text_are_you_sure: Bạn có chắc không?
   text_are_you_sure_continue: Bạn có chắc chắn muốn tiếp tục không?
@@ -6513,9 +6514,8 @@ vi:
 
     '
   text_custom_field_possible_values_info: Một dòng cho mỗi giá trị
-  text_custom_touch_icon_instructions: 'Đây là biểu tượng xuất hiện trên điện thoại di động hoặc máy tính bảng của bạn khi bạn đặt dấu trang trên màn hình chính. Nó phải là tệp hình ảnh PNG có kích thước 180 x 180 pixel bình phương. Vui lòng đảm bảo nền của hình ảnh không trong suốt, nếu không nó sẽ trông xấu trên iOS.
-
-    '
+  text_custom_touch_icon_instructions: |
+    Đây là biểu tượng hiển thị trên điện thoại hoặc máy tính bảng khi bạn thêm dấu trang vào màn hình chính. Biểu tượng phải là tệp ảnh PNG vuông, kích thước 180 x 180 pixel. Vui lòng đảm bảo nền ảnh không trong suốt, nếu không biểu tượng sẽ hiển thị xấu trên iOS.
   text_database_allows_tsv: Tùy chọn cho phép TSVector của Database
   text_default_administrator_account_changed: Tài khoản quản trị viên mặc định đã thay đổi
   text_default_encoding: 'Mặc định: UTF-8'
@@ -6568,9 +6568,8 @@ vi:
     Rất khuyến khích tải cấu hình mặc định. Bạn sẽ có thể sửa đổi nó sau khi tải.
   text_no_notes: Không có bình luận nào cho Work package này.
   text_no_roles_defined: Không có Role nào được xác định.
-  text_notice_security_badge_displayed_html: 'Lưu ý: nếu được kích hoạt, một bảng thông báo về tình trạng của phần mềm sẽ được hiển thị tại trang quản trị <a href="%{information_panel_path}">%{information_panel_label}</a>, và tại trang chủ. Thông tin này chỉ được thấy bởi Quản trị viên. <br/> Bảng thông báo sẽ kiểm tra các thông tin cập nhật từ OpenProject và thông báo về các cập nhật mới hay các lỗi được phát hiện. Để biết thêm chi tiết, vui lòng tham khảo <a href="%{more_info_url}">tài liệu cấu hình</a>.
-
-    '
+  text_notice_security_badge_displayed_html: |
+    Lưu ý: nếu bật, một huy hiệu hiển thị tình trạng bản cài đặt của bạn sẽ xuất hiện trong trang quản trị <a href="%{information_panel_path}">%{information_panel_label}</a> và trên trang chủ. Huy hiệu chỉ hiển thị cho quản trị viên. <br/> Huy hiệu sẽ so sánh phiên bản OpenProject hiện tại của bạn với cơ sở dữ liệu phát hành chính thức để cảnh báo về các bản cập nhật hoặc lỗ hổng đã biết. Để biết thêm về chức năng kiểm tra này, dữ liệu cần dùng để cung cấp thông tin cập nhật và cách tắt nó, vui lòng xem <a href="%{more_info_url}">tài liệu cấu hình</a>.
   text_notice_too_many_values_are_inperformant: 'Lưu ý: Hiển thị hơn 100 mục trên mỗi trang có thể làm tăng thời gian tải trang.'
   text_own_membership_delete_confirmation: |-
     Bạn sắp xóa một số hoặc tất cả các quyền của mình và sau đó có thể không chỉnh sửa được dự án này nữa.
@@ -6579,9 +6578,7 @@ vi:
   text_permanent_remove_confirmation_checkbox_label: Tôi hiểu rằng việc gỡ bỏ này không thể hoàn tác.
   text_plugin_assets_writable: Thư mục nội dung plugin có thể ghi
   text_powered_by: Được cung cấp bởi %{link}
-  text_project_custom_field_html: 'Version Enterprise sẽ thêm các phần bổ sung cho các Custom field của dự án: <br> <ul> <li><b>Thêm các Custom field cho dự án vào danh sách Dự án của bạn để tạo cái nhìn tổng quan về danh mục dự án</b></li> </ul>
-
-    '
+  text_project_custom_field_html: "Phiên bản Enterprise bổ sung các tiện ích sau cho Custom field của dự án: <br> <ul>\n  <li><b>Thêm Custom field của dự án vào danh sách dự án để tạo góc nhìn danh mục dự án</b></li>\n</ul>\n"
   text_project_identifier_description: The project identifier is prepended to all Work package (work package) IDs. If the identifier is "PROJ" for example, the Work package (work package) identifier will be "PROJ-12" or "PROJ-246".
   text_project_identifier_format: Phải bắt đầu bằng chữ cái thường. Chỉ cho phép chữ cái thường (a-z), số, dấu gạch ngang và gạch dưới.
   text_project_identifier_handle_format: Phải bắt đầu bằng một chữ cái và chỉ chứa chữ cái hoa, số và dấu gạch dưới (tối đa 10 ký tự).
@@ -6591,11 +6588,11 @@ vi:
   text_regexp_multiline: 'Biểu thức được áp dụng ở chế độ đa dòng. Ví dụ: ^---\s+'
   text_rename_wiki_page: Đổi tên trang wiki
   text_repository_usernames_mapping: |-
-    Chọn hoặc cập nhật người dùng OpenProject được ánh xạ tới từng tên người dùng được tìm thấy trong nhật ký Repository.
-    Người dùng có cùng tên người dùng hoặc email của OpenProject và Repository sẽ được tự động ánh xạ.
+    Chọn hoặc cập nhật người dùng OpenProject tương ứng với từng tên người dùng trong nhật ký Repository.
+    Người dùng có cùng tên người dùng hoặc email trên OpenProject và Repository sẽ được ánh xạ tự động.
   text_setup_mail_configuration: Cấu hình nhà cung cấp email của bạn
   text_status_changed_by_changeset: Được áp dụng trong bộ thay đổi %{value}.
-  text_table_difference_description: Trong bảng này, đơn %{entries} được hiển thị. Bạn có thể xem sự khác biệt giữa hai mục bất kỳ bằng cách trước tiên chọn các hộp kiểm tương ứng trong bảng. Khi nhấp vào nút bên dưới bảng, sự khác biệt sẽ được hiển thị.
+  text_table_difference_description: Bảng này hiển thị từng %{entries}. Để xem sự khác biệt giữa hai mục bất kỳ, hãy chọn hai ô tương ứng trong bảng rồi nhấp nút bên dưới bảng.
   text_time_logged_by_changeset: Được áp dụng trong bộ thay đổi %{value}.
   text_tip_work_package_begin_day: Work package bắt đầu từ ngày hôm nay
   text_tip_work_package_begin_end_day: Work package bắt đầu và kết thúc ngày hôm nay
@@ -6650,12 +6647,10 @@ vi:
     hashed_token:
       display_value_placeholder: "***"
   tooltip:
-    setting_email_login: 'Nếu được bật, người dùng sẽ không thể chọn đăng nhập trong khi đăng ký. Thay vào đó, địa chỉ email đã cung cấp của họ sẽ dùng làm thông tin đăng nhập. Quản trị viên vẫn có thể thay đổi thông tin đăng nhập riêng.
-
-      '
-  tooltip_resend_invitation: 'Gửi một email mời khác kèm theo mã thông báo mới trong trường hợp email cũ hết hạn hoặc người dùng không nhận được email gốc. Cũng có thể được sử dụng để người dùng đang hoạt động chọn phương thức xác thực mới. Khi được sử dụng với người dùng đang hoạt động, Status của họ sẽ được thay đổi thành ''được mời''.
-
-    '
+    setting_email_login: |
+      Nếu bật, người dùng sẽ không thể chọn tên đăng nhập khi đăng ký mà dùng luôn địa chỉ email làm tên đăng nhập. Quản trị viên vẫn có thể đổi tên đăng nhập riêng.
+  tooltip_resend_invitation: |
+    Gửi thêm một email mời kèm token mới, phòng khi token cũ đã hết hạn hoặc người dùng không nhận được email gốc. Cũng có thể dùng cho người dùng đang hoạt động để chọn phương thức xác thực mới. Khi đó, trạng thái của họ sẽ chuyển thành 'đã mời'.
   tooltip_user_default_timezone: 'Time zone mặc định, không thể thay bởi thiết lapạ Nsd.
 
     '
@@ -6733,7 +6728,7 @@ vi:
         reuse_named: Với workflow và biểu mẫu, bạn có thể dùng các cấu hình hiện có để tránh phải định nghĩa lại mỗi lần tạo loại hoặc biến thể mới. Nếu không có cấu hình nào phù hợp, bạn vẫn có thể tạo cấu hình mới.
         submit: Bắt đầu
         type:
-          description: Loại đại diện cho một kiểu mục cụ thể, như tính năng hoặc lỗi. Mỗi loại có tên, màu sắc, tập hợp các trường, một số quy tắc chuyển đổi giữa các trạng thái và các cấu hình khác. Bạn có thể kích hoạt và dùng các loại khác nhau trong các dự án khác nhau.
+          description: Loại đại diện cho một kiểu mục cụ thể, như tính năng hoặc lỗi. Mỗi loại có tên, màu sắc, tập hợp trường, một số quy tắc chuyển đổi giữa các trạng thái và các cấu hình khác. Bạn có thể bật và dùng các loại khác nhau trong các dự án khác nhau.
           heading: Tạo loại mới
           lead_html: Bạn sắp tạo một loại mới trong hệ thống của mình.
           step_by_step: Bạn sẽ cấu hình loại mới từng bước ở các trang tiếp theo.
@@ -6797,7 +6792,7 @@ vi:
             label: Tắt
           section_title: Tự động xuất tài liệu đầu ra
           unavailable: Unavailable, no automatically-managed Nextcloud storage is configured
-        intro: Chọn mẫu nào trong số những mẫu có sẵn mà bạn muốn bật cho loại này. Mẫu xác định thiết kế và các thuộc tính hiển thị trong tệp PDF đã xuất của Work package sử dụng loại này. Mẫu đầu tiên trong danh sách được chọn theo mặc định.
+        intro: Chọn các mẫu có sẵn mà bạn muốn bật cho loại này. Mẫu quyết định thiết kế và các thuộc tính hiển thị trong tệp PDF xuất ra của work package thuộc loại này. Mẫu đầu tiên trong danh sách được chọn mặc định.
         pdf_export_templates:
           actions:
             label_disable_all: Vô hiệu hóa tất cả
@@ -6878,7 +6873,7 @@ vi:
           manual:
             description: Sau khi bạn [tạo thuộc tính dự án](administration_url), chúng sẽ hiển thị tại đây và có thể được thêm vào một loại.
             title: Không có thuộc tính dự án nào khả dụng
-        description: Chọn các thuộc tính dự án bạn muốn bật cho loại work package này. Các thuộc tính dự án được bật sẽ hiển thị trong một tab riêng ở các work package thuộc loại này. Người dùng có đủ quyền có thể xem và chỉnh sửa các thuộc tính đó tại đây.
+        description: Chọn các thuộc tính dự án bạn muốn bật cho loại work package này. Các thuộc tính dự án được bật sẽ hiển thị trong một tab riêng ở work package thuộc loại này. Người dùng có đủ quyền có thể xem và chỉnh sửa chúng tại đó.
         disabled: Đã tắt
         exclusions:
           attribute_label: Kế thừa %{attribute}
@@ -6967,7 +6962,7 @@ vi:
       variants:
         blankslate:
           description_html: |
-            Bạn có thể tạo các biến thể để cung cấp nhiều phiên bản của loại này cho các dự án khác nhau.<br> Mỗi biến thể có thể kế thừa, sao chép hoặc có cấu hình tùy chỉnh riêng cho mẫu mặc định, custom field, workflow và các tùy chọn.
+            Bạn có thể tạo các biến thể để cung cấp nhiều phiên bản của loại này cho các dự án khác nhau.<br> Mỗi biến thể có thể kế thừa, sao chép hoặc có cấu hình riêng cho mẫu mặc định, custom field, workflow và các tùy chọn.
           title: Loại này chưa có biến thể nào
         created_in_html: Được tạo trong %{project}
         delete:
@@ -7109,9 +7104,8 @@ vi:
         no_results: Không có dự án nào được tìm thấy
         required: Vui lòng chọn một dự án
       role:
-        description: 'Đây là Role mà người dùng sẽ nhận được khi họ tham gia dự án của bạn. Role xác định những hành động nào họ được phép thực hiện và thông tin nào họ được phép xem. [Learn more about roles and permissions.](docs_url)
-
-          '
+        description: |
+          Đây là role mà người dùng sẽ nhận khi tham gia dự án của bạn. Role xác định các hành động họ được phép thực hiện và thông tin họ được phép xem. [Tìm hiểu thêm về role và quyền.](docs_url)
         label: Role trong %{project}
         no_roles_found: Không tìm thấy Role nào
         required: Vui lòng chọn một Role
@@ -7170,7 +7164,7 @@ vi:
       destroy:
         confirm: Bạn có chắc chắn muốn xóa lịch làm việc này không?
       form:
-        availability_description: Hệ số khả dụng thể hiện tỷ lệ phần trăm thực tế trong thời gian làm việc của bạn dành cho các nhiệm vụ dự án. Hệ số này đã tính đến các cuộc họp, email, công việc hành chính và các hoạt động ngoài dự án khác.
+        availability_description: Hệ số khả dụng là tỷ lệ phần trăm thực tế trong thời gian làm việc mà bạn dành cho các nhiệm vụ của dự án. Hệ số này đã tính đến các cuộc họp, email, công việc hành chính và các hoạt động ngoài dự án khác.
         availability_factor: Hệ số khả dụng
         availability_factor_caption: Xác định tỷ lệ phần trăm thời gian làm việc của bạn dành cho công việc dự án.
         effective_hours: Giờ làm việc hiệu quả
@@ -7228,17 +7222,15 @@ vi:
   warning_attachments_not_saved: "%{count} tệp không thể lưu được."
   warning_bar:
     hostname_mismatch:
-      text_html: 'Ứng dụng của bạn đang chạy với cài đặt tên máy chủ được đặt thành <code>%{set_hostname}</code>, nhưng yêu cầu là <code>%{actual_hostname}</code> máy chủ  . Điều này sẽ dẫn đến lỗi! Truy cập <a href="%{setting_path}"> Cài đặt hệ thống </a> và thay đổi cài đặt "Tên máy chủ" để sửa lỗi này.
-
-        '
+      text_html: |
+        Ứng dụng của bạn đang chạy với cài đặt tên máy chủ là <code>%{set_hostname}</code>, nhưng yêu cầu lại đến từ tên máy chủ <code>%{actual_hostname}</code>. Điều này sẽ gây lỗi! Hãy vào <a href="%{setting_path}">Cài đặt hệ thống</a> và sửa cài đặt "Tên máy chủ".
       title: Giao thức cài đặt không khớp
     https_mismatch:
-      text_html: 'Ứng dụng của bạn đang chạy với chế độ HTTPS được đặt thành <code>%{set_protocol}</code>, nhưng yêu cầu là một yêu cầu <code>%{actual_protocol}</code>. Điều này sẽ gây ra lỗi! Bạn sẽ cần thiết lập giá trị cấu hình sau: <code>%{setting_value}</code>. Vui lòng xem <a href="%{more_info_path}">tài liệu cài đặt</a> về cách thiết lập cấu hình này.
-
-        '
+      text_html: |
+        Ứng dụng của bạn đang chạy với chế độ HTTPS là <code>%{set_protocol}</code>, nhưng yêu cầu lại dùng <code>%{actual_protocol}</code>. Điều này sẽ gây lỗi! Bạn cần đặt giá trị cấu hình sau: <code>%{setting_value}</code>. Vui lòng xem <a href="%{more_info_path}">tài liệu cài đặt</a> để biết cách thiết lập.
       title: Thiết lập chế độ HTTPS không khớp
   warning_imminent_user_limit_html: |
-    Bạn đã mời nhiều người dùng hơn mức gói hiện tại hỗ trợ. Người dùng được mời có thể không tham gia được môi trường OpenProject của bạn. Vui lòng [nâng cấp gói](upgrade_url) hoặc chặn các người dùng hiện có để những người đã được mời và đã đăng ký có thể tham gia.
+    Bạn đã mời nhiều người dùng hơn mức gói hiện tại hỗ trợ. Người dùng được mời có thể không tham gia được vào OpenProject của bạn. Vui lòng [nâng cấp gói](upgrade_url) hoặc chặn bớt người dùng hiện có để những người đã được mời và đã đăng ký có thể tham gia.
   warning_protocol_mismatch_html: ''
   warning_registration_token_expired: 'Mail kích hoạt đã hết hạn. Sẽ gửi mail mới tới %{email}.
 
@@ -7248,9 +7240,8 @@ vi:
     '
   warning_user_limit_reached_admin_html: |
     Việc thêm người dùng sẽ vượt quá giới hạn hiện tại. Vui lòng [nâng cấp gói](upgrade_url) để đảm bảo người dùng bên ngoài có thể truy cập phiên bản này.
-  warning_user_limit_reached_instructions: 'Bạn đã đạt đến giới hạn người dùng của mình (%{current}/%{max} người dùng đang hoạt động). Vui lòng liên hệ sales@openproject.com để nâng cấp gói Version Enterprise của bạn và thêm người dùng bổ sung.
-
-    '
+  warning_user_limit_reached_instructions: |
+    Bạn đã đạt giới hạn người dùng (%{current}/%{max} người dùng đang hoạt động). Vui lòng liên hệ sales@openproject.com để nâng cấp gói Enterprise và thêm người dùng.
   wiki:
     index:
       no_results_content_text: Thêm một trang wiki mới
@@ -7299,7 +7290,7 @@ vi:
           same_as_work: Đặt thành cùng giá trị với Công việc.
       label_note: 'Ghi chú:'
       modal:
-        migration_warning_text: Trong chế độ tính toán tiến độ dựa trên công việc, % Hoàn thành không thể được đặt thủ công và được gắn với Công việc. Giá trị hiện tại đã được giữ nhưng không thể chỉnh sửa. Vui lòng nhập Công việc trước.
+        migration_warning_text: Ở chế độ tính tiến độ dựa trên công việc, không thể đặt % Hoàn thành thủ công vì nó gắn với Công việc. Giá trị hiện tại được giữ lại nhưng không thể chỉnh sửa. Vui lòng nhập Công việc trước.
         status_based_help_text: "% Hoàn thành được đặt theo Status Work package."
         work_based_help_text: Mỗi trường được tự động tính toán từ hai trường còn lại khi có thể.
     reminders:
@@ -7621,15 +7612,15 @@ vi:
       title: Nhập work package
     move:
       bulk_current_type_not_available_in_target_project: |
-        Các loại của work package hoặc work package cấp dưới của chúng chưa được bật trong dự án đích. Hãy bật các loại còn thiếu trong dự án đích nếu bạn muốn giữ nguyên chúng. Nếu không, hãy chọn một loại khả dụng trong dự án đích từ danh sách.
+        Loại của các work package hoặc work package con của chúng chưa được bật trong dự án đích. Nếu muốn giữ nguyên, hãy bật các loại còn thiếu trong dự án đích. Nếu không, hãy chọn một loại khả dụng trong dự án đích từ danh sách.
       current_type_not_available_in_target_project: |
-        Loại của work package này hoặc của một work package cấp dưới chưa được bật trong dự án đích. Hãy bật các loại còn thiếu trong dự án đích nếu bạn muốn giữ nguyên chúng. Nếu không, hãy chọn một loại khả dụng trong dự án đích từ danh sách.
+        Loại của work package này hoặc của một work package con chưa được bật trong dự án đích. Nếu muốn giữ nguyên, hãy bật các loại còn thiếu trong dự án đích. Nếu không, hãy chọn một loại khả dụng trong dự án đích từ danh sách.
       no_common_statuses_exists: Có là tình trạng không có sẵn cho tất cả các gói đã chọn công việc. Tình trạng của họ không thể thay đổi.
       unsupported_for_multiple_projects: Di chuyển/sao chép hàng loạt không được hỗ trợ cho các Work package từ nhiều dự án
     sharing:
       missing_workflow_warning:
         link_message: Cấu hình các quy trình công việc trong quản trị.
-        message: 'Không có Workflow nào được định cấu hình cho Role ''Trình chỉnh sửa Work package''. Nếu không có Workflow, nội dung được chia sẻ với người dùng không thể thay đổi Status của Work package. Workflow có thể được sao chép. Chọn loại nguồn (ví dụ: ''Nhiệm vụ'') và Role nguồn (ví dụ: ''Thành viên''). Sau đó chọn loại mục tiêu. Để bắt đầu, bạn có thể chọn tất cả các loại làm mục tiêu. Cuối cùng, chọn Role ''Trình chỉnh sửa Work package'' làm mục tiêu và nhấn ''Sao chép''. Sau khi đã tạo các giá trị mặc định, hãy tinh chỉnh Workflow như bạn thực hiện với mọi Role khác.'
+        message: 'Chưa cấu hình workflow nào cho role ''Người chỉnh sửa work package''. Không có workflow, người được chia sẻ sẽ không thể đổi trạng thái của work package. Workflow có thể sao chép: chọn loại nguồn (ví dụ: ''Nhiệm vụ'') và role nguồn (ví dụ: ''Thành viên''), rồi chọn các loại đích. Để bắt đầu, bạn có thể chọn tất cả các loại làm đích. Cuối cùng, chọn role ''Người chỉnh sửa work package'' làm đích và nhấn ''Sao chép''. Sau khi tạo các giá trị mặc định, hãy tinh chỉnh workflow như với mọi role khác.'
         title: Thiếu luồng công việc để chia sẻ Work package
     summary:
       reports:
@@ -7791,7 +7782,6 @@ vi:
       days:
         non_working: "%{day} hiện không hoạt động"
         working: "%{day} hiện đang hoạt động"
-    warning: 'Việc thay đổi ngày trong tuần được coi là ngày làm việc hay ngày không làm việc có thể ảnh hưởng đến ngày bắt đầu và ngày kết thúc của tất cả các Work package và vòng đời trong tất cả các dự án trong trường hợp này.
-
-      '
+    warning: |
+      Việc đổi các ngày trong tuần được tính là ngày làm việc hay không làm việc có thể ảnh hưởng đến ngày bắt đầu và kết thúc của mọi work package và vòng đời trong tất cả dự án của hệ thống này.
   you: Bạn

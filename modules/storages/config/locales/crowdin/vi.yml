@@ -64,7 +64,7 @@ vi:
         storages/storage:
           attributes:
             host:
-              authorization_header_missing: Chưa được thiết lập đầy đủ. Version Nextcloud không nhận được tiêu đề "Ủy quyền", tiêu đề này cần thiết cho việc ủy ​​quyền các yêu cầu API dựa trên mã thông báo Bearer. Vui lòng kiểm tra kỹ cấu hình máy chủ HTTP của bạn.
+              authorization_header_missing: chưa được thiết lập đầy đủ. Nextcloud không nhận được header "Authorization", vốn cần thiết để ủy quyền các yêu cầu API bằng Bearer token. Vui lòng kiểm tra lại cấu hình máy chủ HTTP.
               cannot_be_connected_to: Không thể đạt được. Hãy đảm bảo rằng máy chủ có thể truy cập được và ứng dụng Integration OpenProject đã được cài đặt.
               minimal_nextcloud_version_not_met: Does not meet minimal version requirements (must be Nextcloud %{minimal_version} or higher, but %{detected_version} was detected)
               not_nextcloud_server: Không phải là máy chủ Nextcloud
@@ -246,8 +246,8 @@ vi:
       redirect_uri_incomplete:
         one_drive: Hoàn tất thiết lập với chuyển hướng URI chính xác.
         sharepoint: Hoàn tất thiết lập với chuyển hướng URI chính xác.
-    confirm_replace_oauth_application: Hành động này sẽ đặt lại thông tin xác thực OAuth hiện tại. Sau khi xác nhận, bạn sẽ phải nhập lại thông tin đăng nhập tại nhà cung cấp dịch vụ lưu trữ và tất cả người dùng từ xa sẽ phải ủy quyền lại cho OpenProject. Bạn có chắc chắn muốn tiếp tục không?
-    confirm_replace_oauth_client: Hành động này sẽ đặt lại thông tin xác thực OAuth hiện tại. Sau khi xác nhận, bạn sẽ phải nhập thông tin xác thực mới từ nhà cung cấp bộ nhớ và tất cả người dùng sẽ phải ủy quyền lại cho %{provider_type}. Bạn có chắc chắn muốn tiếp tục không?
+    confirm_replace_oauth_application: Thao tác này sẽ đặt lại thông tin xác thực OAuth hiện tại. Sau khi xác nhận, bạn phải nhập lại thông tin xác thực tại nhà cung cấp lưu trữ và tất cả người dùng từ xa phải ủy quyền lại cho OpenProject. Bạn có chắc muốn tiếp tục không?
+    confirm_replace_oauth_client: Thao tác này sẽ đặt lại thông tin xác thực OAuth hiện tại. Sau khi xác nhận, bạn phải nhập thông tin xác thực mới từ nhà cung cấp lưu trữ và tất cả người dùng phải ủy quyền lại cho %{provider_type}. Bạn có chắc muốn tiếp tục không?
     delete_warning:
       project_storage_delete_result_1: Tất cả các liên kết đến các tập tin và thư mục tương ứng sẽ bị xóa
       project_storage_delete_result_2: Thư mục dự án được quản lý tự động và tất cả các tệp trong đó sẽ bị xóa
@@ -268,7 +268,7 @@ vi:
       access_management:
         automatic_management: Cho phép truy cập và thư mục được quản lý tự động
         automatic_management_description: Mỗi dự án sẽ có thể quyết định, khi thêm bộ lưu trữ vào đó, liệu họ muốn quản lý thư mục và quyền truy cập theo cách được quản lý tự động hay thủ công.
-        description: OpenProject có thể tự động tạo và quản lý các thư mục dự án khi bộ lưu trữ tệp được thêm vào dự án. Điều này có thể dẫn đến cấu trúc thư mục có tổ chức hơn và quản lý quyền truy cập đơn giản hơn, đảm bảo quyền truy cập cho tất cả người dùng có liên quan.
+        description: OpenProject có thể tự động tạo và quản lý thư mục dự án khi thêm kho lưu trữ tệp vào dự án. Nhờ đó cấu trúc thư mục gọn gàng hơn, việc quản lý quyền truy cập đơn giản hơn và mọi người dùng liên quan đều có quyền truy cập.
         manual_management: Chỉ cho phép truy cập và thư mục được quản lý thủ công
         manual_management_description: Các dự án sử dụng bộ lưu trữ này sẽ không được cung cấp tùy chọn phương pháp quản lý tự động. Các thư mục và quyền truy cập phải được quản lý thủ công.
         setup_incomplete: Chọn kiểu quản lý quyền truy cập của người dùng và tạo thư mục.
@@ -398,13 +398,13 @@ vi:
       title: Cập nhật qua email cho quản trị viên
     help_texts:
       project_folder: Thư mục dự án là thư mục mặc định để tải lên tệp cho dự án này. Tuy nhiên, người dùng vẫn có thể tải tệp lên các vị trí khác.
-      project_folder_bulk: Thư mục dự án là thư mục mặc định để tải lên tệp cho tất cả các dự án đã chọn. Bạn có thể sửa đổi điều này riêng lẻ trong từng cài đặt dự án. Tuy nhiên, người dùng vẫn có thể tải tệp lên các vị trí khác.
+      project_folder_bulk: Thư mục dự án là thư mục mặc định để tải tệp lên cho tất cả các dự án đã chọn. Bạn có thể sửa riêng trong cài đặt của từng dự án. Người dùng vẫn có thể tải tệp lên các vị trí khác.
     instructions:
       all_available_storages_already_added: Tất cả các Repository có sẵn đã được thêm vào dự án.
       authentication_method: Cách thức xác thực các yêu cầu giữa OpenProject và Storage.
       automatic_folder: Điều này sẽ tự động tạo thư mục gốc cho dự án này và quản lý quyền truy cập cho từng thành viên dự án.
       empty_project_folder_validation: Việc chọn một thư mục là bắt buộc để tiếp tục.
-      existing_manual_folder: Bạn có thể chỉ định một thư mục hiện có làm thư mục gốc cho dự án này. Tuy nhiên, các quyền không được quản lý tự động, quản trị viên cần đảm bảo người dùng liên quan có quyền truy cập theo cách thủ công. Thư mục đã chọn có thể được sử dụng bởi nhiều dự án.
+      existing_manual_folder: Bạn có thể chỉ định một thư mục có sẵn làm thư mục gốc cho dự án này. Tuy nhiên, quyền không được quản lý tự động, quản trị viên cần tự đảm bảo người dùng liên quan có quyền truy cập. Nhiều dự án có thể dùng chung một thư mục đã chọn.
       host: Vui lòng thêm địa chỉ máy chủ lưu trữ của bạn bao gồm https://. Nó không được dài hơn 255 ký tự.
       managed_project_folders_application_password_caption_html: 'Bật thư mục được quản lý tự động bằng cách sao chép giá trị này từ: [%{integration}](provider_settings).'
       name: Đặt tên cho bộ lưu trữ của bạn để người dùng có thể phân biệt giữa nhiều bộ lưu trữ.
@@ -428,7 +428,7 @@ vi:
         oauth_client_redirect_uri: Vui lòng sao chép giá trị này vào URI chuyển hướng Web mới trong URI chuyển hướng.
         oauth_client_secret: Trong trường hợp không có bí mật ứng dụng khách nào trong Thông tin xác thực ứng dụng khách, vui lòng tạo một mật khẩu mới.
         oauth_configuration_html: Sao chép các giá trị này từ ứng dụng mong muốn trong [Azure portal](application_link).
-        provider_configuration_html: Vui lòng đảm bảo bạn có quyền quản trị trong [Azure portal](application_link) hoặc liên hệ quản trị viên Microsoft của bạn trước khi thiết lập. Trong portal, bạn cũng cần đăng ký một ứng dụng Azure hoặc dùng ứng dụng sẵn có để xác thực.
+        provider_configuration_html: Vui lòng đảm bảo bạn có quyền quản trị trong [Azure portal](application_link) hoặc liên hệ quản trị viên Microsoft trước khi thiết lập. Trong portal, bạn cũng cần đăng ký một ứng dụng Azure hoặc dùng ứng dụng có sẵn để xác thực.
         tenant_id_html: Vui lòng sao chép Directory (tenant) ID từ ứng dụng mong muốn và App registrations trong [Azure portal](application_link).
         tenant_id_placeholder: Tên hoặc UUID
       setting_up_additional_storages: Để thiết lập Repository tệp bổ sung, vui lòng truy cập
@@ -438,7 +438,7 @@ vi:
       sharepoint:
         integration: Quản trị SharePoint/OpenProject
         oauth_configuration_html: Sao chép các giá trị này từ ứng dụng mong muốn trong [trang SharePoint](application_link).
-        provider_configuration_html: Vui lòng đảm bảo bạn có quyền quản trị trên [trang SharePoint](application_link) hoặc liên hệ quản trị viên Microsoft của bạn trước khi thiết lập. Trong portal, bạn cũng cần đăng ký một ứng dụng Azure hoặc dùng ứng dụng sẵn có để xác thực.
+        provider_configuration_html: Vui lòng đảm bảo bạn có quyền quản trị trên [trang SharePoint](application_link) hoặc liên hệ quản trị viên Microsoft trước khi thiết lập. Trong portal, bạn cũng cần đăng ký một ứng dụng Azure hoặc dùng ứng dụng có sẵn để xác thực.
       type: 'Vui lòng đảm bảo rằng bạn có đặc quyền quản trị trong Version Nextcloud của mình và cài đặt ứng dụng sau trước khi thực hiện thiết lập:'
       type_link_text: "“OpenProject Integration”"
     label_active: Đang hoạt động
@@ -505,7 +505,7 @@ vi:
         title: Thiết lập Integration đã hoàn tất
       timeout:
         link_text: Tình trạng sức khỏe của thiết lập lưu trữ tệp
-        subtitle: OpenProject không thể cung cấp cho bạn quyền truy cập vào thư mục dự án trong khoảng thời gian dự kiến. Vui lòng thử lại một lần nữa.<br><br> Nếu sự cố đó vẫn tiếp diễn, vui lòng liên hệ với quản trị viên OpenProject của bạn để kiểm tra %{storages_health_link}.
+        subtitle: OpenProject không thể cấp quyền truy cập thư mục dự án cho bạn trong thời gian dự kiến. Vui lòng thử lại.<br><br> Nếu sự cố vẫn tiếp diễn, vui lòng liên hệ quản trị viên OpenProject để kiểm tra %{storages_health_link}.
       waiting:
         subtitle: Xin vui lòng chờ một chút, việc này có thể mất chút thời gian...
         title: Chúng tôi đang thiết lập quyền của bạn trên thư mục dự án.
@@ -528,7 +528,7 @@ vi:
         title: Status kết nối thành viên
       project_storages:
         delete: Xóa bộ nhớ tệp khỏi dự án?
-    permission_header_explanation: Quyền đối với tệp trên bộ lưu trữ bên ngoài chỉ được áp dụng cho các thư mục và tệp trong thư mục dự án được quản lý tự động. Lưu ý rằng không phải tất cả các quyền đối với tệp đều được tất cả các nhà cung cấp dịch vụ lưu trữ hỗ trợ. Vui lòng kiểm tra tài liệu về <a target='_blank' href='https://www.openproject.org/docs/system-admin-guide/users-permissions/roles-permissions/#file-storages-permissions'>quyền lưu trữ tệp</a> để biết thêm thông tin.
+    permission_header_explanation: Quyền đối với tệp trên kho lưu trữ bên ngoài chỉ áp dụng cho thư mục và tệp trong các thư mục dự án được quản lý tự động. Lưu ý rằng không phải nhà cung cấp lưu trữ nào cũng hỗ trợ mọi quyền đối với tệp. Vui lòng xem tài liệu về <a target='_blank' href='https://www.openproject.org/docs/system-admin-guide/users-permissions/roles-permissions/#file-storages-permissions'>quyền của kho lưu trữ tệp</a> để biết thêm thông tin.
     provider_types:
       label: Loại nhà cung cấp
       nextcloud:

@@ -5,7 +5,7 @@ vi:
       team_planner_view: Người lập kế hoạch nhóm
     upsell:
       team_planner_view:
-        description: Có được cái nhìn tổng quan đầy đủ về việc lập kế hoạch của nhóm bạn với Team Planner. Kéo dài, rút ​​ngắn và kéo và thả các Work package để sửa đổi ngày tháng, di chuyển chúng hoặc thay đổi người được giao.
+        description: Nắm toàn bộ kế hoạch của nhóm với Team Planner. Kéo giãn, thu ngắn và kéo thả work package để đổi ngày, di chuyển hoặc đổi người được giao.
         title: Người lập kế hoạch nhóm
   permission_manage_team_planner: Quản lý kế hoạch nhóm
   permission_view_team_planner: Xem kế hoạch nhóm
