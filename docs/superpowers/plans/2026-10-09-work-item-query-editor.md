@@ -34,7 +34,6 @@ Backend
 - `app/services/work_item_queries/build_query.rb` - WorkItemQuery -> transient `Query`
 - `app/models/query.rb` (modify) - `filter_tree_sql`, `statement`
 - `app/models/query/results.rb` (modify) - `filter_merges`
-- `app/models/queries/filters/base.rb` (modify) - split `apply_to`
 - `lib/api/v3/work_item_queries/work_item_queries_api.rb` - CRUD + execute
 - `lib/api/v3/root.rb` (modify) - mount
 - `app/models/work_item_query_favorite.rb` - per-user favorite flag
@@ -55,6 +54,16 @@ Frontend (`frontend/src/app/features/work-item-queries/`)
 2. Tree mode nests returned rows by `parent` link; rows whose parent is not in the result are shown as roots (no extra ancestor fetch in v1).
 3. Query keeps persisted `Query` untouched except one optional attribute (`filter_tree_sql`); the spec said "no change to Query" - this is the minimum hook that lets `Query::Results` be reused.
 
+Rulings from the final whole-branch review (final fix wave):
+
+4. Foreign keys: `user_id`, `project_id` and both favourite FKs cascade on delete, `updated_by_id` is nullified (original migration edited, it was unreleased).
+5. The compiler rejects (422) filters whose condition is not in `#where` (own `apply_to`, e.g. sharedWithUser/relatable, or `from`/`left_outer_joins`) at any depth; string `joins` stay rejected only inside OR.
+6. A loaded query keeps its own `project_id`; only new queries take the page's project. Without either, "Query across projects" is checked and disabled.
+7. Column options: a fixed catalog of API column ids, kept in catalog order (no reorder control); sort criteria are still not editable.
+8. `public: true` needs `manage_public_queries` (in the query's project, or in any project for global queries), else 403; public queries are only visible when global or in a project visible to the viewer.
+9. `GET /api/v3/work_item_queries/:id/results` added; the editor loads a saved query with `GET /:id`.
+10. The filter form is requested with `_links.project` when the query has a project (cached per project).
+
 ---
 
 ### Task 1: Migration and `WorkItemQuery` model
@@ -64,7 +73,7 @@ Frontend (`frontend/src/app/features/work-item-queries/`)
 - Test: `spec/models/work_item_query_spec.rb`, `spec/services/work_item_queries/tree_validator_spec.rb`
 
 **Interfaces:**
-- Produces: `WorkItemQuery` columns `name, user_id, updated_by_id, project_id, public, mode, columns, sort_criteria, tree` (+ timestamps); `belongs_to :updated_by` (class `User`); `WorkItemQueryFavorite(user_id, work_item_query_id)` unique pair; `WorkItemQuery#favorite_of?(user)`; `WorkItemQuery.visible(user)`; `WorkItemQueries::TreeValidator.errors(tree) -> Array<String>` (empty when valid); constants `WorkItemQuery::MAX_DEPTH = 5`, `MAX_CONDITIONS = 50`, `EMPTY_TREE = {"op" => "and", "children" => []}`.
+- Produces: `WorkItemQuery` columns `name, user_id, updated_by_id, project_id, public, mode, columns, sort_criteria, tree` (+ timestamps); `belongs_to :updated_by` (class `User`); `WorkItemQueryFavorite(user_id, work_item_query_id)` unique pair; `WorkItemQuery#favorite_of?(user)`; `WorkItemQuery.visible(user)`; `WorkItemQueries::TreeValidator.errors(tree) -> Array<String>` (empty when valid); constants `WorkItemQuery::MAX_DEPTH = 5`, `MAX_CONDITIONS = 50`.
 
 - [ ] **Step 1: Write the failing validator spec**
 
@@ -286,7 +295,7 @@ This is the riskiest task. Do it before any UI.
 
 **Files:**
 - Create: `app/services/work_item_queries/compiler.rb`
-- Modify: `app/models/query.rb` (`statement`, new attr), `app/models/query/results.rb:335-339` (`filter_merges`), `app/models/queries/filters/base.rb:116-123` (`apply_to`)
+- Modify: `app/models/query.rb` (`statement`, new attr), `app/models/query/results.rb:335-339` (`filter_merges`)
 - Test: `spec/services/work_item_queries/compiler_spec.rb`, add a case to `spec/models/query_spec.rb`
 
 **Interfaces:**
@@ -294,7 +303,6 @@ This is the riskiest task. Do it before any UI.
   - `WorkItemQueries::Compiler.new(query).call(tree) -> [String sql, Array<Queries::Filters::Base> leaves]`; raises `WorkItemQueries::Compiler::InvalidTree` (`< StandardError`).
   - `WorkItemQueries::Compiler.or_unsafe?(filter) -> Boolean`.
   - `Query#filter_tree_sql` (attr_accessor, String or nil).
-  - `Queries::Filters::Base#apply_joins_to(scope)`.
 
 - [ ] **Step 1: Write the failing compiler spec**
 
@@ -366,26 +374,7 @@ end
 Run: `bundle exec rspec spec/services/work_item_queries/compiler_spec.rb`
 Expected: FAIL (`uninitialized constant WorkItemQueries::Compiler`).
 
-- [ ] **Step 3: Split `Filters::Base#apply_to`**
-
-Replace the body at `app/models/queries/filters/base.rb:116-123`:
-
-```ruby
-  def apply_to(query_scope)
-    apply_joins_to(query_scope.where(where))
-  end
-
-  # Everything apply_to does except the where clause. Used by tree queries, whose
-  # combined where is built separately.
-  def apply_joins_to(query_scope)
-    query_scope = query_scope.from(from) if from
-    query_scope = query_scope.joins(joins) if joins
-    query_scope = query_scope.left_outer_joins(left_outer_joins) if left_outer_joins
-    query_scope
-  end
-```
-
-(Order of `.where` vs `.from` changes only in sequence of builder calls; the resulting relation is identical.)
+- [ ] **Step 3: (dropped)** `Filters::Base` is not modified; filters whose condition is not in `#where` are rejected by the compiler instead (see deviation 5).
 
 - [ ] **Step 4: `Query` hook**
 
@@ -415,8 +404,11 @@ and add (private section is fine, `statement_filters` is already there at ~506):
 
 ```ruby
   def filter_merges
+    # Tree queries carry their where clause in filter_tree_sql; WP filters' joins arrive via all_filter_joins.
+    return ::WorkPackage.unscoped if query.filter_tree_sql
+
     query.filters.inject(::WorkPackage.unscoped) do |scope, filter|
-      query.filter_tree_sql ? filter.apply_joins_to(scope) : filter.apply_to(scope)
+      filter.apply_to(scope)
     end
   end
 ```
@@ -530,7 +522,7 @@ Expected: PASS with no new failures.
 - [ ] **Step 10: Commit**
 
 ```bash
-git add app/services/work_item_queries app/models/query.rb app/models/query/results.rb app/models/queries/filters/base.rb spec/services/work_item_queries/compiler_spec.rb
+git add app/services/work_item_queries app/models/query.rb app/models/query/results.rb spec/services/work_item_queries/compiler_spec.rb
 git commit -m "feat: compile And/Or condition trees into a Query statement"
 ```
 
