@@ -23,17 +23,18 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 # See COPYRIGHT and LICENSE files for more details.
+#++
 
 class CreateWorkItemQueries < ActiveRecord::Migration[8.1]
   def change
     create_table :work_item_queries do |t|
       t.string :name, null: false
-      t.references :user, null: false, foreign_key: true
-      t.references :updated_by, null: true, foreign_key: { to_table: :users }
-      t.references :project, null: true, foreign_key: true
+      t.references :user, null: false, foreign_key: { on_delete: :cascade }
+      t.references :updated_by, null: true, foreign_key: { to_table: :users, on_delete: :nullify }
+      t.references :project, null: true, foreign_key: { on_delete: :cascade }
       t.boolean :public, null: false, default: false
       t.string :mode, null: false, default: "flat"
       t.jsonb :columns, null: false, default: %w[id type subject status assignee]
@@ -43,8 +44,8 @@ class CreateWorkItemQueries < ActiveRecord::Migration[8.1]
     end
 
     create_table :work_item_query_favorites do |t|
-      t.references :user, null: false, foreign_key: true
-      t.references :work_item_query, null: false, foreign_key: true
+      t.references :user, null: false, foreign_key: { on_delete: :cascade }
+      t.references :work_item_query, null: false, foreign_key: { on_delete: :cascade }
       t.timestamps null: false
     end
     add_index :work_item_query_favorites, %i[user_id work_item_query_id], unique: true, name: "idx_wiq_favorites_unique"

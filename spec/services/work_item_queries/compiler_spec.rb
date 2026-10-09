@@ -93,14 +93,82 @@ RSpec.describe WorkItemQueries::Compiler do
   end
 
   describe ".or_unsafe?" do
-    it "flags filters with string joins or a from clause" do
-      expect(described_class.or_unsafe?(double(from: nil, joins: "INNER JOIN x ON x.id = 1"))).to be true
-      expect(described_class.or_unsafe?(double(from: "(select 1) AS work_packages", joins: nil))).to be true
+    it "flags filters with string joins" do
+      expect(described_class.or_unsafe?(double(joins: "INNER JOIN x ON x.id = 1"))).to be true
     end
 
     it "allows symbol joins and no joins" do
-      expect(described_class.or_unsafe?(double(from: nil, joins: :status))).to be false
-      expect(described_class.or_unsafe?(double(from: nil, joins: nil))).to be false
+      expect(described_class.or_unsafe?(double(joins: :status))).to be false
+      expect(described_class.or_unsafe?(double(joins: nil))).to be false
+    end
+  end
+
+  describe "filters whose condition is not in #where" do
+    let(:other_user) { create(:user) }
+    let(:role) { create(:work_package_role, permissions: %i[view_work_packages]) }
+
+    before { create(:member, user: other_user, project:, entity: wp_t1_s1, roles: [role]) }
+
+    it "rejects sharedWithUser at the top-level AND and inside nested groups" do
+      leaf = { "field" => "sharedWithUser", "operator" => "=", "values" => [other_user.id.to_s] }
+
+      expect { run(group("and", leaf)) }.to raise_error(described_class::InvalidTree, /not supported/)
+      expect { run(group("and", cond("type", t1), group("or", cond("status", s1), leaf))) }
+        .to raise_error(described_class::InvalidTree, /not supported/)
+    end
+
+    it "rejects relatable" do
+      leaf = { "field" => "relatable", "operator" => "relates", "values" => [wp_t1_s2.id.to_s] }
+
+      expect { run(group("and", leaf)) }.to raise_error(described_class::InvalidTree, /not supported/)
+    end
+
+    it "flags real filter classes by their apply_to, from and left_outer_joins" do
+      build = ->(name) { "Queries::WorkPackages::Filter::#{name}".constantize.then { it.create!(name: it.key) } }
+      flagged = %w[SharedWithUserFilter RelatableFilter].map(&build)
+      plain = %w[StatusFilter SubjectFilter].map(&build)
+
+      expect(flagged.map { described_class.unsupported?(it) }).to all(be true)
+      expect(plain.map { described_class.unsupported?(it) }).to all(be false)
+
+      status, subject = plain
+      allow(status).to receive(:left_outer_joins).and_return(:x)
+      allow(subject).to receive(:from).and_return("x")
+      expect(plain.map { described_class.unsupported?(it) }).to all(be true)
+    end
+  end
+
+  describe "ordinary filters" do
+    it "filters by subject" do
+      wp_t1_s2.update_columns(subject: "find the needle here")
+
+      expect(run(group("and", { "field" => "subject", "operator" => "~", "values" => ["needle"] })))
+        .to contain_exactly(wp_t1_s2)
+    end
+
+    it "filters by dueDate between two dates" do
+      dated = create(:work_package, project:, type: t2, status: s1, start_date: nil, due_date: Date.new(2026, 1, 15))
+      create(:work_package, project:, type: t2, status: s1, start_date: nil, due_date: Date.new(2026, 2, 15))
+
+      leaf = { "field" => "dueDate", "operator" => "<>d", "values" => %w[2026-01-01 2026-01-31] }
+      expect(run(group("and", leaf))).to contain_exactly(dated)
+    end
+
+    it "filters by assignee me, also inside OR" do
+      wp_t1_s3.update_columns(assigned_to_id: user.id)
+      me = { "field" => "assignee", "operator" => "=", "values" => ["me"] }
+
+      expect(run(group("and", me))).to contain_exactly(wp_t1_s3)
+      expect(run(group("or", me, cond("type", t2)))).to contain_exactly(wp_t1_s3, wp_t2_s1)
+    end
+
+    it "filters by a custom field" do
+      cf = create(:string_wp_custom_field, is_for_all: true, is_filter: true, types: [t1, t2])
+      CustomValue.create!(customized: wp_t1_s1, custom_field: cf, value: "alpha")
+      CustomValue.create!(customized: wp_t2_s1, custom_field: cf, value: "beta")
+
+      leaf = { "field" => "customField#{cf.id}", "operator" => "~", "values" => ["alp"] }
+      expect(run(group("or", leaf, cond("status", s3)))).to contain_exactly(wp_t1_s1, wp_t1_s3)
     end
   end
 end

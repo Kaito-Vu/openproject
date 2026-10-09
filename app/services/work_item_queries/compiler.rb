@@ -23,9 +23,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 # See COPYRIGHT and LICENSE files for more details.
+#++
 
 module WorkItemQueries
   # Turns a condition tree into a single SQL boolean expression and the list of
@@ -33,8 +34,19 @@ module WorkItemQueries
   class Compiler
     class InvalidTree < StandardError; end
 
+    # apply_to owners that do no scoping of their own; anything else (e.g. sharedWithUser,
+    # relatable) does its real work in apply_to, which tree queries never call.
+    PLAIN_APPLY_TO_OWNERS = [::Queries::Filters::Base, ::Queries::WorkPackages::Filter::WorkPackageFilter].freeze
+
     def self.or_unsafe?(filter)
-      filter.from.present? || !Array(filter.joins).all?(Symbol)
+      !Array(filter.joins).all?(Symbol)
+    end
+
+    # Filters whose condition does not live in #where (custom apply_to, from, left_outer_joins)
+    # would be silently dropped by the tree compilation, at any depth.
+    def self.unsupported?(filter)
+      PLAIN_APPLY_TO_OWNERS.exclude?(filter.method(:apply_to).owner) ||
+        filter.from.present? || filter.left_outer_joins.present?
     end
 
     def initialize(query)
@@ -81,6 +93,7 @@ module WorkItemQueries
       filter.operator = node["operator"]
       filter.values = node["values"]
       raise InvalidTree, "invalid condition on #{node['field']}" unless filter.available? && filter.valid?
+      raise InvalidTree, "#{node['field']} is not supported in the query editor" if self.class.unsupported?(filter)
 
       filter
     end

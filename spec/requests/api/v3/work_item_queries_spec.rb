@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 #-- copyright
 # OpenProject is an open source project management software.
 # Copyright (C) the OpenProject GmbH
@@ -179,6 +181,111 @@ RSpec.describe "API v3 work_item_queries" do
     end.not_to change(WorkItemQuery, :count)
     expect(last_response).to have_http_status(200)
     expect(JSON.parse(last_response.body).dig("_embedded", "results", "_embedded", "elements").size).to eq 1
+  end
+
+  it "accepts the editor's column catalog on execute" do
+    catalog = %w[id type subject status assignee priority project author startDate dueDate percentageDone createdAt updatedAt]
+    post_json "/api/v3/work_item_queries/execute", { tree:, project_id: project.id, columns: catalog }
+    expect(last_response).to have_http_status(200)
+    body = JSON.parse(last_response.body)
+    expect(body.dig("_links", "columns").map { it["href"].split("/").last }).to eq catalog
+    expect(body.dig("_embedded", "results", "_embedded", "elements").pluck("id")).to contain_exactly(wp.id)
+  end
+
+  it "keeps PUT favorite idempotent" do
+    record = WorkItemQuery.create!(name: "f", user:)
+    header "Content-Type", "application/json"
+    2.times do
+      put "/api/v3/work_item_queries/#{record.id}/favorite"
+      expect(last_response).to have_http_status(204)
+    end
+    expect(WorkItemQueryFavorite.where(user:, work_item_query: record).count).to eq 1
+  end
+
+  describe "GET /:id/results" do
+    let(:record) { WorkItemQuery.create!(name: "r", user:, project:, tree:) }
+
+    it "runs the saved query with pageSize passthrough" do
+      create(:work_package, project:, status:)
+      get "/api/v3/work_item_queries/#{record.id}/results?pageSize=1"
+      expect(last_response).to have_http_status(200)
+      results = JSON.parse(last_response.body).dig("_embedded", "results")
+      expect(results["total"]).to eq 2
+      expect(results.dig("_embedded", "elements").size).to eq 1
+    end
+
+    it "returns 422 for a stored tree the compiler rejects" do
+      record.update!(tree: { "op" => "and", "children" => [{ "field" => "nope", "operator" => "=", "values" => ["1"] }] })
+      get "/api/v3/work_item_queries/#{record.id}/results"
+      expect(last_response).to have_http_status(422)
+    end
+
+    it "returns 404 for a query that is not visible" do
+      other = WorkItemQuery.create!(name: "o", user: create(:user))
+      get "/api/v3/work_item_queries/#{other.id}/results"
+      expect(last_response).to have_http_status(404)
+    end
+  end
+
+  describe "sharing with everyone (public)" do
+    let(:user) { create(:user, member_with_permissions: { project => %i[view_work_packages] }) }
+
+    it "rejects public: true without manage_public_queries on create and update" do
+      post_json "/api/v3/work_item_queries", { name: "x", public: true }
+      expect(last_response).to have_http_status(403)
+      post_json "/api/v3/work_item_queries", { name: "x", public: true, project_id: project.id }
+      expect(last_response).to have_http_status(403)
+
+      mine = WorkItemQuery.create!(name: "mine", user:)
+      patch_json "/api/v3/work_item_queries/#{mine.id}", { public: true }
+      expect(last_response).to have_http_status(403)
+      expect(mine.reload.public).to be false
+    end
+
+    it "lets the owner of an already public query edit it without the permission" do
+      mine = WorkItemQuery.create!(name: "mine", user:, public: true)
+      patch_json "/api/v3/work_item_queries/#{mine.id}", { name: "renamed", public: true }
+      expect(last_response).to have_http_status(200)
+      expect(mine.reload.name).to eq "renamed"
+    end
+
+    context "with manage_public_queries in the project" do
+      let(:other_project) { create(:project) }
+      let(:user) do
+        create(:user, member_with_permissions: { project => %i[view_work_packages manage_public_queries],
+                                                 other_project => %i[view_work_packages] })
+      end
+
+      it "allows public queries in that project and global ones" do
+        post_json "/api/v3/work_item_queries", { name: "x", public: true, project_id: project.id }
+        expect(last_response).to have_http_status(201)
+        expect(JSON.parse(last_response.body)["public"]).to be true
+        post_json "/api/v3/work_item_queries", { name: "y", public: true }
+        expect(last_response).to have_http_status(201)
+      end
+
+      it "rejects public queries in a project where the permission is missing" do
+        post_json "/api/v3/work_item_queries", { name: "x", public: true, project_id: other_project.id }
+        expect(last_response).to have_http_status(403)
+      end
+    end
+  end
+
+  describe "public queries in projects the viewer cannot see" do
+    let(:user) { create(:user, member_with_permissions: { project => %i[view_work_packages] }) }
+    let(:hidden) { WorkItemQuery.create!(name: "hidden", public: true, user: create(:admin), project: create(:project)) }
+
+    it "is absent from the list and 404 on GET, results and favorite" do
+      get "/api/v3/work_item_queries"
+      expect(JSON.parse(last_response.body)["items"].pluck("id")).not_to include(hidden.id)
+      ["", "/results"].each do |suffix|
+        get "/api/v3/work_item_queries/#{hidden.id}#{suffix}"
+        expect(last_response).to have_http_status(404)
+      end
+      header "Content-Type", "application/json"
+      put "/api/v3/work_item_queries/#{hidden.id}/favorite"
+      expect(last_response).to have_http_status(404)
+    end
   end
 
   it "rejects anonymous requests and creates nothing" do

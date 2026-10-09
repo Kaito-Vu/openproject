@@ -23,9 +23,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 # See COPYRIGHT and LICENSE files for more details.
+#++
 
 class WorkItemQuery < ApplicationRecord
   MODES = %w[flat tree].freeze
@@ -34,7 +35,6 @@ class WorkItemQuery < ApplicationRecord
   MAX_COLUMNS = 50
   SORT_DIRECTIONS = %w[asc desc].freeze
   MAX_SORT_CRITERIA = 10
-  EMPTY_TREE = { "op" => "and", "children" => [] }.freeze
 
   belongs_to :user
   belongs_to :updated_by, class_name: "User", optional: true
@@ -47,7 +47,11 @@ class WorkItemQuery < ApplicationRecord
   validate :columns_shape
   validate :sort_criteria_shape
 
-  scope :visible, ->(user) { where(user_id: user.id).or(where(public: true)) }
+  # Own queries always; public ones only when global or in a project the user can see.
+  scope :visible, ->(user) {
+    in_reach = where(project_id: nil).or(where(project_id: Project.visible(user).select(:id)))
+    where(user_id: user.id).or(where(public: true).and(in_reach))
+  }
 
   def favorite_of?(user)
     favorites.exists?(user_id: user.id)

@@ -350,13 +350,6 @@ en:
         custom_field_section: Section
       project_type:
         variant: "Variant"
-      work_item_query:
-        columns: "Columns"
-        mode: "Mode"
-        name: "Name"
-        project: "Project"
-        sort_criteria: "Sort criteria"
-        tree: "Conditions"
       query:
         child_work_packages: "Child work packages"
         column_names: "Columns"
@@ -527,6 +520,13 @@ en:
         parent_title: "Parent page"
         redirect_existing_links: "Redirect existing links"
         text: "Page content"
+      work_item_query:
+        columns: "Columns"
+        mode: "Mode"
+        name: "Name"
+        project: "Project"
+        sort_criteria: "Sort criteria"
+        tree: "Conditions"
       work_package:
         ancestor: "Descendants of" # used for filtering of work packages that are descendants of a given work package
         begin_deletion: "Begin of the deletion"

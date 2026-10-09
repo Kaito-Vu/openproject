@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 #-- copyright
 # OpenProject is an open source project management software.
 # Copyright (C) the OpenProject GmbH
@@ -69,6 +71,31 @@ module API
               record
             end
 
+            # Mirrors Queries::BaseContract#user_allowed_to_make_public: only flipping public on is checked,
+            # so owners without the permission can still edit their already public queries.
+            def check_public!(record)
+              return unless record.public && record.public_changed?
+
+              allowed = if record.project
+                          current_user.allowed_in_project?(:manage_public_queries, record.project)
+                        else
+                          current_user.allowed_in_any_project?(:manage_public_queries)
+                        end
+              return if allowed
+
+              raise ::API::Errors::Unauthorized.new(message: "Sharing a query with everyone requires the " \
+                                                             "permission to manage public queries.")
+            end
+
+            def run_query(wiq)
+              query = begin
+                ::WorkItemQueries::BuildQuery.new(wiq, user: current_user).call
+              rescue ::WorkItemQueries::Compiler::InvalidTree => e
+                render_invalid(e.message)
+              end
+              query_representer_response(query, params.slice(:pageSize, :offset).to_h.symbolize_keys)
+            end
+
             def error_text(record)
               record.errors.map { |e| "#{e.attribute} #{e.message}" }.to_sentence
             end
@@ -87,7 +114,8 @@ module API
 
           get do
             records = WorkItemQuery.visible(current_user).includes(:updated_by, :user).order(:name).to_a
-            fav_ids = WorkItemQueryFavorite.where(user: current_user, work_item_query_id: records.map(&:id)).pluck(:work_item_query_id)
+            fav_ids = WorkItemQueryFavorite.where(user: current_user, work_item_query_id: records.map(&:id))
+                                           .pluck(:work_item_query_id)
             { items: records.map { |r| item(r, favorite: fav_ids.include?(r.id)) } }
           end
 
@@ -96,6 +124,7 @@ module API
           end
           post do
             record = WorkItemQuery.new(attrs.merge(user: current_user, updated_by: current_user))
+            check_public!(record)
             if record.save
               status 201
               item(record)
@@ -108,20 +137,21 @@ module API
             status 200
             wiq = WorkItemQuery.new(attrs.merge(name: "adhoc", user: current_user))
             render_invalid(error_text(wiq)) unless wiq.valid?
-            query = begin
-              ::WorkItemQueries::BuildQuery.new(wiq, user: current_user).call
-            rescue ::WorkItemQueries::Compiler::InvalidTree => e
-              render_invalid(e.message)
-            end
-            query_representer_response(query, params.slice(:pageSize, :offset).to_h.symbolize_keys)
+            run_query(wiq)
           end
 
           route_param :id, type: Integer do
             get { item(find_visible!) }
 
+            get :results do
+              run_query(find_visible!)
+            end
+
             patch do
               record = find_owned!
-              if record.update(attrs.merge(updated_by: current_user))
+              record.assign_attributes(attrs.merge(updated_by: current_user))
+              check_public!(record)
+              if record.save
                 item(record)
               else
                 render_invalid(error_text(record))
@@ -137,7 +167,8 @@ module API
             namespace :favorite do
               put do
                 record = find_visible!
-                WorkItemQueryFavorite.find_or_create_by!(user: current_user, work_item_query: record)
+                # create_or_find_by! (not find_or_create_by!) so concurrent PUTs hit the unique index and stay 204.
+                WorkItemQueryFavorite.create_or_find_by!(user: current_user, work_item_query: record)
                 status 204
                 body false
               end

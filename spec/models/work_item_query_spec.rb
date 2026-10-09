@@ -41,11 +41,51 @@ RSpec.describe WorkItemQuery do
     expect(described_class.new(name: "q", user:, tree: { "op" => "xor", "children" => [] })).not_to be_valid
   end
 
-  it "scopes visible to owner or public" do
-    mine = described_class.create!(name: "mine", user:)
+  it "scopes visible to own queries and public ones that are global or in a visible project" do
+    visible_project = create(:project, member_with_permissions: { user => %i[view_work_packages] })
+    hidden_project = create(:project)
+    mine = described_class.create!(name: "mine", user:, project: hidden_project)
     pub = described_class.create!(name: "pub", user: create(:user), public: true)
+    pub_visible = described_class.create!(name: "pv", user: create(:user), public: true, project: visible_project)
+    described_class.create!(name: "ph", user: create(:user), public: true, project: hidden_project)
     described_class.create!(name: "other", user: create(:user))
-    expect(described_class.visible(user)).to contain_exactly(mine, pub)
+    expect(described_class.visible(user)).to contain_exactly(mine, pub, pub_visible)
+  end
+
+  describe "deleting referenced records" do
+    let(:other) { create(:user) }
+    let(:project) { create(:project) }
+
+    it "removes the user's queries and favourites and nullifies updated_by via Principals::DeleteJob" do
+      create(:deleted_user)
+      own = described_class.create!(name: "own", user:)
+      described_class.create!(name: "own fav", user:).favorites.create!(user: other)
+      edited = described_class.create!(name: "edited", user: other, updated_by: user)
+      WorkItemQueryFavorite.create!(user:, work_item_query: edited)
+
+      Principals::DeleteJob.perform_now(user)
+
+      expect(User.exists?(user.id)).to be false
+      expect(described_class.exists?(own.id)).to be false
+      expect(described_class.where(user_id: user.id)).to be_empty
+      expect(edited.reload.updated_by_id).to be_nil
+      expect(WorkItemQueryFavorite.where(user_id: user.id)).to be_empty
+      expect(WorkItemQueryFavorite.where.not(work_item_query_id: described_class.select(:id))).to be_empty
+    end
+
+    it "removes project scoped queries (and their favourites) when the project is deleted" do
+      scoped = described_class.create!(name: "scoped", user:, project:)
+      scoped.favorites.create!(user: other)
+      global = described_class.create!(name: "global", user:)
+
+      result = Projects::DeleteService.new(user: create(:admin), model: project).call
+
+      expect(result).to be_success
+      expect(Project.exists?(project.id)).to be false
+      expect(described_class.exists?(scoped.id)).to be false
+      expect(WorkItemQueryFavorite.where(work_item_query_id: scoped.id)).to be_empty
+      expect(described_class.exists?(global.id)).to be true
+    end
   end
 
   it "tracks favorites per user" do
