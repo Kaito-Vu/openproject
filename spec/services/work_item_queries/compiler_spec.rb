@@ -74,6 +74,24 @@ RSpec.describe WorkItemQueries::Compiler do
       .to raise_error(described_class::InvalidTree)
   end
 
+  describe "OR-unsafe leaves" do
+    let(:query) { Query.new(name: "q", user:, project:) }
+
+    before { allow(described_class).to receive(:or_unsafe?).and_return(true) }
+
+    it "raises InvalidTree inside an OR group" do
+      tree = group("or", cond("status", s1), cond("status", s2))
+
+      expect { described_class.new(query).call(tree) }.to raise_error(described_class::InvalidTree, /OR group/)
+    end
+
+    it "is accepted at the top-level AND" do
+      tree = group("and", cond("status", s1), cond("status", s2))
+
+      expect { described_class.new(query).call(tree) }.not_to raise_error
+    end
+  end
+
   describe ".or_unsafe?" do
     it "flags filters with string joins or a from clause" do
       expect(described_class.or_unsafe?(double(from: nil, joins: "INNER JOIN x ON x.id = 1"))).to be true

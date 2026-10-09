@@ -333,8 +333,11 @@ class Query::Results
   end
 
   def filter_merges
+    # Tree queries carry their where clause in filter_tree_sql; WP filters' joins arrive via all_filter_joins.
+    return ::WorkPackage.unscoped if query.filter_tree_sql
+
     query.filters.inject(::WorkPackage.unscoped) do |scope, filter|
-      query.filter_tree_sql ? filter.apply_joins_to(scope) : filter.apply_to(scope)
+      filter.apply_to(scope)
     end
   end
 
