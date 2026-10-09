@@ -2511,6 +2511,7 @@ vi:
   button_set_reminder: Đặt lời nhắc
   button_show: Hiện
   button_sort: Sắp xếp
+  button_stop_timer: Dừng hẹn giờ
   button_submit: Gửi
   button_test: Kiểm tra
   button_unarchive: Ngừng lưu trữ
@@ -3784,6 +3785,7 @@ vi:
   label_date_from_to: Từ %{start} tới %{end}
   label_date_to: Đến
   label_dates: Ngày tháng
+  label_day: ngày
   label_day_plural: Ngày
   label_default: Mặc định
   label_defaults: Mặc định
@@ -3999,6 +4001,7 @@ vi:
   label_module_plural: Các Mô-Đun
   label_modules: Mô-đun
   label_modules_and_plugins: Mô-đun và Plugin
+  label_month: tháng
   label_months_from: Tháng từ
   label_more: Xem thêm
   label_more_information: Thêm thông tin
@@ -4012,6 +4015,7 @@ vi:
   label_my_avatar: Hình đại diện của tôi
   label_my_queries: Các Query tùy biến của tôi
   label_my_security: Bảo mật
+  label_my_work: Công việc của tôi
   label_name: Tên
   label_never: Không bao giờ
   label_new: Mới
@@ -4026,7 +4030,10 @@ vi:
   label_news_singular: Tin tức
   label_news_view_all: Xem tất cả tin
   label_next: Tiếp
+  label_next_day: Ngày hôm sau
+  label_next_month: Tháng tiếp theo
   label_next_week: Tuần tới
+  label_next_workweek: Tuần làm việc tiếp theo
   label_next_year: Năm sau
   label_no_change_option: "(không đổi)"
   label_no_data: Không có dữ liệu để hiển thị
@@ -4034,6 +4041,7 @@ vi:
   label_no_parent_group: (Không có nhóm cha)
   label_no_parent_page: Không có trang quan hệ
   label_no_start_date: Không có ngày bắt đầu
+  label_no_time: Không theo dõi thời gian
   label_nobody: Không ai
   label_non_working_days: Lịch khả dụng
   label_non_working_days_summary: Tóm tắt
@@ -4099,7 +4107,10 @@ vi:
   label_preview: Xem trước
   label_preview_not_available: Xem trước không có sẵn
   label_previous: Trước đó
+  label_previous_day: Ngày hôm trước
+  label_previous_month: Tháng trước
   label_previous_week: Tuần trước
+  label_previous_workweek: Tuần làm việc trước đó
   label_previous_year: Năm trước
   label_principal_invite_via_email: Hoặc mời người dùng mới qua email
   label_principal_search: Thêm người dùng hoặc nhóm hiện có
@@ -4218,6 +4229,7 @@ vi:
   label_sort_lowest: Chuyển đến dưới cùng
   label_sorted_by: Sắp xếp theo %{value}
   label_spent_time: Dành thời gian
+  label_stack: Ngăn xếp
   label_start_to_end: Bắt đầu đến kết thúc
   label_start_to_start: Bắt đầu đến bắt đầu
   label_starts_with: Starts with
@@ -4251,6 +4263,7 @@ vi:
   label_time: Thời gian
   label_time_entry_activity_plural: Hoạt động dành thời gian
   label_time_entry_plural: Dành thời gian
+  label_timer_since: Bắt đầu lúc %{time}
   label_title: Tiêu đề
   label_today: Hôm nay
   label_today_as_date: Chọn hôm nay làm ngày.
@@ -4300,6 +4313,7 @@ vi:
   label_videos: Các đoạn phim
   label_view_all_revisions: Xem tất cả các Version
   label_view_diff: Xem sự khác biệt
+  label_view_mode_switcher: Thay đổi chế độ xem
   label_view_revisions: Xem các bản điều chỉnh
   label_view_x: 'View: %{x}'
   label_watched_work_packages: Các công việc đã xem
@@ -4347,6 +4361,7 @@ vi:
   label_working_days: Ngày làm việc
   label_working_days_and_hours: Ngày và giờ làm việc
   label_working_hours: Lịch làm việc
+  label_workweek: tuần làm việc
   label_x_closed_work_packages_abbr:
     one: 1 đóng
     other: "%{count} đóng"
@@ -4779,6 +4794,18 @@ vi:
     password_confirmation_dialog:
       confirmation_required: Bạn cần nhập mật khẩu tài khoản của mình để xác nhận thay đổi này.
       title: Xác nhận mật khẩu của bạn để tiếp tục
+    work:
+      actions:
+        assign_to_me: Giao công việc cho tôi
+        delete_time_entry: Xóa mục thời gian
+        edit_time_entry: Sửa mục thời gian
+        log_time_from_allocation: Ghi thời gian từ phân bổ
+        open_project: Mở dự án
+        open_work_package: Mở công việc
+      entries_filter:
+        all: Tất cả mục
+        allocated: Chỉ phân bổ
+        logged: Chỉ thời gian đã ghi
   my_account:
     access_tokens:
       access_tokens: Mã thông báo truy cập
@@ -5341,6 +5368,9 @@ vi:
   permission_manage_dashboards: Quản lý Dashboard
   permission_manage_forums: Quản lý diễn đàn
   permission_manage_members: Quản lý thành viên
+  permission_manage_members_explanation: 'Caution: Users with this permission can assign any project role to any member, including roles with permissions that they themselves don''t have. This includes changing their own roles, allowing users to give themselves more permissions on the project.
+
+    '
   permission_manage_news: Quản lý tin tức
   permission_manage_own_reminders: Tạo lời nhắc riêng
   permission_manage_own_working_times: Quản lý thời gian làm việc của chính mình
@@ -7379,6 +7409,8 @@ vi:
       required_description: Đánh dấu Work package này là một yêu cầu đối với Related work package
       requires_description: Đánh dấu Related work package là yêu cầu đối với Work package này
   work_packages:
+    assign_to_me:
+      success: "%{work_package} đã được giao cho bạn."
     bulk:
       copy_failed: Các Work package không thể được sao chép.
       could_not_be_deleted: 'Không thể xóa các work package sau:'

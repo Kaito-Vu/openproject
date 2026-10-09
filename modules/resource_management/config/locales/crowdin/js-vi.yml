@@ -6,3 +6,6 @@ vi:
       create_placeholder_user: Tạo người dùng giữ chỗ với tiêu chí Filter
       hidden_user: Người dùng ẩn
       show_allocations: Hiển thị phân bổ nguồn lực
+      my_work:
+        finish_by: Hoàn thành trước %{date}
+        finish_today: Hoàn thành hôm nay
