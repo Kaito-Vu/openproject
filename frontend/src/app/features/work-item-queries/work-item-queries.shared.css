@@ -43,7 +43,8 @@
 }
 .wiq-btn:hover:not(:disabled) { background: var(--bgColor-neutral-muted, #eaeef2); }
 .wiq-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.wiq-btn svg { flex: none; }
+.wiq-btn svg { flex: none; display: block; }
+.wiq-icon-btn svg { display: block; }
 .wiq-btn--primary {
   background: var(--bgColor-success-emphasis, #1f883d);
   border-color: transparent;
@@ -56,8 +57,9 @@
 .wiq-icon-btn {
   display: inline-grid;
   place-items: center;
-  width: 28px;
-  height: 28px;
+  flex: none;
+  width: 32px;
+  height: 32px;
   padding: 0;
   border: 0;
   border-radius: var(--wiq-radius);
@@ -81,7 +83,16 @@
   color: var(--wiq-fg);
   font: inherit;
 }
-select.wiq-control[multiple] { height: auto; min-height: 96px; padding: 4px; }
+select.wiq-control {
+  padding-right: 30px;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16' fill='none' stroke='%2359636e' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+select.wiq-control:disabled { cursor: not-allowed; opacity: 0.6; }
 .wiq-control:focus-visible,
 .wiq-btn:focus-visible,
 .wiq-icon-btn:focus-visible,

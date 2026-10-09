@@ -35,13 +35,14 @@ import {
   AllowedValues, FieldSchema, valuesAfterOperatorChange, withSavedValues,
 } from './work-item-filter-schema';
 import { WorkItemFilterSchemaService } from './work-item-filter-schema.service';
+import { WorkItemMultiSelectComponent } from './work-item-multi-select.component';
 
 // One condition: field and operator come from the query form's filter schemas, the value input
 // follows the value type of the chosen operator. Signals because the app runs zoneless.
 @Component({
   selector: 'op-work-item-condition-row',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, WorkItemMultiSelectComponent],
   styleUrls: ['./work-item-queries.shared.css', './work-item-condition-row.component.css'],
   template: `
     <div class="cell">
@@ -65,9 +66,8 @@ import { WorkItemFilterSchemaService } from './work-item-filter-schema.service';
     <div class="cell values">
       @switch (valueInput()) {
         @case ('list') {
-          <select class="wiq-control" multiple [attr.aria-label]="'Values for ' + fieldName()" [ngModel]="condition().values" (ngModelChange)="emitValues($event)">
-            @for (o of listOptions(); track o.id) { <option [value]="o.id">{{ o.name }}</option> }
-          </select>
+          <op-work-item-multi-select [options]="listOptions()" [selected]="condition().values"
+            [label]="'Values for ' + fieldName()" (changed)="emitValues($event)" />
         }
         @case ('ids') {
           <input class="wiq-control" type="text" [attr.aria-label]="'Values (comma separated ids) for ' + fieldName()" placeholder="ids, comma separated"

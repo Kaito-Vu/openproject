@@ -75,23 +75,23 @@
 .wiq-rows { padding: 8px 16px 4px; overflow-x: auto; }
 .wiq-grid-head, .wiq-row {
   display: grid;
-  grid-template-columns: 24px 84px minmax(170px, 1.1fr) minmax(140px, 0.8fr) minmax(220px, 2fr) 96px;
+  grid-template-columns: 32px 88px minmax(170px, 1.1fr) minmax(150px, 0.8fr) minmax(300px, 2fr) 112px;
   align-items: start;
   gap: 8px;
-  min-width: 860px;
+  min-width: 940px;
 }
-.wiq-grid-head { padding: 4px 8px; color: var(--wiq-fg-muted); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+.wiq-grid-head { padding: 4px 8px 4px 8px; color: var(--wiq-fg-muted); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
 .wiq-row { margin-top: 6px; padding: 8px; border: 1px solid var(--wiq-border-muted); border-radius: var(--wiq-radius); background: var(--wiq-bg); }
 .wiq-row:hover { border-color: var(--wiq-border); background: var(--wiq-bg-inset); }
 .wiq-row.is-selected { border-color: var(--wiq-accent); background: var(--wiq-accent-soft); }
 .wiq-row.is-nested { border-left: 4px solid var(--wiq-accent); }
-.wiq-row .wiq-pick { display: grid; place-items: center; height: 32px; }
+.wiq-row .wiq-pick { display: grid; place-items: center; width: 32px; height: 32px; }
 .wiq-row .wiq-pick input { width: 16px; height: 16px; accent-color: var(--wiq-accent); }
 .wiq-andor { height: 32px; display: flex; align-items: center; }
 .wiq-andor select { font-weight: 600; }
 .wiq-andor .wiq-where { padding-left: 4px; color: var(--wiq-fg-muted); font-size: 13px; }
-.wiq-row-actions { display: flex; justify-content: flex-end; align-items: center; gap: 2px; height: 32px; }
-.wiq-link-btn { padding: 0 4px; border: 0; background: none; color: var(--wiq-accent-fg); font: inherit; font-size: 13px; cursor: pointer; }
+.wiq-row-actions { display: flex; justify-content: flex-end; align-items: center; gap: 0; min-height: 32px; }
+.wiq-link-btn { margin-right: 4px; padding: 0 4px; border: 0; background: none; color: var(--wiq-accent-fg); font: inherit; font-size: 13px; cursor: pointer; }
 .wiq-link-btn:hover { text-decoration: underline; }
 
 .wiq-add-row { padding: 8px 16px 16px; }
