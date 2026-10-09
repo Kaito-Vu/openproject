@@ -25,8 +25,6 @@
 // See COPYRIGHT and LICENSE files for more details.
 //++
 
-export type Op = 'and'|'or';
-
 import { NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 

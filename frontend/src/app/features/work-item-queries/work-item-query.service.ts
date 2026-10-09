@@ -25,8 +25,6 @@
 // See COPYRIGHT and LICENSE files for more details.
 //++
 
-export type Op = 'and'|'or';
-
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
@@ -37,11 +35,28 @@ export interface WorkItemQueryItem {
   columns:string[]; sort_criteria:string[][]; tree:Group;
 }
 
+export interface EditorState {
+  name:string; mode:'flat'|'tree'; project_id:number|null; tree:Group;
+}
+
+// New queries get defaults; existing ones keep public/columns/sort_criteria from the loaded item.
+export function buildSavePayload(state:EditorState, loaded:WorkItemQueryItem|null):WorkItemQueryItem {
+  return {
+    name: state.name,
+    mode: state.mode,
+    project_id: state.project_id,
+    tree: state.tree,
+    public: loaded?.public ?? false,
+    columns: loaded?.columns ?? ['id', 'type', 'subject', 'status', 'assignee'],
+    sort_criteria: loaded?.sort_criteria ?? [['id', 'asc']],
+  };
+}
+
 export interface ExecuteElement {
   id:number; subject:string;
   _links:{ type:{ title:string }; status:{ title:string }; assignee?:{ title:string }; parent?:{ href:string|null } };
 }
-export interface ExecuteResponse { _embedded:{ results:{ _embedded:{ elements:ExecuteElement[] } } } }
+export interface ExecuteResponse { _embedded:{ results:{ total?:number; _embedded:{ elements:ExecuteElement[] } } } }
 
 @Injectable({ providedIn: 'root' })
 export class WorkItemQueryService {

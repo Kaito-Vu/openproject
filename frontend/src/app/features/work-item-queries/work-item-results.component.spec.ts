@@ -25,8 +25,6 @@
 // See COPYRIGHT and LICENSE files for more details.
 //++
 
-export type Op = 'and'|'or';
-
 import { nestByParent } from './work-item-results.component';
 
 describe('nestByParent', () => {

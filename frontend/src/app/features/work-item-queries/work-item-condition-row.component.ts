@@ -25,8 +25,6 @@
 // See COPYRIGHT and LICENSE files for more details.
 //++
 
-export type Op = 'and'|'or';
-
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Condition } from './work-item-query-tree';

@@ -25,16 +25,15 @@
 // See COPYRIGHT and LICENSE files for more details.
 //++
 
-export type Op = 'and'|'or';
-
 import { HttpErrorResponse } from '@angular/common/http';
+import { finalize } from 'rxjs';
 import { Component, ElementRef, Input, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { populateInputsFromDataset } from 'core-app/shared/components/dataset-inputs';
 import {
   addCondition, Condition, emptyTree, group, Group, Path, removeAt, Row, rows, setOp, ungroup, updateCondition,
 } from './work-item-query-tree';
-import { WorkItemQueryItem, WorkItemQueryService } from './work-item-query.service';
+import { buildSavePayload, WorkItemQueryItem, WorkItemQueryService } from './work-item-query.service';
 import { ResultRow, WorkItemResultsComponent } from './work-item-results.component';
 import { WorkItemConditionRowComponent } from './work-item-condition-row.component';
 
@@ -71,6 +70,10 @@ export class WorkItemQueryEditorComponent implements OnInit {
 
   name = '';
 
+  loading = false;
+
+  total = 0;
+
   private lastLoaded:WorkItemQueryItem|null = null;
 
   constructor() {
@@ -78,21 +81,28 @@ export class WorkItemQueryEditorComponent implements OnInit {
   }
 
   ngOnInit():void {
-    this.service.list().subscribe((res) => {
-      this.saved = res.items;
-      const preset = this.queryId != null ? res.items.find((i) => i.id === Number(this.queryId)) : undefined;
-      if (preset) { this.load(preset); this.run(); }
+    this.service.list().subscribe({
+      next: (res) => {
+        this.saved = res.items;
+        const preset = this.queryId != null ? res.items.find((i) => i.id === Number(this.queryId)) : undefined;
+        if (preset) { this.load(preset); this.run(); }
+      },
+      error: (err:HttpErrorResponse) => { this.error = (err.error as { message?:string }|null)?.message ?? 'Loading queries failed'; },
     });
   }
 
   get rows():Row[] { return rows(this.tree); }
 
   run():void {
+    if (this.loading) { return; }
+    this.loading = true;
     this.error = null;
     this.service
-      .execute({ tree: this.tree, mode: this.mode, project_id: this.acrossProjects ? null : this.projectId })
+      .execute({ tree: this.tree, mode: this.mode, project_id: this.acrossProjects ? null : this.projectId, pageSize: 500 })
+      .pipe(finalize(() => { this.loading = false; }))
       .subscribe({
         next: (res) => {
+          this.total = res._embedded.results.total ?? 0;
           this.results = res._embedded.results._embedded.elements.map((el) => ({
             id: el.id,
             subject: el.subject,
@@ -103,7 +113,11 @@ export class WorkItemQueryEditorComponent implements OnInit {
             children: [],
           }));
         },
-        error: (err:HttpErrorResponse) => { this.error = (err.error as { message?:string }|null)?.message ?? 'Query failed'; },
+        error: (err:HttpErrorResponse) => {
+          this.results = [];
+          this.total = 0;
+          this.error = (err.error as { message?:string }|null)?.message ?? 'Query failed';
+        },
       });
   }
 
@@ -137,15 +151,10 @@ export class WorkItemQueryEditorComponent implements OnInit {
     const name = this.name || (window.prompt('Query name') ?? '');
     if (!name) { return; }
     this.name = name;
-    const item:WorkItemQueryItem = {
-      name,
-      mode: this.mode,
-      public: false,
-      project_id: this.acrossProjects ? null : this.projectId,
-      columns: ['id', 'type', 'subject', 'status', 'assignee'],
-      sort_criteria: [['id', 'asc']],
-      tree: this.tree,
-    };
+    const item = buildSavePayload(
+      { name, mode: this.mode, project_id: this.acrossProjects ? null : this.projectId, tree: this.tree },
+      this.currentId != null ? this.lastLoaded : null,
+    );
     const req = this.currentId != null ? this.service.update(this.currentId, item) : this.service.create(item);
     req.subscribe({
       next: (saved) => {

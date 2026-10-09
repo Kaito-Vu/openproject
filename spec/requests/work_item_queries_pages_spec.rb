@@ -27,7 +27,6 @@
 # See COPYRIGHT and LICENSE files for more details.
 #++
 
-
 require "spec_helper"
 
 RSpec.describe "Work item queries pages", type: :rails_request do
@@ -65,9 +64,10 @@ RSpec.describe "Work item queries pages", type: :rails_request do
   end
 
   context "when anonymous" do
-    it "does not render the editor" do
+    it "redirects the editor to the login page" do
       get "/queries/editor"
-      expect(response).not_to have_http_status(:ok)
+      expect(response).to have_http_status(:redirect)
+      expect(response.location).to include("/login")
     end
   end
 end
