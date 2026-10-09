@@ -43,9 +43,9 @@ RSpec.describe "Query editor", :js do
     within(clause) do
       find("input[aria-label='#{I18n.t('js.work_item_queries.filter.field')}']").click
       find("li[role='option']", exact_text: I18n.t("js.work_packages.properties.status")).click
-      values = find("select[aria-label='#{I18n.t('js.work_item_queries.filter.values_for', field: 'Status')}']")
-      expect(values).to have_css("option", text: status.name)
-      values.find("option", text: status.name).select_option
+      # The value cell is a chip multi-select: open it, tick the status in the popover.
+      find("[role='combobox'][aria-label='#{I18n.t('js.work_item_queries.filter.values_for', field: 'Status')}']").click
+      find("[role='option']", text: status.name).find("input[type='checkbox']").check
     end
   end
 
