@@ -996,6 +996,7 @@ vi:
       message_successful_bulk_delete: Đã xóa thành công các Work package.
       message_successful_show_in_fullscreen: Bấm vào đây để mở Work package này ở View toàn màn hình.
       message_view_spent_time: Hiển thị thời gian dành cho Work package này
+      button_assign_to_me: "Giao cho tôi"
       message_work_package_read_only: Work package bị khóa ở Status này. Không có thuộc tính nào khác ngoài Status có thể được thay đổi.
       message_work_package_status_blocked: Status Work package không thể ghi được do Status đóng và Version đóng đang được chỉ định.
       no_results:

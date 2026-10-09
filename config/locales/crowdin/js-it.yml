@@ -1001,6 +1001,7 @@ it:
       message_successful_bulk_delete: Macro-attività eliminata con successo.
       message_successful_show_in_fullscreen: Clicca qui per aprire questa macro-attività in una visualizzazione a schermo intero.
       message_view_spent_time: Visualizza il tempo speso sulla macro-attività
+      button_assign_to_me: "Assegna a me"
       message_work_package_read_only: Il pacchetto di lavoro è bloccato in questo stato. Nessun attributo eccetto lo stato può essere alterato.
       message_work_package_status_blocked: Lo stato della macro-attività non è scrivibile a causa dello stato chiuso e della versione chiusa assegnata.
       no_results:

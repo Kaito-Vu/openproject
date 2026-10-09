@@ -1001,6 +1001,7 @@ si:
       message_successful_bulk_delete: සාර්ථකව මකා දැමූ වැඩ පැකේජ.
       message_successful_show_in_fullscreen: සම්පූර්ණ තිර දර්ශනය තුළ මෙම වැඩ පැකේජය විවෘත කිරීමට මෙහි ක්ලික් කරන්න.
       message_view_spent_time: මෙම වැඩ පැකේජය සඳහා ගත කළ කාලය පෙන්වන්න
+      button_assign_to_me: "මට පවරන්න"
       message_work_package_read_only: වැඩ පැකේජය මෙම තත්වය තුළ අගුලු දමා ඇත. තත්වය හැර වෙනත් කිසිදු ගුණාංගයක් වෙනස් කළ නොහැක.
       message_work_package_status_blocked: සංවෘත තත්ත්වය සහ සංවෘත අනුවාදය පවරා ඇති නිසා වැඩ පැකේජ තත්ත්වය ලිවිය නොහැකි ය.
       no_results:

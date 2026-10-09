@@ -1013,6 +1013,7 @@ uk:
       message_successful_bulk_delete: Успішно видалено пакет робіт.
       message_successful_show_in_fullscreen: Клацніть тут, щоб відкрити цей пакет робіт в повноекранному режимі.
       message_view_spent_time: Показувати час, витрачений на цей робочий пакет
+      button_assign_to_me: "Призначити мені"
       message_work_package_read_only: Робочий пакет заблоковано в цьому статусі. Атрибут, відмінний від статусу, може бути змінений.
       message_work_package_status_blocked: Пакет робіт недоступний для запису, оскільки призначено закритий статус або закриту версію.
       no_results:

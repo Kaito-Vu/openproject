@@ -102,12 +102,10 @@ module ErrorsHelper
     message_details = arg[:message_details]
     respond_to do |format|
       format.html do
-        error_message = "[#{I18n.t(:error_code, code: status)}] #{message}\n#{message_details}"
-        flash.now[:error] = { message: error_message, dismiss_scheme: :none }
         render template: "common/error",
                layout: use_layout,
                status:,
-               locals: { status:, params:, menu_name: error_menu_name }
+               locals: { status:, message:, message_details:, params:, menu_name: error_menu_name }
       end
       format.any do
         head status

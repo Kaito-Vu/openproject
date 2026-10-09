@@ -1001,6 +1001,7 @@ sv:
       message_successful_bulk_delete: Arbetspaket togs bort.
       message_successful_show_in_fullscreen: Klicka här för att öppna det här arbetspaketet i fullskärmsläge.
       message_view_spent_time: Visa loggad tid för detta arbetspaket
+      button_assign_to_me: "Tilldela mig"
       message_work_package_read_only: Arbetspaketet är låst i denna status. Inget annat attribut än status kan ändras.
       message_work_package_status_blocked: Arbetspaketets status kan inte ändras eftersom både en stängd status och en stängd version har tilldelats.
       no_results:

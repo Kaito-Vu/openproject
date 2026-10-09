@@ -1015,6 +1015,7 @@ ru:
       message_successful_bulk_delete: Пакеты работ успешно удалены.
       message_successful_show_in_fullscreen: Кликните здесь, чтобы открыть этот пакет работ в полноэкранном режиме.
       message_view_spent_time: Показать время, затраченное на этот пакет работ
+      button_assign_to_me: "Назначить мне"
       message_work_package_read_only: Пакет работ заблокирован в этом статусе. Никакой атрибут, отличный от статуса, не может быть изменен.
       message_work_package_status_blocked: Статус пакета работ недоступен для записи из-за закрытого статуса и назначенной закрытой версии.
       no_results:

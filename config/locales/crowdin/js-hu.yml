@@ -1037,6 +1037,7 @@ hu:
       message_successful_bulk_delete: Sikerült törölni a feladatcsoportokat.
       message_successful_show_in_fullscreen: Ide kattintva a munkacsomag részletei teljes képernyős nézeten jeleníthetőek meg.
       message_view_spent_time: Feladatcsoporttal töltött idő megjelenítése
+      button_assign_to_me: "Hozzám rendelés"
       message_work_package_read_only: Ez Feladatcsomag ebben a státuszban zárolt. Nem lehet más attribútum segítségével megváltoztatni.
       message_work_package_status_blocked: A munkacsomag állapota nem írható, mivel a zárt állapotot és a zárt verziót hozzárendelték.
       no_results:

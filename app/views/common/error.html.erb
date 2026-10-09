@@ -30,3 +30,36 @@ See COPYRIGHT and LICENSE files for more details.
 <%= call_hook(:view_common_error_details, { params: params, project: (defined?(@project) ? @project : nil) }) %>
 
 <% html_title h(status) %>
+
+<% title = t("error_page.title.#{status}", default: t("error_page.title.default")) %>
+
+<style>
+  .op-error-page {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; gap: 12px; padding: 64px 16px; min-height: 60vh;
+  }
+  .op-error-page--code {
+    font-size: clamp(80px, 16vw, 144px); font-weight: 800; line-height: 1; letter-spacing: -0.04em;
+    background: linear-gradient(135deg, var(--button-primary-bgColor-rest, #1a67a3), var(--bgColor-accent-emphasis, #3a8dde));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .op-error-page--title { margin: 0; font-size: 28px; font-weight: 600; color: var(--fgColor-default); }
+  .op-error-page--message { max-width: 520px; margin: 0; color: var(--fgColor-muted); font-size: 16px; line-height: 1.5; }
+  .op-error-page--details { max-width: 520px; margin: 0; color: var(--fgColor-muted); font-size: 13px; white-space: pre-wrap; }
+  .op-error-page--actions { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 16px; }
+</style>
+
+<main class="op-error-page" role="alert">
+  <div class="op-error-page--code" aria-hidden="true"><%= h(status) %></div>
+  <h1 class="op-error-page--title"><%= title %></h1>
+  <p class="op-error-page--message"><%= message %></p>
+  <% if message_details.present? %>
+    <p class="op-error-page--details"><%= message_details %></p>
+  <% end %>
+  <div class="op-error-page--actions">
+    <%= render Primer::Beta::Button.new(tag: :a, href: root_path, scheme: :primary) do |button|
+          button.with_leading_visual_icon(icon: :home)
+          t("error_page.back_home")
+        end %>
+  </div>
+</main>

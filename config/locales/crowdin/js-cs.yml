@@ -1017,6 +1017,7 @@ cs:
       message_successful_bulk_delete: Pracovní balíčky úspěšně odstraněny.
       message_successful_show_in_fullscreen: Klikněte zde pro otevření tohoto pracovního balíčku v celoobrazovkovém zobrazení.
       message_view_spent_time: Zobrazit strávený čas pro tento pracovní balíček
+      button_assign_to_me: "Přiřadit mně"
       message_work_package_read_only: Pracovní balíček je v tomto stavu uzamčen. Nemůže být změněn žádný jiný atribut mimo vlastního stavu balíčku.
       message_work_package_status_blocked: Stav pracovního balíčku nelze zapisovat kvůli stavu zavření a přiřazování uzavřené verze.
       no_results:

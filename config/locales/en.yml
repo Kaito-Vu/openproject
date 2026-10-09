@@ -3352,6 +3352,16 @@ en:
   error_can_not_unarchive_project: "This project cannot be unarchived: %{errors}"
   error_check_user_and_role: "Please choose a user and a role."
   error_code: "Error %{code}"
+  error_page:
+    back_home: "Back to home"
+    title:
+      "400": "Bad request"
+      "402": "Upgrade required"
+      "403": "Access denied"
+      "404": "Page not found"
+      "422": "Request couldn't be processed"
+      "500": "Something went wrong"
+      default: "Something went wrong"
   error_color_could_not_be_saved: "Color could not be saved"
   error_cookie_missing: "The OpenProject cookie is missing. Please ensure that cookies are enabled, as this application will not properly function without."
   error_custom_option_not_found: "Option does not exist."

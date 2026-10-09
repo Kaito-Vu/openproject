@@ -1001,6 +1001,7 @@ fa:
       message_successful_bulk_delete: بسته‌های کاری با موفقیت حذف شدند.
       message_successful_show_in_fullscreen: برای بازکردن این بسته کاری در نمای تمام‌صفحه اینجا کلیک کنید.
       message_view_spent_time: نمایش زمان صرف‌شده برای این بسته کاری
+      button_assign_to_me: "واگذاری به من"
       message_work_package_read_only: بسته کاری در این وضعیت قفل است. هیچ ویژگی‌ای جز وضعیت قابل تغییر نیست.
       message_work_package_status_blocked: به‌دلیل تخصیص وضعیت بسته و نسخه بسته، وضعیت بسته کاری قابل نوشتن نیست.
       no_results:

@@ -1001,6 +1001,7 @@ hy:
       message_successful_bulk_delete: Աշխատանքային փաթեթները հաջողությամբ ջնջվել են։
       message_successful_show_in_fullscreen: Սեղմեք այստեղ՝ այս աշխատանքային փաթեթը լիաէկրան տեսքով բացելու համար։
       message_view_spent_time: Ցուցադրել այս աշխատանքային փաթեթի ծախսված ժամանակը
+      button_assign_to_me: "Նշանակել ինձ"
       message_work_package_read_only: Աշխատանքային փաթեթը կողպված է այս կարգավիճակում։ Կարգավիճակից բացի ոչ մի հատկանիշ չի կարող փոփոխվել։
       message_work_package_status_blocked: Աշխատանքային փաթեթի կարգավիճակը գրելի չէ, քանի որ նշանակված են փակ կարգավիճակ և փակ տարբերակ։
       no_results:

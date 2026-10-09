@@ -1013,6 +1013,7 @@ pl:
       message_successful_bulk_delete: Pomyślnie usunięto zadania.
       message_successful_show_in_fullscreen: Kliknij tutaj, aby otworzyć ten pakiet prac w trybie pełnoekranowym.
       message_view_spent_time: Pokaż spędzony czas dla tych zadań
+      button_assign_to_me: "Przypisz do mnie"
       message_work_package_read_only: Pakiet roboczy jest zablokowany w tym stanie. Nie można zmienić żadnego atrybutu innego niż stan.
       message_work_package_status_blocked: Nie można zapisać stanu pakietu roboczego ze względu na jego zamknięty stan i przypisaną mu zamkniętą wersję.
       no_results:

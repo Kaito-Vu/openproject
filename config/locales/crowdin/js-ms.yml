@@ -995,6 +995,7 @@ ms:
       message_successful_bulk_delete: Berjaya memadamkan pakej kerja.
       message_successful_show_in_fullscreen: Klik di sini untuk buka pakej kerja ini dalam paparan skrin penuh.
       message_view_spent_time: Paparkan masa yang dihabiskan untuk pakej kerja ini
+      button_assign_to_me: "Tugaskan kepada saya"
       message_work_package_read_only: Pakej kerja dikunci dalam status ini. Tiada atribut selain status yang boleh diubah.
       message_work_package_status_blocked: Status pakej kerja tidak boleh ditulis kerana statusnya yang tertutup dan versi tertutup yang diberikan.
       no_results:

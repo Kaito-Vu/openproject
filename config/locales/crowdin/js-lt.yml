@@ -1013,6 +1013,7 @@ lt:
       message_successful_bulk_delete: Darbų paketai sėkmingai ištrinti.
       message_successful_show_in_fullscreen: Paspauskite čia, kad atvertumėte darbų paketą pilno lango režime.
       message_view_spent_time: Rodyti praleistą laiką su šiuo darbų paketu
+      button_assign_to_me: "Priskirti man"
       message_work_package_read_only: Šioje būsenoje darbų paketas yra užrakintas. Negali būti keičiamas joks atributas, išskyrus būseną.
       message_work_package_status_blocked: Darbų paketo būsena negali būti keičiama, nes dabar yra uždaryta ir uždaryta versija yra priskirta.
       no_results:

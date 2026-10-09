@@ -1001,6 +1001,7 @@ tr:
       message_successful_bulk_delete: İş paketleri başarıyla silindi.
       message_successful_show_in_fullscreen: Bu iş paketini tam ekran görebilmek için buraya tıklayın.
       message_view_spent_time: Bu iş paketi için harcanan zamanı göster
+      button_assign_to_me: "Bana ata"
       message_work_package_read_only: İş paketi bu durum içinde kilitli. Durumu haricinde başka bir özelliği değiştirilemez.
       message_work_package_status_blocked: İş paketi durumu, kapalı durum ve kapalı sürüm tahsis edildiğinden dolayı yazılamaz.
       no_results:

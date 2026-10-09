@@ -1001,6 +1001,7 @@ pt-BR:
       message_successful_bulk_delete: Pacotes de trabalho excluídos com sucesso.
       message_successful_show_in_fullscreen: Clique aqui para abrir este pacote de trabalho na visualização de tela cheia.
       message_view_spent_time: Mostrar o tempo gasto neste pacote de trabalho
+      button_assign_to_me: "Atribuir a mim"
       message_work_package_read_only: Pacote de trabalho está bloqueado na presente situação. Nenhum atributo que não seja a situação pode ser alterado.
       message_work_package_status_blocked: A situação do pacote de trabalho não é gravável devido a situação fechada e a versão fechada.
       no_results:

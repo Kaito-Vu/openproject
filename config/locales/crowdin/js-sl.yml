@@ -1023,6 +1023,7 @@ sl:
       message_successful_bulk_delete: Delovni paketi so uspešno izbrisani.
       message_successful_show_in_fullscreen: 'Za celozaslonski pogled delovnih paketov, kliknite tukaj. '
       message_view_spent_time: Prikaži porabljen čas za ta delovni paket
+      button_assign_to_me: "Dodeli meni"
       message_work_package_read_only: 'Delovni paket je zaklenjen v tem stanju. Spremenite lahko samo stanje. '
       message_work_package_status_blocked: Stanja delovnega paketa ni mogoče napisati zaradi zaprtega stanja in dodeljene zaprte različice.
       no_results:

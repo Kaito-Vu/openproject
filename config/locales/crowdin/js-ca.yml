@@ -1001,6 +1001,7 @@ ca:
       message_successful_bulk_delete: Paquets de treball eliminats correctament.
       message_successful_show_in_fullscreen: Feu clic aquí per obrir aquest paquet de treball a pantalla completa.
       message_view_spent_time: Mostra el temps utilitzat per aquest paquet de treball
+      button_assign_to_me: "Assigna'm"
       message_work_package_read_only: El paquet de treball està bloquejat en aquest estat. Cap atribut excepte l'estat es pot modificar.
       message_work_package_status_blocked: L'estat del paquet de treball no permet l'escriptura perquè el seu estat i versió estan tancats.
       no_results:

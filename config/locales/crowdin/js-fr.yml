@@ -1001,6 +1001,7 @@ fr:
       message_successful_bulk_delete: Les lots de travaux ont été supprimés.
       message_successful_show_in_fullscreen: Cliquez ici pour ouvrir ce lot de travaux en affichage plein écran.
       message_view_spent_time: Afficher le temps passé pour ce lot de travaux
+      button_assign_to_me: "M'assigner"
       message_work_package_read_only: Le lot de travaux est verrouillé dans ce statut. Aucun autre attribut que le statut ne peut être modifié.
       message_work_package_status_blocked: Le statut du lot de travaux n'est pas modifiable en raison de l'attribution d'un statut fermé et d'une version fermée.
       no_results:

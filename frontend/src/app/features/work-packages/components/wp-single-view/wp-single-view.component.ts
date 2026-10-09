@@ -126,6 +126,7 @@ export class WorkPackageSingleViewComponent extends UntilDestroyedMixin implemen
   };
 
   public text = {
+    assignToMe: this.I18n.t('js.work_packages.button_assign_to_me'),
     linkProject: (name:string) => this.I18n.t('js.project.click_to_switch_to_project', { projectname: name }),
     attachments: {
       label: this.I18n.t('js.label_attachments'),
@@ -283,6 +284,22 @@ export class WorkPackageSingleViewComponent extends UntilDestroyedMixin implemen
 
   public get selectEntireId():boolean {
     return isSemanticWorkPackageId(this.idLabel);
+  }
+
+  public get canAssignToMe():boolean {
+    const change = this.halEditing.changeFor<WorkPackageResource, WorkPackageChangeset>(this.workPackage);
+    const assignee = change.projectedResource.assignee as { href?:string }|null;
+
+    return !this.isNewResource
+      && this.currentUserService.isLoggedIn
+      && assignee?.href !== this.currentUserService.href
+      && this.schemaCache.of(this.workPackage).isAttributeEditable('assignee');
+  }
+
+  public async assignToMe():Promise<void> {
+    const change = this.halEditing.changeFor<WorkPackageResource, WorkPackageChangeset>(this.workPackage);
+    change.setValue('assignee', { href: this.currentUserService.href });
+    await this.halEditing.save(change);
   }
 
   public showSwitchToProjectBanner():boolean {

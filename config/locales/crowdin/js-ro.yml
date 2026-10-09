@@ -1007,6 +1007,7 @@ ro:
       message_successful_bulk_delete: Pachetele de lucru au fost șterse cu succes.
       message_successful_show_in_fullscreen: Click aici pentru a afișa acest pachet de lucru pe tot ecranul.
       message_view_spent_time: Arată timpul consumat pentru acest pachet de lucru
+      button_assign_to_me: "Atribuie-mi"
       message_work_package_read_only: Pachetul de lucru este blocat în acest statut. Niciun alt atribut în afară de status nu poate fi modificat.
       message_work_package_status_blocked: Starea pachetului de lucru nu poate fi scrisă din cauza statutului închis și a versiunii închise care au fost atribuite.
       no_results:
