@@ -221,9 +221,11 @@ class ProjectsController < ApplicationController
   end
 
   def create_blank # rubocop:disable Metrics/AbcSize
+    return advance_wizard_step if params[:step].to_i == 2
+
     service_call = Projects::CreateService
       .new(user: current_user)
-      .call(permitted_params.new_project)
+      .call(new_blank_project_params)
 
     @new_project = service_call.result
 
@@ -231,7 +233,7 @@ class ProjectsController < ApplicationController
       redirect_to project_path(@new_project), notice: I18n.t(:notice_successful_create)
     else
       # Do not display custom field errors if the form is submitted from the second page.
-      clear_custom_field_errors!(@new_project) unless from_step_3?
+      clear_custom_field_errors!(@new_project) unless from_custom_fields_step?
       set_wizard_step!(@new_project)
 
       if service_call.message.present?
@@ -239,6 +241,51 @@ class ProjectsController < ApplicationController
       end
       render action: :new, status: :unprocessable_entity, layout: "no_menu"
     end
+  end
+
+  # The details step only validates and moves on, nothing is persisted before the
+  # configuration (types and modules) has been chosen.
+  def advance_wizard_step
+    service_call = Projects::SetAttributesService
+      .new(user: current_user, model: Project.new, contract_class: Projects::CreateContract)
+      .call(new_blank_project_params)
+    @new_project = service_call.result
+    clear_custom_field_errors!(@new_project)
+
+    if @new_project.errors.any?
+      params[:step] = 2
+      if service_call.message.present?
+        flash.now[:error] = I18n.t(:notice_unsuccessful_create_with_reason, reason: service_call.message)
+      end
+      render action: :new, status: :unprocessable_entity, layout: "no_menu"
+    else
+      params[:step] = 3
+      # Turbo only renders non-redirect form responses with an error status
+      render action: :new, status: :unprocessable_entity, layout: "no_menu"
+    end
+  end
+
+  # Types and modules are only submitted once their steps were shown.
+  def new_blank_project_params
+    permitted_params.new_project.merge(chosen_project_types).merge(chosen_modules)
+  end
+
+  def chosen_project_types
+    return {} unless params.dig(:project, :variant_ids)
+
+    @selected_variant_ids = Array(params[:project][:variant_ids]).compact_blank.map(&:to_i)
+    project_types = TypeVariant.default_variant.where(id: @selected_variant_ids).map do |variant|
+      ProjectType.new(type_id: variant.type_id, variant:)
+    end
+    { project_types: }
+  end
+
+  def chosen_modules
+    return {} unless params.dig(:project, :module_names)
+
+    available = OpenProject::AccessControl.available_project_modules.map(&:to_s)
+    @selected_module_names = Array(params[:project][:module_names]).compact_blank & available
+    { enabled_module_names: @selected_module_names }
   end
 
   def create_from_template # rubocop:disable Metrics/AbcSize
@@ -271,7 +318,7 @@ class ProjectsController < ApplicationController
     second_step_attributes = %i[name description identifier parent]
     step_2_is_valid = !attributes_with_error.intersect?(second_step_attributes)
 
-    params[:step] = step_2_is_valid ? 3 : 2
+    params[:step] = step_2_is_valid ? 4 : 2
   end
 
   def clear_custom_field_errors!(project)
@@ -284,8 +331,8 @@ class ProjectsController < ApplicationController
     project.custom_values.each { |cv| cv.errors.clear }
   end
 
-  def from_step_3?
-    params[:step].to_i == 3
+  def from_custom_fields_step?
+    params[:step].to_i == 4
   end
 
   def find_optional_template

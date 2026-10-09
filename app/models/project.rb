@@ -69,6 +69,9 @@ class Project < ApplicationRecord
   }, class_name: "Member"
   # rubocop:enable Rails/HasManyOrHasOneDependent, Rails/InverseOf
 
+  # Optional user chosen in the creation wizard to receive the default project admin role.
+  attr_accessor :project_admin_id
+
   has_many :memberships, class_name: "Member"
   has_many :users, through: :member_users, source: :principal
   has_many :groups, through: :member_groups, source: :principal

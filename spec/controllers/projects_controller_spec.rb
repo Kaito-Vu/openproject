@@ -300,6 +300,7 @@ RSpec.describe ProjectsController do
               expect(controller.params[:step].to_i).to eq 3
               expect(response).to render_template "new"
               expect(response).to have_http_status :unprocessable_entity
+              expect(Project.find_by(name: "Valid Project")).to be_nil
             end
 
             it "does not show custom field errors", :aggregate_failures do
@@ -311,23 +312,6 @@ RSpec.describe ProjectsController do
             end
           end
 
-          # It is not possible to submit these params with the wizard in place,
-          # because the custom fields cannot be submitted in the second step.
-          # However, this test just ensures that no tampering with the params
-          # will result in an unexpected behavior.
-          context "when there is no validation error on the custom field" do
-            let(:project_params) do
-              {
-                name: "Valid Project",
-                custom_field_values: { custom_field.id => "Valid Value" }
-              }
-            end
-
-            it "creates the project successfully", :aggregate_failures do
-              expect(response).to redirect_to project_path(assigns(:new_project))
-              expect(flash[:notice]).to eq I18n.t(:notice_successful_create)
-            end
-          end
         end
 
         context "when there is no required custom field" do
@@ -350,20 +334,51 @@ RSpec.describe ProjectsController do
           context "when the name is present" do
             let(:project_params) { { name: "Valid Project" } }
 
-            it "creates the project successfully", :aggregate_failures do
-              expect(response).to redirect_to project_path(assigns(:new_project))
-              expect(flash[:notice]).to eq I18n.t(:notice_successful_create)
+            it "advances to the types step without creating the project", :aggregate_failures do
+              expect(controller.params[:step].to_i).to eq 3
+              expect(response).to render_template "new"
+              expect(response).to have_http_status :unprocessable_entity
+              expect(Project.find_by(name: "Valid Project")).to be_nil
             end
           end
         end
       end
 
-      context "when submitted from step 3" do
+      context "when submitted from the configuration step" do
+        let(:type) { create(:type) }
+
+        it "creates the project with the chosen types", :aggregate_failures do
+          post :create,
+               params: { project: workspace_type_param.merge({ name: "Valid Project", variant_ids: ["", type.default_variant.id] }),
+                         step: 3 }
+
+          expect(response).to redirect_to project_path(assigns(:new_project))
+          expect(assigns(:new_project).enabled_types).to contain_exactly(type)
+        end
+
+        it "enables only the chosen modules", :aggregate_failures do
+          post :create,
+               params: { project: workspace_type_param.merge({ name: "Valid Project",
+                                                                module_names: ["", "wiki", "not_a_module"] }),
+                         step: 3 }
+
+          expect(assigns(:new_project).reload.enabled_module_names).to contain_exactly("wiki")
+        end
+
+        it "creates the project without types when none is chosen", :aggregate_failures do
+          post :create,
+               params: { project: workspace_type_param.merge({ name: "Valid Project", variant_ids: [""] }), step: 3 }
+
+          expect(assigns(:new_project).reload.project_types).to be_empty
+        end
+      end
+
+      context "when submitted from step 4" do
         shared_let(:custom_field) { create(:string_project_custom_field, is_required: true, is_for_all: true) }
 
         it "does not clear custom field errors", :aggregate_failures do
           post :create,
-               params: { project: workspace_type_param.merge({ name: "Valid Project" }), step: 3 }
+               params: { project: workspace_type_param.merge({ name: "Valid Project" }), step: 4 }
 
           expect(assigns(:new_project).errors[:"custom_field_#{custom_field.id}"])
             .to be_present

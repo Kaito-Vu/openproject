@@ -53,6 +53,23 @@ RSpec.describe "Projects", "creation", :js do
     end
   end
 
+  it "creates the project with the work item types chosen in the wizard" do
+    chosen = create(:type, name: "Chosen type")
+    create(:type, name: "Skipped type")
+
+    projects_page.create_new_workspace :project, open_menu: true
+    click_on "Continue"
+
+    fill_in "Name", with: "Typed project"
+    click_on "Continue"
+
+    check "Chosen type"
+    click_on "Complete"
+
+    expect_and_dismiss_flash type: :success, message: "Successful creation."
+    expect(Project.find_by(name: "Typed project").enabled_types).to contain_exactly(chosen)
+  end
+
   it "can create a project" do
     projects_page.create_new_workspace :project, open_menu: true
 
@@ -62,8 +79,12 @@ RSpec.describe "Projects", "creation", :js do
     click_on "Continue"
 
     # Step 2: Fill in project details
-    expect(page).to have_text("2 of 2")
+    expect(page).to have_text("2 of 3")
     fill_in "Name", with: "Foo bar"
+    click_on "Continue"
+
+    # Step 3: Select types and modules
+    expect(page).to have_text("3 of 3")
     click_on "Complete"
 
     expect_and_dismiss_flash type: :success, message: "Successful creation."
@@ -131,6 +152,9 @@ RSpec.describe "Projects", "creation", :js do
 
     # Step 2: Fill in project details
     fill_in "Name", with: "Foo project"
+    click_on "Continue"
+
+    # Step 3: Select types and modules
     click_on "Complete"
 
     expect_and_dismiss_flash type: :success, message: "Successful creation."
@@ -150,12 +174,12 @@ RSpec.describe "Projects", "creation", :js do
     click_on "Continue"
 
     # Step 2: Try to complete without name
-    expect(page).to have_text("2 of 2")
-    click_on "Complete"
+    expect(page).to have_text("2 of 3")
+    click_on "Continue"
 
     expect_and_dismiss_flash type: :error, message: /^Creation failed/
 
-    expect(page).to have_text("2 of 2")
+    expect(page).to have_text("2 of 3")
     expect(page).to have_field "Name", validation_error: "can't be blank."
   end
 
@@ -184,12 +208,16 @@ RSpec.describe "Projects", "creation", :js do
       click_on "Continue"
 
       # Step 2: Fill in project details
-      expect(page).to have_text("2 of 3")
+      expect(page).to have_text("2 of 4")
       fill_in "Name", with: "Foo bar"
       click_on "Continue"
 
-      # Step 3: Fill in custom fields
-      expect(page).to have_text("3 of 3")
+      # Step 3: Select types and modules
+      expect(page).to have_text("3 of 4")
+      click_on "Continue"
+
+      # Step 4: Fill in custom fields
+      expect(page).to have_text("4 of 4")
       expect(page).to have_combo_box "List CF *"
       list_field.select_option "A", "B"
 
@@ -247,12 +275,16 @@ RSpec.describe "Projects", "creation", :js do
       click_on "Continue"
 
       # Step 2: Fill in project details
-      expect(page).to have_text("2 of 3")
+      expect(page).to have_text("2 of 4")
       fill_in "Name", with: "Foo bar"
       click_on "Continue"
 
-      # Step 3: Fill in custom fields
-      expect(page).to have_text("3 of 3")
+      # Step 3: Select types and modules
+      expect(page).to have_text("3 of 4")
+      click_on "Continue"
+
+      # Step 4: Fill in custom fields
+      expect(page).to have_text("4 of 4")
       expect(page).to have_combo_box "Version CF *"
 
       # expect the versions are grouped by the project name
@@ -332,12 +364,15 @@ RSpec.describe "Projects", "creation", :js do
         click_on "Continue"
 
         # Step 2: Project details - skip to step 3
-        expect(page).to have_text("2 of 3")
+        expect(page).to have_text("2 of 4")
         fill_in "Name", with: "Test Project"
         click_on "Continue"
 
-        # Step 3: Custom fields
-        expect(page).to have_text("3 of 3")
+        # Step 3: Configuration
+        click_on "Continue"
+
+        # Step 4: Custom fields
+        expect(page).to have_text("4 of 4")
         expect(page).to have_field "Required Foo *"
         expect(page).to have_field "Required User *"
 
@@ -362,17 +397,20 @@ RSpec.describe "Projects", "creation", :js do
         click_on "Continue"
 
         # Step 2: Fill in name
-        expect(page).to have_text("2 of 3")
+        expect(page).to have_text("2 of 4")
         fill_in "Name", with: "Test Project"
         click_on "Continue"
 
-        # Step 3: Try to complete without required custom field
-        expect(page).to have_text("3 of 3")
+        # Step 3: Configuration
+        click_on "Continue"
+
+        # Step 4: Try to complete without required custom field
+        expect(page).to have_text("4 of 4")
         click_on "Complete"
 
         expect_and_dismiss_flash type: :error, message: /^Creation failed/
 
-        expect(page).to have_text("3 of 3")
+        expect(page).to have_text("4 of 4")
         expect(page).to have_field "Required Foo *", validation_error: "can't be blank."
       end
     end
@@ -396,7 +434,10 @@ RSpec.describe "Projects", "creation", :js do
         fill_in "Name", with: "Foo bar"
         click_on "Continue"
 
-        # Step 3: Fill in required custom field
+        # Step 3: Configuration
+        click_on "Continue"
+
+        # Step 4: Fill in required custom field
         fill_in "Required Foo", with: "Required value"
       end
 
@@ -537,12 +578,13 @@ RSpec.describe "Projects", "creation", :js do
       click_on "Continue"
 
       # Step 2: Fill in project details
-      # Should show "2 of 2" because the required field is not for all projects
-      # The bug causes this to show "2 of 3" incorrectly
-      expect(page).to have_text("2 of 2")
+      # Should show "2 of 3" because the required field is not for all projects
+      expect(page).to have_text("2 of 3")
       fill_in "Name", with: "Project without step 3"
+      click_on "Continue"
 
-      # Should have Complete button (not Continue) since this is the last step
+      # Step 3: Configuration is the last step, so no custom fields step follows
+      expect(page).to have_text("3 of 3")
       expect(page).to have_button("Complete")
       expect(page).to have_no_button("Continue")
 
@@ -579,6 +621,7 @@ RSpec.describe "Projects", "creation", :js do
       expect(page).to have_field "Identifier", with: "FPA"
 
       fill_in "Identifier", with: "MYIDENT"
+      click_on "Continue"
       click_on "Complete"
 
       expect_and_dismiss_flash type: :success, message: "Successful creation."
@@ -595,7 +638,7 @@ RSpec.describe "Projects", "creation", :js do
 
       expect(page).to have_field "Identifier", with: "FPA"
       fill_in "Identifier", with: "3INVALID"
-      click_on "Complete"
+      click_on "Continue"
 
       expect(page).to have_text "Identifier must start with a letter"
     end

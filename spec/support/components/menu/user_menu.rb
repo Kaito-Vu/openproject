@@ -39,7 +39,7 @@ module Components
     end
 
     def close
-      page.find(".op-app-header--modules-menu-header .close-button").click
+      page.send_keys(:escape)
     end
 
     def expect_user_shown(user_name)

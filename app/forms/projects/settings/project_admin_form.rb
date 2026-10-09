@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-#-- copyright
+# -- copyright
 # OpenProject is an open source project management software.
 # Copyright (C) the OpenProject GmbH
 #
@@ -26,58 +26,38 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 # See COPYRIGHT and LICENSE files for more details.
-#++
-
+# ++
 module Projects
-  class ProjectCreationFooterComponent < ApplicationComponent
-    include OpPrimer::ComponentHelpers
-
-    def initialize(form_identifier:, project:, template:, current_step:, cancel_href:)
-      @form_identifier = form_identifier
-      @project = project
-      @template = template
-      @current_step = current_step
-      @cancel_href = cancel_href
-
-      super
-    end
-
-    def call
-      render(StepWizard::FooterComponent.new(form_identifier:, total_steps:, current_step:)) do |footer|
-        footer.with_cancel_button(href: cancel_href)
-        footer.with_continue_button(**continue_button_args)
-        footer.with_submit_button(**submit_button_args)
-        if show_progress_bar?
-          footer.with_progress_bar
-        end
+  module Settings
+    # Optional wizard field: who receives the default project admin role in the new project.
+    class ProjectAdminForm < ApplicationForm
+      form do |f|
+        f.autocompleter(
+          name: :project_admin_id,
+          label: I18n.t("create_project.project_admin_label"),
+          caption: I18n.t("create_project.project_admin_caption"),
+          autocomplete_options: {
+            component: "opce-user-autocompleter",
+            allowEmpty: true,
+            defaultData: false,
+            focusDirectly: false,
+            model: selected_admin_model,
+            placeholder: I18n.t(:label_user_search),
+            url: ::API::V3::Utilities::PathHelper::ApiV3Path.principals,
+            resource: "principals",
+            searchKey: "any_name_attribute",
+            filters: [{ name: "type", operator: "=", values: %w[User] },
+                      { name: "status", operator: "=", values: [Principal.statuses[:active].to_s] }]
+          }
+        )
       end
-    end
 
-    attr_reader :form_identifier, :project, :template, :current_step, :cancel_href
+      private
 
-    private
-
-    def show_progress_bar?
-      current_step > 1
-    end
-
-    def continue_button_args
-      {
-        form: form_identifier,
-        name: "next_section"
-      }
-    end
-
-    def submit_button_args
-      {
-        form: form_identifier,
-        name: "finish",
-        value: "true"
-      }
-    end
-
-    def total_steps
-      CreationStepperComponent.total_steps(project:, template:)
+      def selected_admin_model
+        admin = User.active.find_by(id: model.project_admin_id.presence)
+        { id: admin.id, name: admin.name } if admin
+      end
     end
   end
 end

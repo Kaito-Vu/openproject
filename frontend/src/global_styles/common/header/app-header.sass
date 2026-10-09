@@ -106,3 +106,15 @@
 
   &.op-app-header_development
     background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='20'><text x='0' y='1em' fill='rgba(0, 0, 0, 0.5)'>development</text></svg>")
+
+// Creating a project is the main action of the quick add menu
+.op-quick-add-menu--primary
+  background: var(--bgColor-accent-muted)
+  font-weight: var(--base-text-weight-semibold, 600)
+
+  .ActionListItem-label,
+  .ActionListItem-visual
+    color: var(--fgColor-accent)
+
+  &:hover
+    background: var(--control-transparent-bgColor-hover, var(--bgColor-accent-muted))

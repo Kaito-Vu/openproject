@@ -60,6 +60,33 @@ RSpec.describe Projects::CreateService, type: :model do
               roles: [new_project_role])
     end
 
+    context "when a project admin was chosen" do
+      let(:chosen_admin) { create(:user) }
+
+      before { allow(model_instance).to receive(:project_admin_id).and_return(chosen_admin.id.to_s) }
+
+      it "adds the chosen user with the new project role" do
+        subject
+
+        expect(create_member_instance)
+          .to have_received(:call)
+          .with(principal: chosen_admin, project: model_instance, roles: [new_project_role])
+      end
+    end
+
+    context "when the chosen project admin is not an active user" do
+      let(:locked_user) { create(:locked_user) }
+
+      before { allow(model_instance).to receive(:project_admin_id).and_return(locked_user.id.to_s) }
+
+      it "does not add them" do
+        subject
+
+        expect(create_member_instance)
+          .not_to have_received(:call).with(hash_including(principal: locked_user))
+      end
+    end
+
     context "when current user is admin" do
       it "does not add the user to the project" do
         allow(user)

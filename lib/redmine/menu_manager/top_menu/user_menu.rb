@@ -56,9 +56,12 @@ module Redmine::MenuManager::TopMenu::UserMenu
       avatar_image_alt_text: I18n.t("label_user_menu")
     )
 
+    return render_logged_in_dropdown(items, avatar) if User.current.logged?
+
+    # Anonymous users need the login form, which doesn't fit in an ActionMenu.
     render Primer::Alpha::Dialog.new(title: I18n.t("label_user_menu"),
                                      visually_hide_title: true,
-                                     size: User.current.logged? ? :small : :medium,
+                                     size: :medium,
                                      position: :right) do |dialog|
       lateral_user_menu_button(dialog, avatar)
 
@@ -73,6 +76,26 @@ module Redmine::MenuManager::TopMenu::UserMenu
           render_login_partial
         end
       end
+    end
+  end
+
+  def render_logged_in_dropdown(items, avatar)
+    render Primer::Alpha::ActionMenu.new(classes: "op-app-menu--item",
+                                         menu_id: "op-app-header--user-menu",
+                                         anchor_align: :end) do |menu|
+      options = { scheme: :invisible,
+                  classes: "op-app-header--primer-button",
+                  test_selector: "op-app-header--user-menu-button" }
+      if avatar.present?
+        menu.with_show_button(px: 0, aria: { label: I18n.t("label_user_menu") }, **options) { avatar }
+      else
+        menu.with_show_button(icon: :person, aria: { label: I18n.t("label_user_menu") }, **options)
+      end
+
+      menu.with_group do |group|
+        group.with_heading(title: User.current.name)
+      end
+      add_lateral_user_menu_items menu, items.reject { |item| item.partial.present? }
     end
   end
 

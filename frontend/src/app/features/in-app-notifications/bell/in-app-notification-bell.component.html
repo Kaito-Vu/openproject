@@ -7,3 +7,21 @@
     ></span>
   }
 }
+
+@if (open) {
+  <div class="op-ian-bell--dropdown" role="menu" data-test-selector="op-ian-dropdown">
+    <div class="op-ian-bell--dropdown-header">{{ text.title }}</div>
+    <div class="op-ian-bell--dropdown-body">
+      @for (notification of notifications; track notification.id) {
+        <a class="op-ian-bell--dropdown-item" role="menuitem" [href]="itemPath(notification)">
+          <span class="op-ian-bell--dropdown-subject">{{ notification._links.resource?.title || notification.subject }}</span>
+          <span class="op-ian-bell--dropdown-reason">{{ reasonText(notification.reason) }}</span>
+        </a>
+      }
+      @if (!loading && notifications.length === 0) {
+        <div class="op-ian-bell--dropdown-empty">{{ text.empty }}</div>
+      }
+    </div>
+    <a class="op-ian-bell--dropdown-footer" [href]="notificationsPath" data-test-selector="op-ian-view-all">{{ text.view_all }}</a>
+  </div>
+}

@@ -683,6 +683,7 @@ en:
           at_all: "New notifications will appear here when there is activity that concerns you."
           with_current_filter: "There are no notifications in this view at the moment"
         text_update_date_by: "%{date} by"
+        view_all: "View all"
         total_count_warning: "Showing the %{newest_count} most recent notifications. %{more_count} more are not displayed."
       date_alerts:
         milestone_date: "Milestone date"

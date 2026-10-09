@@ -35,7 +35,7 @@ module Projects
     include OpTurbo::Streamable
     include Projects::Concerns::IdentifierSuggestion
 
-    options :project, :template, :step
+    options :project, :template, :step, :selected_variant_ids, :selected_module_names
 
     def step_2_display
       { display: :none } unless step == 2
@@ -43,6 +43,29 @@ module Projects
 
     def step_3_display
       { display: :none } unless step == 3
+    end
+
+    def step_4_display
+      { display: :none } unless step == 4
+    end
+
+    # Always rendered (hidden outside step 3) so the choice survives the later steps.
+    def modules_checkboxes
+      safe_join(
+        [hidden_field_tag("project[module_names][]", "", id: nil),
+         tag.div(safe_join(project_modules.map { |name| module_checkbox(name) }), class: "op-project-type-grid")]
+      )
+    end
+
+    def section_heading(key)
+      tag.h3(I18n.t("create_project.#{key}"), class: "op-project-config-heading")
+    end
+
+    def types_checkboxes
+      safe_join(
+        [hidden_field_tag("project[variant_ids][]", "", id: nil),
+         tag.div(safe_join(type_variants.map { |variant| type_checkbox(variant) }), class: "op-project-type-grid")]
+      )
     end
 
     def workspaces_path
@@ -53,6 +76,44 @@ module Projects
                        end
 
       url_for(workspace_type.pluralize.to_sym)
+    end
+
+    private
+
+    def type_variants
+      TypeVariant.default_variant.includes(type: :color).sort_by { |variant| variant.type.position }
+    end
+
+    # nil = nothing submitted yet, so start from the types enabled for new projects
+    def checked_variant_ids
+      @checked_variant_ids ||= selected_variant_ids || TypeVariant.enabled_in_new_projects.ids
+    end
+
+    def project_modules
+      OpenProject::AccessControl.available_project_modules(sorted: true)
+    end
+
+    def checked_module_names
+      @checked_module_names ||= selected_module_names || Setting.default_projects_modules
+    end
+
+    def module_checkbox(name)
+      tag.label(class: "op-project-type-card") do
+        check_box_tag("project[module_names][]", name, checked_module_names.include?(name.to_s),
+                      id: "project_module_names_#{name}", class: "FormControl-checkbox") +
+          tag.span(l_or_humanize(name, prefix: "project_module_"), class: "op-project-type-card--name")
+      end
+    end
+
+    def type_checkbox(variant)
+      type = variant.type
+
+      tag.label(class: "op-project-type-card") do
+        check_box_tag("project[variant_ids][]", variant.id, checked_variant_ids.include?(variant.id),
+                      id: "project_variant_ids_#{variant.id}", class: "FormControl-checkbox") +
+          tag.span(class: "op-project-type-card--dot", style: ("--type-color: #{type.color.hexcode}" if type.color)) +
+          tag.span(type.name, class: "op-project-type-card--name")
+      end
     end
   end
 end

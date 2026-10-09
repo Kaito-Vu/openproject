@@ -42,6 +42,7 @@ module Projects::Concerns
       new_project = attributes_call.result
 
       set_default_role(new_project) unless user.admin?
+      assign_project_admin(new_project)
       notify_project_created(new_project) if new_project.persisted?
 
       super
@@ -68,6 +69,17 @@ module Projects::Concerns
           .new(user:, contract_class: EmptyContract)
           .call(roles: [role], project: new_project, principal: user)
       end
+    end
+
+    # The user picked in the creation wizard gets the same default role as the creator.
+    def assign_project_admin(new_project)
+      admin = User.active.find_by(id: new_project.project_admin_id.presence)
+      role = ProjectRole.in_new_project
+      return if admin.nil? || role.nil? || !new_project.persisted?
+
+      Members::CreateService
+        .new(user:, contract_class: EmptyContract)
+        .call(roles: [role], project: new_project, principal: admin)
     end
 
     def notify_project_created(new_project)

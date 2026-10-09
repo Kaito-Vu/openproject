@@ -74,6 +74,9 @@ RSpec.describe "Portfolios",
       expect(page)
         .not_to have_combo_box "Subproject of"
 
+      click_on "Continue"
+
+      # Step 3: Select types and modules
       click_on "Complete"
 
       expect_and_dismiss_flash type: :success, message: "Successful creation."

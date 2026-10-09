@@ -1,0 +1,135 @@
+//-- copyright
+// OpenProject is an open source project management software.
+// Copyright (C) the OpenProject GmbH
+//
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License version 3.
+//
+// OpenProject is a fork of ChiliProject, which is a fork of Redmine. The copyright follows:
+// Copyright (C) 2006-2013 Jean-Philippe Lang
+// Copyright (C) 2010-2013 the ChiliProject Team
+//
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// as published by the Free Software Foundation; either version 2
+// of the License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+//
+// See COPYRIGHT and LICENSE files for more details.
+//++
+
+
+.op-project-stepper
+  list-style: none
+  display: flex
+  align-items: center
+  gap: var(--base-size-8, 0.5rem)
+  margin: 0 0 var(--base-size-24, 1.5rem)
+  padding: 0
+
+  &--item
+    display: flex
+    align-items: center
+    gap: var(--base-size-8, 0.5rem)
+    color: var(--fgColor-muted)
+    font-size: var(--text-body-size-medium)
+
+    // connector between two steps
+    &:not(:last-child)::after
+      content: ""
+      width: var(--base-size-32, 2rem)
+      height: var(--borderWidth-thick, 2px)
+      margin-left: var(--base-size-8, 0.5rem)
+      background: var(--borderColor-default)
+      border-radius: var(--borderRadius-full)
+
+    &[data-state="done"]
+      color: var(--fgColor-default)
+
+      &:not(:last-child)::after
+        background: var(--bgColor-accent-emphasis)
+
+    &[data-state="current"]
+      color: var(--fgColor-default)
+      font-weight: var(--base-text-weight-semibold, 600)
+
+  &--marker
+    display: inline-flex
+    align-items: center
+    justify-content: center
+    width: var(--base-size-24, 1.5rem)
+    height: var(--base-size-24, 1.5rem)
+    border-radius: var(--borderRadius-full)
+    border: var(--borderWidth-thin, 1px) solid var(--borderColor-default)
+    font-size: var(--text-body-size-small)
+
+    [data-state="done"] &
+      background: var(--bgColor-accent-emphasis)
+      border-color: var(--bgColor-accent-emphasis)
+      color: var(--fgColor-onEmphasis)
+
+    [data-state="current"] &
+      border-color: var(--bgColor-accent-emphasis)
+      color: var(--fgColor-accent)
+      box-shadow: 0 0 0 3px var(--bgColor-accent-muted)
+
+  // only the current step keeps its label on narrow screens
+  @media screen and (max-width: $breakpoint-sm)
+    &--item:not([data-state="current"]) &--label
+      display: none
+
+.op-project-config-heading
+  margin: var(--base-size-24, 1.5rem) 0 var(--base-size-12, 0.75rem)
+  font-size: var(--text-title-size-small)
+  font-weight: var(--base-text-weight-semibold, 600)
+
+  &:first-child
+    margin-top: 0
+
+.op-project-type-grid
+  display: grid
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr))
+  gap: var(--base-size-12, 0.75rem)
+
+.op-project-type-card
+  display: flex
+  align-items: center
+  gap: var(--base-size-12, 0.75rem)
+  padding: var(--base-size-12, 0.75rem) var(--base-size-16, 1rem)
+  border: var(--borderWidth-thin, 1px) solid var(--borderColor-default)
+  border-radius: var(--borderRadius-large)
+  background: var(--bgColor-default)
+  cursor: pointer
+  transition: border-color 0.15s, background-color 0.15s
+
+  &:hover
+    border-color: var(--borderColor-emphasis)
+
+  &:has(input:checked)
+    border-color: var(--bgColor-accent-emphasis)
+    background: var(--bgColor-accent-muted)
+
+  &:has(input:focus-visible)
+    outline: 2px solid var(--focus-outlineColor)
+    outline-offset: 2px
+
+  &--dot
+    flex: none
+    width: var(--base-size-12, 0.75rem)
+    height: var(--base-size-12, 0.75rem)
+    border-radius: var(--borderRadius-full)
+    background: var(--type-color, var(--fgColor-muted))
+
+  &--name
+    flex: 1
+    min-width: 0
+    overflow: hidden
+    text-overflow: ellipsis
+    white-space: nowrap

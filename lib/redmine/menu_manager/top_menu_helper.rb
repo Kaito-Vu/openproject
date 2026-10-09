@@ -124,8 +124,6 @@ module Redmine::MenuManager::TopMenuHelper
                                      position: :relative,
                                      px: 1)) do
       concat(render(Primer::Beta::IconButton.new(icon: :inbox,
-                                                 tag: :a,
-                                                 href: notifications_path,
                                                  classes: "op-app-header--primer-button op-ian-bell",
                                                  scheme: :invisible,
                                                  test_selector: "op-ian-bell",

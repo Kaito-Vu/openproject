@@ -74,6 +74,9 @@ RSpec.describe "Programs",
       parent_field.expect_no_option "Other portfolio"
       parent_field.select_option "Root portfolio"
 
+      click_on "Continue"
+
+      # Step 3: Select types and modules
       click_on "Complete"
 
       expect_and_dismiss_flash type: :success, message: "Successful creation."

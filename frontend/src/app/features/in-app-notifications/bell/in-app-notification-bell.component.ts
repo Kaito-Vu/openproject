@@ -31,6 +31,11 @@ import { filter, map, shareReplay, switchMap, throttleTime } from 'rxjs/operator
 import { ActiveWindowService } from 'core-app/core/active-window/active-window.service';
 import { PathHelperService } from 'core-app/core/path-helper/path-helper.service';
 import { ApiV3Service } from 'core-app/core/apiv3/api-v3.service';
+import { I18nService } from 'core-app/core/i18n/i18n.service';
+import { ChangeDetectorRef } from '@angular/core';
+import { InAppNotificationsResourceService } from 'core-app/core/state/in-app-notifications/in-app-notifications.service';
+import { INotification } from 'core-app/core/state/in-app-notifications/in-app-notification.model';
+import { IAN_FACET_FILTERS } from 'core-app/features/in-app-notifications/center/state/ian-center.store';
 import { IanBellService } from 'core-app/features/in-app-notifications/bell/state/ian-bell.service';
 import { populateInputsFromDataset } from 'core-app/shared/components/dataset-inputs';
 
@@ -47,6 +52,77 @@ export class InAppNotificationBellComponent implements OnInit {
   readonly apiV3Service = inject(ApiV3Service);
   readonly activeWindow = inject(ActiveWindowService);
   readonly pathHelper = inject(PathHelperService);
+  readonly I18n = inject(I18nService);
+  readonly cdRef = inject(ChangeDetectorRef);
+  readonly resourceService = inject(InAppNotificationsResourceService);
+
+  open = false;
+  loading = false;
+  notifications:INotification[] = [];
+
+  text = {
+    title: this.I18n.t('js.label_notification_center_plural', { defaultValue: 'Notifications' }),
+    empty: this.I18n.t('js.notifications.center.empty_state.no_notification'),
+    view_all: this.I18n.t('js.notifications.center.view_all', { defaultValue: 'View all' }),
+  };
+
+  get notificationsPath():string {
+    return this.pathHelper.notificationsPath();
+  }
+
+  itemPath(notification:INotification):string {
+    const id = notification._links.resource?.href?.split('/').pop();
+    return id ? this.pathHelper.notificationsDetailsPath(id, 'activity') : this.notificationsPath;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event:MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (target.closest('.op-ian-bell')) {
+      this.toggle();
+    } else if (this.open && !this.elementRef.nativeElement.contains(target)) {
+      this.close();
+    }
+  }
+
+  @HostListener('document:keydown.escape')
+  close() {
+    this.open = false;
+    this.cdRef.markForCheck();
+  }
+
+  reasonText(reason:string):string {
+    return this.I18n.t(`js.notifications.reasons.${reason}`, { defaultValue: reason });
+  }
+
+  private toggle() {
+    this.open = !this.open;
+    if (this.open) {
+      this.load();
+    }
+    this.cdRef.markForCheck();
+  }
+
+  private load() {
+    this.loading = true;
+    this.resourceService
+      .fetchCollection({
+        filters: IAN_FACET_FILTERS.unread,
+        pageSize: 5,
+        sortBy: [['createdAt', 'desc']],
+      })
+      .subscribe({
+        next: (result) => {
+          this.notifications = result._embedded.elements;
+          this.loading = false;
+          this.cdRef.markForCheck();
+        },
+        error: () => {
+          this.loading = false;
+          this.cdRef.markForCheck();
+        },
+      });
+  }
 
   @Input() interval = 50000;
 

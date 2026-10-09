@@ -68,10 +68,12 @@ module Redmine::MenuManager::TopMenu::QuickAddMenu
         content_arguments: {
           target: html_options.fetch(:target, "_top"),
           **html_options,
+          classes: ("op-quick-add-menu--primary" if item.name == :new_project),
           test_selector: "quick-add-menu-item"
         },
         label_arguments: { id: id_for_name(item.caption) },
         label: item.caption,
+        description: (I18n.t("menus.quick_add.new_project_description") if item.name == :new_project),
         test_selector: "op-menu--item-action"
       ) do |menu_item|
         menu_item.with_leading_visual_icon(icon: item.icon)
@@ -108,38 +110,19 @@ module Redmine::MenuManager::TopMenu::QuickAddMenu
       .map { |type| work_package_create_link(type.id, type.name) }
   end
 
+  # Work packages are only created from within a concrete project.
   def visible_types
-    @visible_types ||= begin
-      if user_can_create_work_package?
-        if in_project_context?
-          @project.enabled_types
-        else
-          Type.enabled_in(Project.allowed_to(User.current, :add_work_packages))
-        end
-      else
-        Type.none
-      end
-    end.to_a
+    @visible_types ||= in_project_context? && user_can_create_work_package? ? @project.enabled_types.to_a : []
   end
 
   def work_package_create_link(type_id, type_name)
-    if in_project_context?
-      { caption: type_name,
-        href: new_project_work_packages_path(project_id: @project.identifier, type: type_id),
-        classes: "__hl_uppercase __hl_foreground __hl_type_#{type_id}" }
-    else
-      { caption: type_name,
-        href: new_work_package_path(type: type_id),
-        classes: "__hl_uppercase __hl_foreground __hl_type_#{type_id}" }
-    end
+    { caption: type_name,
+      href: new_project_work_packages_path(project_id: @project.identifier, type: type_id),
+      classes: "__hl_uppercase __hl_foreground __hl_type_#{type_id}" }
   end
 
   def user_can_create_work_package?
-    if in_project_context?
-      User.current.allowed_in_project?(:add_work_packages, @project)
-    else
-      User.current.allowed_in_any_project?(:add_work_packages)
-    end
+    User.current.allowed_in_project?(:add_work_packages, @project)
   end
 
   def show_quick_add_menu?

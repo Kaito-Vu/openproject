@@ -2595,6 +2595,17 @@ vi:
     template_heading: Chọn mẫu chương trình để làm việc với các phương pháp quản lý dự án phổ biến nhất hoặc tạo chương trình từ đầu.
   create_project:
     attributes_heading: Điền thông tin bắt buộc này để thực hiện các dự án của bạn.
+    project_admin_label: Quản trị dự án
+    project_admin_caption: Tùy chọn. Người này được thêm vào dự án với vai trò quản trị dự án mặc định.
+    configuration_heading: Chọn những gì dự án này sẽ sử dụng.
+    modules_heading: Module
+    types_heading: Loại work item
+    steps:
+      label: Các bước tạo dự án
+      template: Mẫu
+      details: Thông tin
+      configuration: Cấu hình
+      attributes: Thuộc tính
     blank_description: Không có mô tả được cung cấp.
     blank_template:
       description: Bắt đầu lại từ đầu. Thêm thủ công các thuộc tính, thành viên và mô-đun của dự án.
@@ -4793,6 +4804,7 @@ vi:
       text_transform_actions: Thao tác biến đổi văn bản
     quick_add:
       label: Thêm vào…
+      new_project_description: Tạo dự án mới
   more_actions: Nhiều chức năng hơn
   my:
     access_token:

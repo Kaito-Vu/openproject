@@ -2785,6 +2785,17 @@ en:
 
   create_project:
     attributes_heading: "Fill in this mandatory information to work on your projects."
+    project_admin_label: "Project admin"
+    project_admin_caption: "Optional. This person is added to the project with the default project admin role."
+    configuration_heading: "Choose what this project works with."
+    modules_heading: "Modules"
+    types_heading: "Work item types"
+    steps:
+      label: "Project creation steps"
+      template: "Template"
+      details: "Details"
+      configuration: "Configuration"
+      attributes: "Attributes"
     blank_description: No description provided.
     blank_template:
       description: Start from scratch. Manually add project attributes, members and modules.
@@ -5089,6 +5100,7 @@ en:
       text_transform_actions: "Text transform actions"
     quick_add:
       label: "Add…"
+      new_project_description: "Create a new project"
 
   more_actions: "More functions"
 

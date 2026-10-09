@@ -96,7 +96,9 @@ RSpec.describe "Global role: Global Create project", :js do
 
       # Step 2: Fill in project details
       fill_in "Name", with: "New project name"
+      click_on "Continue"
 
+      # Step 3: Select types and modules
       click_on "Complete"
 
       expect(page).to have_current_path "/projects/new-project-name"

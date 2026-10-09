@@ -42,12 +42,18 @@ See COPYRIGHT and LICENSE files for more details.
               Projects::Settings::EditableIdentifierForm.new(f),
               Projects::Settings::DescriptionForm.new(f),
               Projects::Settings::RelationsForm.new(f, invisible: params[:parent_id].present?),
+              *(Projects::Settings::ProjectAdminForm.new(f) if template.nil?),
               Projects::Settings::TypeForm.new(f)
             )
           )
         end
 
         container.with_row(mb: 3, **step_3_display) do
+          safe_join([section_heading(:types_heading), types_checkboxes,
+                     section_heading(:modules_heading), modules_checkboxes])
+        end
+
+        container.with_row(mb: 3, **step_4_display) do
           render(Projects::Settings::CustomFieldsForm.new(f))
         end
 

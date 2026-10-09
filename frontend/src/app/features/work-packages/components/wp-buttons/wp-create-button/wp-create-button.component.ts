@@ -77,7 +77,8 @@ export class WorkPackageCreateButtonComponent extends UntilDestroyedMixin implem
         take(1),
       )
       .subscribe((allowed) => {
-        this.allowed = allowed;
+        // Work packages can only be created from within a project
+        this.allowed = !!this.currentProject.id && allowed;
         this.updateDisabledState();
       });
 

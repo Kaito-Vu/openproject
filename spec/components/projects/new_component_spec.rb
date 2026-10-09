@@ -63,6 +63,34 @@ RSpec.describe Projects::NewComponent, type: :component do
   end
 
   context "when creating from scratch" do
+    shared_let(:preselected_type) { create(:type) }
+    shared_let(:other_type) { create(:type) }
+
+    before { preselected_type.default_variant.update!(enabled_in_new_projects: true) }
+
+    it "offers every type, preselecting those enabled for new projects", :aggregate_failures do
+      html = render_inline(described_class.new(project:, step: 3))
+
+      expect(html).to have_field preselected_type.name, type: :checkbox, checked: true, visible: :all
+      expect(html).to have_field other_type.name, type: :checkbox, checked: false, visible: :all
+    end
+
+    it "offers the modules, preselecting the default ones", :aggregate_failures do
+      allow(Setting).to receive(:default_projects_modules).and_return(%w[wiki])
+      html = render_inline(described_class.new(project:, step: 3))
+
+      expect(html).to have_field "Wiki", type: :checkbox, checked: true, visible: :all
+      expect(html).to have_field "Forums", type: :checkbox, checked: false, visible: :all
+    end
+
+    it "keeps an explicit selection instead of the defaults", :aggregate_failures do
+      html = render_inline(described_class.new(project:, step: 3,
+                                               selected_variant_ids: [other_type.default_variant.id]))
+
+      expect(html).to have_field preselected_type.name, type: :checkbox, checked: false, visible: :all
+      expect(html).to have_field other_type.name, type: :checkbox, checked: true, visible: :all
+    end
+
     it "renders custom fields form" do
       allow(Projects::Settings::CustomFieldsForm).to receive(:new).and_call_original
       rendered_component

@@ -641,6 +641,7 @@ vi:
           at_all: Thông báo mới sẽ xuất hiện ở đây khi có hoạt động khiến bạn quan tâm.
           with_current_filter: Hiện tại không có thông báo nào trong View này
         text_update_date_by: "%{date} bởi"
+        view_all: Xem tất cả
         total_count_warning: Hiển thị %{newest_count} thông báo gần đây nhất. %{more_count} thêm không được hiển thị.
       date_alerts:
         milestone_date: Ngày quan trọng
