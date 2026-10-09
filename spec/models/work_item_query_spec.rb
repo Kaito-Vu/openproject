@@ -54,4 +54,18 @@ RSpec.describe WorkItemQuery do
     expect(query.favorite_of?(user)).to be true
     expect(query.favorite_of?(create(:user))).to be false
   end
+
+  it "validates columns" do
+    [nil, "id", [1], [""], Array.new(51) { "id" }].each do |bad|
+      expect(described_class.new(name: "q", user:, columns: bad)).not_to be_valid
+    end
+    expect(described_class.new(name: "q", user:, columns: %w[id subject])).to be_valid
+  end
+
+  it "validates sort_criteria" do
+    [nil, "x", ["id"], [%w[id up]], [%w[id asc extra]], Array.new(11) { %w[id asc] }].each do |bad|
+      expect(described_class.new(name: "q", user:, sort_criteria: bad)).not_to be_valid
+    end
+    expect(described_class.new(name: "q", user:, sort_criteria: [%w[id desc]])).to be_valid
+  end
 end

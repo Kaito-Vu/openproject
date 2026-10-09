@@ -116,4 +116,74 @@ RSpec.describe "API v3 work_item_queries" do
     get "/api/v3/work_item_queries"
     expect(JSON.parse(last_response.body)["items"].find { it["id"] == id }["favorite"]).to be false
   end
+
+  describe "as a non-admin user" do
+    let(:user) { create(:user, member_with_permissions: { project => %i[view_work_packages] }) }
+    let(:owner) { create(:user) }
+    let!(:pub) { WorkItemQuery.create!(name: "pub", public: true, user: owner) }
+    let!(:priv) { WorkItemQuery.create!(name: "priv", user: owner) }
+
+    it "rejects DELETE by a non-owner on a public query with 403" do
+      delete "/api/v3/work_item_queries/#{pub.id}"
+      expect(last_response).to have_http_status(403)
+      expect(WorkItemQuery.exists?(pub.id)).to be true
+    end
+
+    it "returns 404 for favorite PUT/DELETE on an invisible query" do
+      header "Content-Type", "application/json"
+      put "/api/v3/work_item_queries/#{priv.id}/favorite"
+      expect(last_response).to have_http_status(404)
+      delete "/api/v3/work_item_queries/#{priv.id}/favorite"
+      expect(last_response).to have_http_status(404)
+    end
+
+    it "ignores a client-sent user_id on create" do
+      post_json "/api/v3/work_item_queries", { name: "x", user_id: owner.id }
+      expect(last_response).to have_http_status(201)
+      expect(WorkItemQuery.find(JSON.parse(last_response.body)["id"]).user_id).to eq user.id
+    end
+
+    it "lists own and public queries but not other private ones" do
+      mine = WorkItemQuery.create!(name: "mine", user:)
+      get "/api/v3/work_item_queries"
+      expect(JSON.parse(last_response.body)["items"].pluck("id")).to contain_exactly(pub.id, mine.id)
+    end
+
+    it "rejects invalid project_id with 422 on create, update and execute" do
+      other_project = create(:project)
+      [other_project.id, 0].each do |pid|
+        post_json "/api/v3/work_item_queries", { name: "x", project_id: pid }
+        expect(last_response).to have_http_status(422)
+        post_json "/api/v3/work_item_queries/execute", { project_id: pid }
+        expect(last_response).to have_http_status(422)
+      end
+      mine = WorkItemQuery.create!(name: "mine", user:)
+      patch_json "/api/v3/work_item_queries/#{mine.id}", { project_id: other_project.id }
+      expect(last_response).to have_http_status(422)
+    end
+  end
+
+  it "rejects invalid columns, sort_criteria and null values with 422" do
+    [{ columns: nil }, { columns: "id" }, { sort_criteria: nil }, { sort_criteria: [%w[id up]] }, { mode: "grid" }].each do |bad|
+      post_json "/api/v3/work_item_queries", { name: "x" }.merge(bad)
+      expect(last_response).to have_http_status(422)
+      post_json "/api/v3/work_item_queries/execute", bad
+      expect(last_response).to have_http_status(422)
+    end
+  end
+
+  it "does not persist anything on execute and honours pageSize" do
+    create(:work_package, project:, status:)
+    expect do
+      post_json "/api/v3/work_item_queries/execute", { tree:, project_id: project.id, pageSize: 1 }
+    end.not_to change(WorkItemQuery, :count)
+    expect(last_response).to have_http_status(200)
+    expect(JSON.parse(last_response.body).dig("_embedded", "results", "_embedded", "elements").size).to eq 1
+  end
+
+  it "rejects anonymous requests and creates nothing" do
+    login_as(User.anonymous)
+    expect { post_json "/api/v3/work_item_queries", { name: "x" } }.not_to change(WorkItemQuery, :count)
+    expect(last_response.status).to be_in([401, 403])
+  end
 end

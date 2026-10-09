@@ -350,6 +350,13 @@ en:
         custom_field_section: Section
       project_type:
         variant: "Variant"
+      work_item_query:
+        columns: "Columns"
+        mode: "Mode"
+        name: "Name"
+        project: "Project"
+        sort_criteria: "Sort criteria"
+        tree: "Conditions"
       query:
         child_work_packages: "Child work packages"
         column_names: "Columns"

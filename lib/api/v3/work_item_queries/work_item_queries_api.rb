@@ -36,9 +36,9 @@ module API
           helpers ::API::V3::Queries::Helpers::QueryRepresenterResponse
 
           helpers do
-            def item(record)
+            def item(record, favorite: record.favorite_of?(current_user))
               record.slice(:id, :name, :mode, :public, :project_id, :columns, :sort_criteria, :tree, :user_id)
-                    .merge(favorite: record.favorite_of?(current_user),
+                    .merge(favorite:,
                            updated_at: record.updated_at,
                            updated_by_name: (record.updated_by || record.user)&.name)
             end
@@ -48,7 +48,14 @@ module API
             def attrs
               params.to_h.symbolize_keys.slice(*ATTRS).tap do |h|
                 h[:tree] = JSON.parse(h[:tree].to_json) if h.key?(:tree)
+                check_project!(h[:project_id])
               end
+            end
+
+            def check_project!(project_id)
+              return if project_id.nil?
+
+              render_invalid("Project not found") unless Project.visible(current_user).exists?(id: project_id)
             end
 
             def find_visible!
@@ -62,6 +69,10 @@ module API
               record
             end
 
+            def error_text(record)
+              record.errors.map { |e| "#{e.attribute} #{e.message}" }.to_sentence
+            end
+
             def render_invalid(message)
               raise ::API::Errors::UnprocessableContent.new(message)
             end
@@ -70,11 +81,14 @@ module API
           # Authentication happens in after_validation, so authorize there too (a `before`
           # block would still see the anonymous user).
           after_validation do
+            authorize_by_with_raise(current_user.logged?)
             authorize_in_any_work_package(:view_work_packages)
           end
 
           get do
-            { items: WorkItemQuery.visible(current_user).includes(:updated_by, :user).order(:name).map { item(it) } }
+            records = WorkItemQuery.visible(current_user).includes(:updated_by, :user).order(:name).to_a
+            fav_ids = WorkItemQueryFavorite.where(user: current_user, work_item_query_id: records.map(&:id)).pluck(:work_item_query_id)
+            { items: records.map { |r| item(r, favorite: fav_ids.include?(r.id)) } }
           end
 
           params do
@@ -86,13 +100,14 @@ module API
               status 201
               item(record)
             else
-              render_invalid(record.errors.full_messages.to_sentence)
+              render_invalid(error_text(record))
             end
           end
 
           post :execute do
             status 200
             wiq = WorkItemQuery.new(attrs.merge(name: "adhoc", user: current_user))
+            render_invalid(error_text(wiq)) unless wiq.valid?
             query = begin
               ::WorkItemQueries::BuildQuery.new(wiq, user: current_user).call
             rescue ::WorkItemQueries::Compiler::InvalidTree => e
@@ -109,7 +124,7 @@ module API
               if record.update(attrs.merge(updated_by: current_user))
                 item(record)
               else
-                render_invalid(record.errors.full_messages.to_sentence)
+                render_invalid(error_text(record))
               end
             end
 
