@@ -32,9 +32,9 @@ require "spec_helper"
 RSpec.describe "Queries list", :js do
   let(:user) { create(:admin) }
   let(:other) { create(:user) }
-  let!(:mine) { WorkItemQuery.create!(name: "My bugs", user:, updated_by: user) }
-  let!(:shared) { WorkItemQuery.create!(name: "Release bugs", user: other, updated_by: other, public: true) }
-  let!(:private_other) { WorkItemQuery.create!(name: "Hidden", user: other) }
+  let!(:mine) { create(:work_item_query, name: "My bugs", user:) }
+  let!(:shared) { create(:work_item_query, :public, name: "Release bugs", user: other) }
+  let!(:private_other) { create(:work_item_query, name: "Hidden", user: other) }
 
   before { login_as(user) }
 
