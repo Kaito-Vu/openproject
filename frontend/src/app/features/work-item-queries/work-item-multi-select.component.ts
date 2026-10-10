@@ -34,7 +34,7 @@ import { I18nService } from 'core-app/core/i18n/i18n.service';
 import { Option } from './work-item-filter-schema';
 import { filterOptions, selectedChips, toggleValue } from './work-item-multi-select';
 import {
-  claimPopover, closeOnViewportChange, popoverPosition, PopoverPosition, releasePopover,
+  openPopover, popoverPosition, PopoverPosition,
 } from './work-item-popover';
 
 let nextId = 0;
@@ -155,13 +155,21 @@ export class WorkItemMultiSelectComponent {
 
   readonly shown = computed(() => filterOptions(this.options(), this.query()));
 
+  // Undoes openPopover (listeners, single-open registry) on close and on destroy.
+  private release:(() => void)|null = null;
+
   constructor() {
-    closeOnViewportChange(
-      this.document,
-      inject(DestroyRef),
-      () => (this.open() ? this.host.nativeElement.querySelector('.pop') : null),
-      () => this.close(),
-    );
+    inject(DestroyRef).onDestroy(() => this.releasePopover());
+  }
+
+  private releasePopover():void {
+    this.release?.();
+    this.release = null;
+  }
+
+  private claimPopover():void {
+    this.releasePopover();
+    this.release = openPopover(this, this.document, () => this.host.nativeElement.querySelector('.pop'), () => this.close());
   }
 
   isOn(id:string):boolean { return this.selected().includes(id); }
@@ -170,7 +178,7 @@ export class WorkItemMultiSelectComponent {
     if (this.open()) { this.close(true); return; }
     this.reposition();
     this.query.set('');
-    claimPopover(this);
+    this.claimPopover();
     this.open.set(true);
     setTimeout(() => { this.host.nativeElement.querySelector<HTMLInputElement>('.pop-search input')?.focus(); });
   }
@@ -178,7 +186,7 @@ export class WorkItemMultiSelectComponent {
   // Closing returns focus to the trigger only when the user closed it (Escape, trigger), not when
   // focus or a click moved elsewhere or the page scrolled.
   close(refocus = false):void {
-    releasePopover(this);
+    this.releasePopover();
     if (!this.open()) { return; }
     this.open.set(false);
     if (refocus) { this.trigger().nativeElement.focus(); }

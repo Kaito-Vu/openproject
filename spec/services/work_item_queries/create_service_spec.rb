@@ -73,6 +73,18 @@ RSpec.describe WorkItemQueries::CreateService, "integration" do
     expect(result.errors.symbols_for(:project)).to eq [:error_not_found]
   end
 
+  context "with save_queries but without view_work_packages in the project" do
+    # The member can see the project, but the visible scope would hide the saved query from its owner.
+    let(:permissions) { %i[view_project save_queries] }
+
+    it "rejects the project like an invisible one" do
+      result = create_query(project_id: project.id)
+      expect(result).to be_failure
+      expect(result.errors.symbols_for(:project)).to eq [:error_not_found]
+      expect(WorkItemQuery.count).to eq 0
+    end
+  end
+
   it "rejects public without manage_public_queries, as an error on public" do
     [project.id, nil].each do |project_id|
       result = create_query(project_id:, public: true)

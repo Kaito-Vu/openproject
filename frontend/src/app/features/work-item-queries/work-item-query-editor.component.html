@@ -36,7 +36,8 @@
             <span class="Button-label">{{ text.run }}</span>
           </span>
         </button>
-        <button type="button" class="Button Button--secondary Button--medium" (click)="save()" [disabled]="saving()">
+        <button type="button" class="Button Button--secondary Button--medium" (click)="save()" [disabled]="saving() || notOwner()"
+                [attr.aria-describedby]="notOwner() ? 'wiq-not-owner' : null">
           <span class="Button-content"><span class="Button-label">{{ saving() ? text.saving : text.save }}</span></span>
         </button>
         <button type="button" class="Button Button--invisible Button--medium" (click)="revert()">
@@ -65,6 +66,10 @@
         <span class="wiq-copy-state" aria-hidden="true">@switch (copyState()) { @case ('copied') { {{ text.copied }} } @case ('failed') { {{ text.copyFailed }} } }</span>
       </div>
     </header>
+
+    @if (notOwner()) {
+      <p class="FormControl-caption wiq-not-owner" id="wiq-not-owner">{{ text.notOwner }}</p>
+    }
 
     @if (error(); as message) {
       <div class="flash flash-error wiq-flash" role="alert">{{ message }}</div>

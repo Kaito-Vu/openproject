@@ -70,10 +70,12 @@ describe('work item popover components', () => {
       input.focus();
       fixture.detectChanges();
       expect(listbox()).toBeNull();
+      expect(input.getAttribute('aria-controls')).toBeNull();
 
       key(input, 'ArrowDown');
       fixture.detectChanges();
       expect(input.getAttribute('aria-expanded')).toBe('true');
+      expect(input.getAttribute('aria-controls')).toBe(listbox().id);
       expect(input.getAttribute('aria-activedescendant')).toBe(`${fixture.componentInstance.listId}-1`);
       const active = listbox().querySelector('[aria-selected="true"]');
       expect(active.textContent).toContain('Status');

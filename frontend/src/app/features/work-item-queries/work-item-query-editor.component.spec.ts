@@ -80,6 +80,7 @@ describe('WorkItemQueryEditorComponent', () => {
     const editor = fixture.componentInstance;
     editor.projectId = 5;
     editor.queryId = inputs.queryId ?? null;
+    editor.currentUserId = 1;
     editor.listUrl = '/sub/projects/demo/queries';
     editor.editorUrl = EDITOR_URL;
     fixture.detectChanges();
@@ -256,16 +257,47 @@ describe('WorkItemQueryEditorComponent', () => {
     expect(editor.dirty()).toBe(false);
   });
 
-  it('asks before leaving the page only when dirty', () => {
-    const { editor } = create();
-    const clean = new Event('beforeunload', { cancelable: true });
-    editor.onBeforeUnload(clean);
-    expect(clean.defaultPrevented).toBe(false);
+  it('reports unsaved changes to the app-wide leave guard (beforeunload and Turbo visits) and resets it', () => {
+    const app = { pageState: 'pristine' };
+    (window as unknown as { OpenProject:unknown }).OpenProject = app;
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const { editor, fixture } = create();
+    fixture.detectChanges();
+    expect(app.pageState).toBe('pristine');
 
     editor.setName('Draft');
-    const dirty = new Event('beforeunload', { cancelable: true });
-    editor.onBeforeUnload(dirty);
-    expect(dirty.defaultPrevented).toBe(true);
+    fixture.detectChanges();
+    expect(app.pageState).toBe('edited');
+
+    editor.revert();
+    fixture.detectChanges();
+    expect(confirm).toHaveBeenCalled();
+    expect(app.pageState).toBe('pristine');
+
+    editor.setName('Draft');
+    fixture.detectChanges();
+    fixture.destroy();
+    expect(app.pageState).toBe('pristine');
+    delete (window as unknown as { OpenProject?:unknown }).OpenProject;
+  });
+
+  it("disables Save with a visible reason for someone else's query, while Run keeps working", () => {
+    const { editor, fixture } = create({ queryId: 7 });
+    http.expectOne(`${API}/7`).flush(savedQuery({ public: true, _links: { ...savedQuery()._links, user: { href: '/sub/api/v3/users/2' } } }));
+    http.expectOne(`${API}/execute`).flush(executeResponse);
+    fixture.detectChanges();
+
+    expect(editor.notOwner()).toBe(true);
+    const el = fixture.nativeElement as HTMLElement;
+    const saveButton = [...el.querySelectorAll('button')].find((b) => b.textContent?.includes('js.work_item_queries.editor.save'))!;
+    expect(saveButton.disabled).toBe(true);
+    expect(el.querySelector(`#${saveButton.getAttribute('aria-describedby')}`)?.textContent)
+      .toContain('js.work_item_queries.editor.not_owner');
+    editor.save();
+    http.expectNone({ method: 'PATCH' });
+
+    editor.run();
+    http.expectOne(`${API}/execute`).flush(executeResponse);
   });
 
   it('shows a loading state for an existing query, then loads it by id and runs it', () => {

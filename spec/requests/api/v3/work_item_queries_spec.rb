@@ -152,6 +152,20 @@ RSpec.describe "API v3 work_item_queries" do
       expect(error_attributes).to eq ["project"]
     end
 
+    context "with save_queries but without view_work_packages in the target project" do
+      let(:no_wp_project) { create(:project) }
+      let(:user) do
+        create(:user, member_with_permissions: { project => permissions, no_wp_project => %i[view_project save_queries] })
+      end
+
+      it "rejects that project as an error on project (the query would not be listable)" do
+        expect { send_json :post, api_v3_paths.work_item_queries, { name: "x", _links: project_link(no_wp_project.id) } }
+          .not_to change(WorkItemQuery, :count)
+        expect(last_response).to have_http_status(422)
+        expect(error_attributes).to eq ["project"]
+      end
+    end
+
     it "rejects public without manage_public_queries as an error on public" do
       send_json :post, api_v3_paths.work_item_queries, { name: "x", public: true }
 

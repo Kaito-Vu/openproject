@@ -27,6 +27,7 @@
 
 .wiq-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-inline-start: auto; }
 .wiq-sep { width: 1px; height: 20px; background: var(--borderColor-default); }
+.wiq-not-owner { margin: -8px 0 16px; }
 .wiq-copy-state { color: var(--fgColor-muted); font-size: var(--text-body-size-small); }
 
 /* ---------- settings ---------- */

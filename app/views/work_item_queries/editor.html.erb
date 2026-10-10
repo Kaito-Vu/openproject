@@ -31,6 +31,7 @@ See COPYRIGHT and LICENSE files for more details.
                           inputs: {
                             projectId: @project&.id,
                             queryId: params[:id],
+                            currentUserId: current_user.id,
                             listUrl: @project ? project_work_item_queries_path(@project) : work_item_queries_path,
                             editorUrl: @project ? project_work_item_query_editor_path(@project) : work_item_query_editor_path
                           } %>

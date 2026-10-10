@@ -25,8 +25,6 @@
 // See COPYRIGHT and LICENSE files for more details.
 //++
 
-import { DestroyRef } from '@angular/core';
-
 export interface PopoverPosition { left:number; width:number; top:number|null; bottom:number|null; maxHeight:number }
 
 // Where to place a fixed popover at its trigger: below by default, above when there is no room below
@@ -58,25 +56,28 @@ export function releasePopover(owner:Closable):void {
   if (current === owner) { current = null; }
 }
 
-// Fixed popovers do not follow their trigger, so they close when any ancestor scrolls (OpenProject
-// scrolls #content-wrapper, not the window; scroll does not bubble, hence the capture phase) or the
-// window resizes. Scrolling inside the popover itself (its list) is ignored.
-export function closeOnViewportChange(
+// Marks `owner` as the open popover (closing any other) and, while it is open, closes it when any
+// ancestor scrolls (OpenProject scrolls #content-wrapper, not the window; scroll does not bubble,
+// hence the capture phase) or the window resizes: fixed popovers do not follow their trigger.
+// Scrolling inside the popover itself (its list) is ignored. Returns the function that undoes all
+// of it; call it on close and on destroy.
+export function openPopover(
+  owner:Closable,
   doc:Document,
-  destroyRef:DestroyRef,
   popover:() => Element|null,
   close:() => void,
-):void {
+):() => void {
+  claimPopover(owner);
   const win = doc.defaultView;
   const onScroll = (e:Event):void => {
     const pop = popover();
     if (pop && !pop.contains(e.target as Node)) { close(); }
   };
-  const onResize = ():void => { if (popover()) { close(); } };
   doc.addEventListener('scroll', onScroll, { capture: true, passive: true });
-  win?.addEventListener('resize', onResize);
-  destroyRef.onDestroy(() => {
+  win?.addEventListener('resize', close);
+  return () => {
     doc.removeEventListener('scroll', onScroll, { capture: true });
-    win?.removeEventListener('resize', onResize);
-  });
+    win?.removeEventListener('resize', close);
+    releasePopover(owner);
+  };
 }

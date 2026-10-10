@@ -25,9 +25,8 @@
 // See COPYRIGHT and LICENSE files for more details.
 //++
 
-import { DestroyRef } from '@angular/core';
 import {
-  claimPopover, closeOnViewportChange, popoverPosition, releasePopover,
+  claimPopover, openPopover, popoverPosition, releasePopover,
 } from './work-item-popover';
 
 describe('popoverPosition', () => {
@@ -69,27 +68,35 @@ describe('claimPopover', () => {
   });
 });
 
-describe('closeOnViewportChange', () => {
-  it('closes on a scroll outside the popover, not inside it, and stops listening on destroy', () => {
+describe('openPopover', () => {
+  it('closes on a scroll outside the popover, not inside it, and stops listening once released', () => {
     const pop = document.createElement('div');
     const inner = document.createElement('ul');
     pop.appendChild(inner);
     const outside = document.createElement('div');
     document.body.append(pop, outside);
-    let onDestroy = ():void => undefined;
-    const destroyRef = { onDestroy: (fn:() => void) => { onDestroy = fn; return () => undefined; } } as unknown as DestroyRef;
     const close = vi.fn();
-    closeOnViewportChange(document, destroyRef, () => pop, close);
+    const release = openPopover({ close }, document, () => pop, close);
 
     inner.dispatchEvent(new Event('scroll'));
     expect(close).not.toHaveBeenCalled();
     outside.dispatchEvent(new Event('scroll'));
     expect(close).toHaveBeenCalledTimes(1);
 
-    onDestroy();
+    release();
     outside.dispatchEvent(new Event('scroll'));
+    window.dispatchEvent(new Event('resize'));
     expect(close).toHaveBeenCalledTimes(1);
     pop.remove();
     outside.remove();
+  });
+
+  it('releases the single-open registry so a later popover does not close a released one', () => {
+    const a = { close: vi.fn() };
+    const release = openPopover(a, document, () => null, a.close);
+    release(); // e.g. the owner was destroyed while open
+    const b = { close: vi.fn() };
+    openPopover(b, document, () => null, b.close)();
+    expect(a.close).not.toHaveBeenCalled();
   });
 });

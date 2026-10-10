@@ -1033,6 +1033,7 @@ en:
         name_label: "Query name"
         name_placeholder: "Untitled query"
         no_own_project: "Neither the query nor this page has a project"
+        not_owner: "Only the owner can save changes to this query. You can still run it."
         operator_named: "And/Or before %{name}"
         or: "Or"
         public_denied: "You are not allowed to share queries with everyone"

@@ -60,7 +60,10 @@ module WorkItemQueries
     def project_visible?
       return @project_visible if defined?(@project_visible)
 
-      @project_visible = model.project_id.nil? || Project.visible(user).exists?(id: model.project_id)
+      # Same rule as the visible scope (Queries::Scopes::Visible): a query saved into a project without
+      # view_work_packages would vanish from its owner's list.
+      @project_visible = model.project_id.nil? ||
+                         Project.allowed_to(user, :view_work_packages).exists?(id: model.project_id)
     end
 
     # Mirrors Queries::BaseContract#user_allowed_to_save_queries?

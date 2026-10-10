@@ -36,7 +36,7 @@ import {
   exactMatch, highlightParts, initialActive, moveActive,
 } from './work-item-combobox';
 import {
-  claimPopover, closeOnViewportChange, popoverPosition, PopoverPosition, releasePopover,
+  openPopover, popoverPosition, PopoverPosition,
 } from './work-item-popover';
 
 let nextId = 0;
@@ -62,7 +62,7 @@ let nextId = 0;
         spellcheck="false"
         aria-autocomplete="list"
         [attr.aria-expanded]="open()"
-        [attr.aria-controls]="listId"
+        [attr.aria-controls]="open() ? listId : null"
         [attr.aria-activedescendant]="activeId()"
         [attr.aria-label]="label()"
         [placeholder]="placeholder()"
@@ -153,13 +153,21 @@ export class WorkItemComboboxComponent {
     return this.open() && i >= 0 && i < this.shown().length ? `${this.listId}-${i}` : null;
   });
 
+  // Undoes openPopover (listeners, single-open registry) on close and on destroy.
+  private release:(() => void)|null = null;
+
   constructor() {
-    closeOnViewportChange(
-      this.document,
-      inject(DestroyRef),
-      () => (this.open() ? this.host.nativeElement.querySelector('.pop') : null),
-      () => this.close(),
-    );
+    inject(DestroyRef).onDestroy(() => this.releasePopover());
+  }
+
+  private releasePopover():void {
+    this.release?.();
+    this.release = null;
+  }
+
+  private claimPopover():void {
+    this.releasePopover();
+    this.release = openPopover(this, this.document, () => this.host.nativeElement.querySelector('.pop'), () => this.close());
   }
 
   parts(name:string) { return highlightParts(name, this.typed() ?? ''); }
@@ -173,13 +181,13 @@ export class WorkItemComboboxComponent {
       280,
     ));
     this.active.set(initialActive(this.shown().map((o) => o.id), this.value()));
-    claimPopover(this);
+    this.claimPopover();
     this.open.set(true);
     this.scrollToActive();
   }
 
   close():void {
-    releasePopover(this);
+    this.releasePopover();
     this.open.set(false);
     this.typed.set(null);
   }

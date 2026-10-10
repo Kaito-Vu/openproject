@@ -30,7 +30,7 @@ import {
   catchError, finalize, of, Subscription, switchMap,
 } from 'rxjs';
 import {
-  Component, computed, DOCUMENT, ElementRef, HostListener, Input, OnDestroy, OnInit, inject, signal, viewChild,
+  Component, computed, DOCUMENT, effect, ElementRef, Input, OnDestroy, OnInit, inject, signal, viewChild,
 } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
@@ -93,6 +93,8 @@ export class WorkItemQueryEditorComponent implements OnInit, OnDestroy {
 
   @Input() editorUrl = '';
 
+  @Input() currentUserId:number|null = null;
+
   readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
 
   private service = inject(WorkItemQueryService);
@@ -144,6 +146,7 @@ export class WorkItemQueryEditorComponent implements OnInit, OnDestroy {
     namePlaceholder: this.I18n.t('js.work_item_queries.editor.name_placeholder'),
     nameRequired: this.I18n.t('js.work_item_queries.errors.name_required'),
     noOwnProject: this.I18n.t('js.work_item_queries.editor.no_own_project'),
+    notOwner: this.I18n.t('js.work_item_queries.editor.not_owner'),
     or: this.I18n.t('js.work_item_queries.editor.or'),
     publicDenied: this.I18n.t('js.work_item_queries.editor.public_denied'),
     queryAcrossProjects: this.I18n.t('js.work_item_queries.editor.query_across_projects'),
@@ -197,6 +200,12 @@ export class WorkItemQueryEditorComponent implements OnInit, OnDestroy {
 
   // Project of the saved query being edited (null for a new or a global query).
   private readonly savedProjectId = signal<number|null>(null);
+
+  // Owner of the saved query being edited (null for a new query).
+  private readonly ownerId = signal<number|null>(null);
+
+  // Someone else's (public) query: it can be run and edited locally, but only its owner may save it.
+  readonly notOwner = computed(() => this.ownerId() != null && this.ownerId() !== Number(this.currentUserId));
 
   readonly baseline = signal<EditorState|null>(null);
 
@@ -288,6 +297,9 @@ export class WorkItemQueryEditorComponent implements OnInit, OnDestroy {
 
   constructor() {
     populateInputsFromDataset(this);
+    // The app-wide BeforeunloadController asks before leaving through a reload, tab close or a Turbo
+    // visit (breadcrumb, menu links) while window.OpenProject reports unsaved changes.
+    effect(() => { this.setPageEdited(this.dirty()); });
   }
 
   ngOnInit():void {
@@ -316,14 +328,7 @@ export class WorkItemQueryEditorComponent implements OnInit, OnDestroy {
     this.destroyed = true;
     clearTimeout(this.copyTimer);
     Object.values(this.subs).forEach((sub) => sub?.unsubscribe());
-  }
-
-  @HostListener('window:beforeunload', ['$event'])
-  onBeforeUnload(event:BeforeUnloadEvent):void {
-    if (this.dirty()) {
-      event.preventDefault();
-      event.returnValue = ''; // older browsers only prompt with returnValue set
-    }
+    this.setPageEdited(false);
   }
 
   columnLabel(id:string):string {
@@ -420,7 +425,7 @@ export class WorkItemQueryEditorComponent implements OnInit, OnDestroy {
   }
 
   save():void {
-    if (this.saving() || this.status() !== 'ready') { return; }
+    if (this.saving() || this.status() !== 'ready' || this.notOwner()) { return; }
     const name = this.name().trim();
     if (!name) {
       this.nameInvalid.set(true);
@@ -467,6 +472,7 @@ export class WorkItemQueryEditorComponent implements OnInit, OnDestroy {
     if (this.name().trim() === sent.name) { this.name.set(saved.name); }
     this.currentId.set(saved.id);
     this.savedProjectId.set(linkId(saved._links.project));
+    this.ownerId.set(linkId(saved._links.user));
     this.baseline.set({ ...sent, name: saved.name });
     if (wasNew) {
       this.document.defaultView?.history.replaceState(null, '', this.queryUrl(saved.id));
@@ -478,6 +484,7 @@ export class WorkItemQueryEditorComponent implements OnInit, OnDestroy {
     const projectId = linkId(query._links.project);
     this.currentId.set(query.id);
     this.savedProjectId.set(projectId);
+    this.ownerId.set(linkId(query._links.user));
     this.restore({
       name: query.name,
       mode: query.mode,
@@ -539,6 +546,11 @@ export class WorkItemQueryEditorComponent implements OnInit, OnDestroy {
   }
 
   private queryUrl(id:number):string { return `${this.editorUrl}?id=${id}`; }
+
+  private setPageEdited(edited:boolean):void {
+    const app = this.document.defaultView?.OpenProject;
+    if (app) { app.pageState = edited ? 'edited' : 'pristine'; }
+  }
 
   private announce(message:string):void { this.announcement.set(message); }
 }
