@@ -1,47 +1,13 @@
 .wiq { max-width: 1100px; padding: 8px 0 32px; }
 .wiq-page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
-.wiq-page-head h1 { margin: 0; font-size: 24px; font-weight: 600; line-height: 1.25; }
-.wiq-sub { margin: 4px 0 0; color: var(--wiq-fg-muted); }
+.wiq-page-head h1 { margin: 0; font-size: var(--text-title-size-medium); font-weight: var(--base-text-weight-semibold); line-height: 1.25; }
+.wiq-sub { margin: 4px 0 0; color: var(--fgColor-muted); }
 
 .wiq-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
-.wiq-tabs { display: inline-flex; padding: 3px; border-radius: calc(var(--wiq-radius) + 2px); background: var(--bgColor-neutral-muted, #eaeef2); }
-.wiq-tabs button {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 28px;
-  padding: 0 14px;
-  border: 0;
-  border-radius: var(--wiq-radius);
-  background: transparent;
-  color: var(--wiq-fg-muted);
-  font: inherit;
-  font-weight: 500;
-  cursor: pointer;
-}
-.wiq-tabs button:hover { color: var(--wiq-fg); }
-.wiq-tabs button.is-active { background: var(--wiq-bg); color: var(--wiq-fg); box-shadow: 0 1px 2px rgba(31, 35, 40, 0.15); }
-.wiq-tabs button:focus-visible { outline: 2px solid var(--focus-outlineColor, #0969da); }
+.SegmentedControl { margin: 0; padding: 0; }
+.wiq-search { width: 280px; max-width: 100%; }
 
-.wiq-search { display: grid; align-items: center; width: 280px; max-width: 100%; margin: 0; }
-.wiq-search > * { grid-area: 1 / 1; }
-.wiq-search svg { z-index: 1; justify-self: start; margin-left: 10px; color: var(--wiq-fg-muted); pointer-events: none; }
-.wiq-search input {
-  width: 100%;
-  height: 32px;
-  margin: 0;
-  padding: 0 10px 0 32px;
-  line-height: normal;
-  box-sizing: border-box;
-  border: 1px solid var(--control-borderColor-rest, var(--wiq-border));
-  border-radius: var(--wiq-radius);
-  background: var(--wiq-bg);
-  color: var(--wiq-fg);
-  font: inherit;
-}
-.wiq-search input:focus-visible { outline: 2px solid var(--focus-outlineColor, #0969da); outline-offset: -1px; }
-
-.wiq-section-head { margin: 0; border-bottom: 1px solid var(--wiq-border-muted); font-size: 14px; }
+.wiq-section-head { margin: 0; border-bottom: var(--borderWidth-thin) solid var(--borderColor-muted); font-size: var(--text-body-size-medium); }
 .wiq-section-head button {
   display: flex;
   align-items: center;
@@ -50,41 +16,42 @@
   padding: 12px 16px;
   border: 0;
   background: transparent;
-  color: var(--wiq-fg);
+  color: var(--fgColor-default);
   font: inherit;
-  font-weight: 600;
-  text-align: left;
+  font-weight: var(--base-text-weight-semibold);
+  text-align: start;
   cursor: pointer;
 }
-.wiq-section-head button:hover { background: var(--wiq-bg-inset); }
-.chev { transition: transform 0.15s; color: var(--wiq-fg-muted); }
+.wiq-section-head button:hover { background: var(--bgColor-muted); }
+.chev { transition: transform 0.15s; color: var(--fgColor-muted); }
 .chev.is-collapsed { transform: rotate(-90deg); }
 
 .wiq-table { width: 100%; border-collapse: collapse; }
 .wiq-table thead th {
   padding: 8px 16px;
-  border-bottom: 1px solid var(--wiq-border-muted);
-  color: var(--wiq-fg-muted);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-align: left;
-  text-transform: uppercase;
+  border-bottom: var(--borderWidth-thin) solid var(--borderColor-muted);
+  color: var(--fgColor-muted);
+  font-size: var(--text-body-size-small);
+  font-weight: var(--base-text-weight-semibold);
+  text-align: start;
 }
 .wiq-table thead th:first-child { width: 55%; }
-.wiq-table tbody td { padding: 10px 16px; border-bottom: 1px solid var(--wiq-border-muted); vertical-align: middle; }
+.wiq-table tbody td { padding: 10px 16px; border-bottom: var(--borderWidth-thin) solid var(--borderColor-muted); vertical-align: middle; }
 .wiq-table tbody tr:last-child td { border-bottom: 0; }
-.wiq-table tbody tr:hover td { background: var(--wiq-bg-inset); }
+.wiq-table tbody tr:hover td { background: var(--bgColor-muted); }
 
 .wiq-title-cell { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.wiq-title-cell a { overflow: hidden; color: var(--wiq-fg); font-weight: 500; text-decoration: none; text-overflow: ellipsis; white-space: nowrap; }
-.wiq-title-cell a:hover { color: var(--wiq-accent-fg); text-decoration: underline; }
-.wiq-kind { display: inline-grid; place-items: center; width: 28px; height: 28px; flex: none; border-radius: var(--wiq-radius); background: var(--wiq-accent-soft); color: var(--wiq-accent-fg); }
+.wiq-title-cell a { overflow: hidden; color: var(--fgColor-default); font-weight: var(--base-text-weight-medium); text-overflow: ellipsis; white-space: nowrap; }
+.wiq-title-cell a:hover { color: var(--fgColor-accent); }
+.wiq-kind { display: inline-grid; place-items: center; width: 28px; height: 28px; flex: none; border-radius: var(--borderRadius-medium); background: var(--bgColor-accent-muted); color: var(--fgColor-accent); }
 
 .wiq-meta { display: flex; align-items: center; gap: 10px; }
-.wiq-meta .muted { color: var(--wiq-fg-muted); }
-.avatar { display: inline-grid; place-items: center; width: 26px; height: 26px; flex: none; border-radius: 50%; color: #fff; font-size: 11px; font-weight: 600; }
-.row-actions { display: inline-flex; gap: 2px; width: 58px; margin-left: auto; }
-.star.is-on { color: var(--fgColor-attention, #bf8700); }
-.row-actions .wiq-icon-btn:not(.star) { opacity: 0; transition: opacity 0.12s; }
-tr:hover .row-actions .wiq-icon-btn, .row-actions .wiq-icon-btn:focus-visible { opacity: 1; }
+.wiq-meta .muted { color: var(--fgColor-muted); }
+.avatar { display: inline-grid; place-items: center; width: 26px; height: 26px; flex: none; border-radius: 50%; color: #fff; font-size: 11px; font-weight: var(--base-text-weight-semibold); }
+.row-actions { display: inline-flex; gap: 2px; margin-inline-start: auto; }
+.star.is-on { color: var(--fgColor-attention); }
+/* The delete action shows on hover where hover exists; touch devices always see it. */
+@media (hover: hover) {
+  .wiq-delete { opacity: 0; transition: opacity 0.12s; }
+  tr:hover .wiq-delete, .wiq-delete:focus-visible { opacity: 1; }
+}

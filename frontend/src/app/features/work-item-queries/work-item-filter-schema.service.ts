@@ -28,6 +28,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { catchError, map, Observable, shareReplay, throwError } from 'rxjs';
+import { PathHelperService } from 'core-app/core/path-helper/path-helper.service';
 import {
   AllowedValues, FieldSchema, parseCollection, parseQueryForm, queryFormBody,
 } from './work-item-filter-schema';
@@ -38,6 +39,8 @@ import {
 export class WorkItemFilterSchemaService {
   private http = inject(HttpClient);
 
+  private apiV3Base = inject(PathHelperService).api.v3.apiV3Base;
+
   private fields$ = new Map<number|null, Observable<FieldSchema[]>>();
 
   private allowed = new Map<string, Observable<AllowedValues>>();
@@ -46,7 +49,8 @@ export class WorkItemFilterSchemaService {
   fields(projectId:number|null = null):Observable<FieldSchema[]> {
     let req = this.fields$.get(projectId);
     if (!req) {
-      req = this.http.post<unknown>('/api/v3/queries/form', queryFormBody(projectId)).pipe(
+      const body = queryFormBody(projectId == null ? null : `${this.apiV3Base}/projects/${projectId}`);
+      req = this.http.post<unknown>(`${this.apiV3Base}/queries/form`, body).pipe(
         map(parseQueryForm),
         shareReplay(1),
         catchError((err:unknown) => { this.fields$.delete(projectId); return throwError(() => err); }),

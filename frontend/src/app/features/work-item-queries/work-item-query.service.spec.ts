@@ -25,38 +25,12 @@
 // See COPYRIGHT and LICENSE files for more details.
 //++
 
+import { TestBed } from '@angular/core/testing';
+import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import {
-  applySaved, buildSavePayload, resolveProjectId, WorkItemQueryItem,
+  apiErrors, errorText, linkId, resolveProjectId, WorkItemQueryService,
 } from './work-item-query.service';
-import { emptyTree } from './work-item-query-tree';
-
-describe('buildSavePayload', () => {
-  const tree = { op: 'and' as const, children: [{ field: 'status', operator: '=', values: ['1'] }] };
-  const state = {
-    name: 'q', mode: 'tree' as const, project_id: 3, tree, public: true, columns: ['id', 'priority'],
-  };
-
-  it('sends the editor state (public, columns) and the default sort for a new query', () => {
-    const p = buildSavePayload(state, null);
-    expect(p.public).toBe(true);
-    expect(p.columns).toEqual(['id', 'priority']);
-    expect(p.sort_criteria).toEqual([['id', 'asc']]);
-  });
-
-  it('keeps sort_criteria of an existing query and uses the current editor state', () => {
-    const loaded:WorkItemQueryItem = {
-      id: 1, name: 'old', mode: 'flat', public: false, project_id: null,
-      columns: ['id', 'subject'], sort_criteria: [['subject', 'desc']], tree: emptyTree(),
-    };
-    const p = buildSavePayload({ ...state, public: false }, loaded);
-    expect(p.public).toBe(false);
-    expect(p.columns).toEqual(['id', 'priority']);
-    expect(p.sort_criteria).toEqual([['subject', 'desc']]);
-    expect(p.tree).toBe(tree);
-    expect(p.mode).toBe('tree');
-    expect(p.project_id).toBe(3);
-  });
-});
 
 describe('resolveProjectId', () => {
   it('uses no project for a new query on the global page', () => {
@@ -68,35 +42,82 @@ describe('resolveProjectId', () => {
   });
 
   it("keeps a loaded query's own project when opened on another page", () => {
-    expect(resolveProjectId(false, { project_id: 3 }, 5)).toBe(3);
-    expect(resolveProjectId(false, { project_id: 3 }, null)).toBe(3);
+    expect(resolveProjectId(false, 3, 5)).toBe(3);
+    expect(resolveProjectId(false, 3, null)).toBe(3);
   });
 
   it('uses no project when across projects is toggled on', () => {
-    expect(resolveProjectId(true, { project_id: 3 }, 5)).toBeNull();
+    expect(resolveProjectId(true, 3, 5)).toBeNull();
     expect(resolveProjectId(true, null, 5)).toBeNull();
-  });
-
-  it("falls back to the page's project when a global query is toggled off", () => {
-    expect(resolveProjectId(false, { project_id: null }, 5)).toBe(5);
   });
 });
 
-describe('applySaved', () => {
-  const saved = { id: 7, name: 's' } as WorkItemQueryItem;
+describe('linkId', () => {
+  it('reads the id at the end of a HAL link and null for an unset link', () => {
+    expect(linkId({ href: '/sub/api/v3/projects/12', title: 'P' })).toBe(12);
+    expect(linkId({ href: null })).toBeNull();
+    expect(linkId(undefined)).toBeNull();
+  });
+});
 
-  it('applies the response when the editor has not loaded anything else', () => {
-    const out = applySaved({ currentId: null, lastLoaded: null, loadToken: 2, name: '' }, 2, saved);
-    expect(out.currentId).toBe(7);
-    expect(out.name).toBe('s');
-    expect(out.lastLoaded).toBe(saved);
+describe('apiErrors / errorText', () => {
+  const fail = (error:unknown, status = 422) => new HttpErrorResponse({ status, error });
+
+  it('reads a single PropertyConstraintViolation with its attribute', () => {
+    const err = fail({ message: 'Sharing needs a permission.', _embedded: { details: { attribute: 'public' } } });
+    expect(apiErrors(err)).toEqual([{ message: 'Sharing needs a permission.', attribute: 'public' }]);
   });
 
-  it('ignores the response when another query was loaded meanwhile', () => {
-    const state = { currentId: 3, lastLoaded: null, loadToken: 3, name: 'B' };
-    const out = applySaved(state, 2, saved);
-    expect(out).toBe(state);
-    expect(out.name).toBe('B');
-    expect(out.currentId).toBe(3);
+  it('expands MultipleErrors and joins their messages', () => {
+    const err = fail({
+      message: 'Multiple field constraints have been violated.',
+      _embedded: {
+        errors: [
+          { message: "Name can't be blank.", _embedded: { details: { attribute: 'name' } } },
+          { message: 'Bad tree.', _embedded: { details: { attribute: 'tree' } } },
+        ],
+      },
+    });
+    expect(apiErrors(err).map((e) => e.attribute)).toEqual(['name', 'tree']);
+    expect(errorText(err, 'x')).toBe("Name can't be blank. Bad tree.");
+  });
+
+  it('falls back when the body has no message', () => {
+    expect(errorText(fail(null, 0), 'Save failed')).toBe('Save failed');
+    expect(errorText(fail('<html>', 500), 'Save failed')).toBe('Save failed');
+  });
+});
+
+describe('WorkItemQueryService', () => {
+  let service:WorkItemQueryService;
+  let http:HttpTestingController;
+
+  beforeEach(() => {
+    window.appBasePath = '/sub';
+    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    service = TestBed.inject(WorkItemQueryService);
+    http = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => {
+    http.verify();
+    window.appBasePath = '';
+  });
+
+  it('requests the API under the app base path and unwraps the collection', () => {
+    let names:string[] = [];
+    service.list().subscribe((items) => { names = items.map((i) => i.name); });
+    http.expectOne('/sub/api/v3/work_item_queries').flush({ _embedded: { elements: [{ id: 1, name: 'A' }] } });
+    expect(names).toEqual(['A']);
+
+    service.get(4).subscribe();
+    http.expectOne('/sub/api/v3/work_item_queries/4').flush({});
+    service.setFavorite(4, true).subscribe();
+    http.expectOne({ method: 'PUT', url: '/sub/api/v3/work_item_queries/4/favorite' }).flush(null);
+  });
+
+  it('builds project hrefs under the base path', () => {
+    expect(service.projectHref(7)).toBe('/sub/api/v3/projects/7');
+    expect(service.projectHref(null)).toBeNull();
   });
 });

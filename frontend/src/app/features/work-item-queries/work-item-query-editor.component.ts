@@ -26,40 +26,60 @@
 //++
 
 import { HttpErrorResponse } from '@angular/common/http';
-import { finalize, Subscription } from 'rxjs';
-import { Component, ElementRef, Input, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { populateInputsFromDataset } from 'core-app/shared/components/dataset-inputs';
 import {
-  addCondition, Condition, emptyTree, group, Group, Path, pruneIncomplete, removeAt, Row, rows, setOp, ungroup, updateCondition,
+  catchError, finalize, of, Subscription, switchMap,
+} from 'rxjs';
+import {
+  Component, computed, DOCUMENT, ElementRef, HostListener, Input, OnDestroy, OnInit, inject, signal, viewChild,
+} from '@angular/core';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { FormsModule } from '@angular/forms';
+import {
+  ColumnsIconComponent, CopyIconComponent, DownloadIconComponent, PlayIconComponent, PlusIconComponent, StackIconComponent,
+  TrashIconComponent,
+} from '@openproject/octicons-angular';
+import { populateInputsFromDataset } from 'core-app/shared/components/dataset-inputs';
+import { I18nService } from 'core-app/core/i18n/i18n.service';
+import { TimezoneService } from 'core-app/core/datetime/timezone.service';
+import { ToastService } from 'core-app/shared/components/toaster/toast.service';
+import {
+  addCondition, canGroup, Condition, emptyTree, group, Group, layout, LayoutRow, Op, Path, pruneIncomplete, removeAt, rows,
+  setOp, ungroup, updateCondition, withKeys,
 } from './work-item-query-tree';
 import {
-  applySaved, buildSavePayload, resolveProjectId, WorkItemQueryItem, WorkItemQueryService,
+  apiErrors, errorText, linkId, QueryMode, resolveProjectId, WorkItemQuery, WorkItemQueryPayload, WorkItemQueryService,
 } from './work-item-query.service';
-import { toCsv } from './work-item-csv';
+import { downloadCsv, safeFileName, toCsv } from './work-item-csv';
 import { copyText } from './work-item-copy-text';
-import { I18nService } from 'core-app/core/i18n/i18n.service';
-import { COLUMN_CATALOG, DEFAULT_COLUMNS, toggleColumn } from './work-item-columns';
-import { ResultRow, WorkItemResultsComponent } from './work-item-results.component';
+import {
+  COLUMN_CATALOG, columnLabelKey, DEFAULT_COLUMNS, toggleColumn,
+} from './work-item-columns';
+import {
+  ResultRow, timezoneFormat, toResultRows, WorkItemResultsComponent,
+} from './work-item-results.component';
 import { WorkItemConditionRowComponent } from './work-item-condition-row.component';
+import { WorkItemFilterSchemaService } from './work-item-filter-schema.service';
+import { FieldSchema, needsValues } from './work-item-filter-schema';
 
 // Rows loaded per run (and exported as CSV).
 const PAGE_SIZE = 500;
 
-// Replaces characters invalid in file names (and control chars) with underscores.
-function safeFileName(name:string):string {
-  const clean = [...name].map((c) => (c.charCodeAt(0) < 32 || '/\\:*?"<>|'.includes(c) ? '_' : c)).join('').trim();
-  return clean || 'query';
+// Everything the user edits; the baseline (as loaded, saved or started) is one of these.
+interface EditorState {
+  name:string; mode:QueryMode; acrossProjects:boolean; columns:string[]; isPublic:boolean; tree:Group;
 }
 
-function errorMessage(err:HttpErrorResponse, fallback:string):string {
-  return (err.error as { message?:string }|null)?.message ?? fallback;
-}
+// Blank clauses and client keys do not count as changes.
+const comparable = (s:EditorState):string => JSON.stringify({ ...s, name: s.name.trim(), tree: pruneIncomplete(s.tree) });
 
 @Component({
   selector: 'op-work-item-query-editor',
   standalone: true,
-  imports: [FormsModule, WorkItemResultsComponent, WorkItemConditionRowComponent],
+  imports: [
+    FormsModule, WorkItemResultsComponent, WorkItemConditionRowComponent,
+    ColumnsIconComponent, CopyIconComponent, DownloadIconComponent, PlayIconComponent, PlusIconComponent, StackIconComponent,
+    TrashIconComponent,
+  ],
   templateUrl: './work-item-query-editor.component.html',
   styleUrls: ['./work-item-queries.shared.css', './work-item-query-editor.component.css'],
 })
@@ -68,11 +88,26 @@ export class WorkItemQueryEditorComponent implements OnInit, OnDestroy {
 
   @Input() queryId:number|null = null;
 
+  // UI paths built by Rails (route helpers, so they include the relative URL root).
+  @Input() listUrl = '';
+
+  @Input() editorUrl = '';
+
   readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
 
   private service = inject(WorkItemQueryService);
 
+  private schema = inject(WorkItemFilterSchemaService);
+
   private I18n = inject(I18nService);
+
+  private toast = inject(ToastService);
+
+  private timezone = inject(TimezoneService);
+
+  private document = inject(DOCUMENT);
+
+  private nameInput = viewChild<ElementRef<HTMLInputElement>>('nameInput');
 
   readonly text = {
     queries: this.I18n.t('js.work_item_queries.title'),
@@ -82,14 +117,13 @@ export class WorkItemQueryEditorComponent implements OnInit, OnDestroy {
     field: this.I18n.t('js.work_item_queries.filter.field'),
     operator: this.I18n.t('js.work_item_queries.filter.operator'),
     value: this.I18n.t('js.work_item_queries.filter.value'),
-    addClause: this.I18n.t('js.work_item_queries.editor.add_clause'),
-    addClauseBelow: this.I18n.t('js.work_item_queries.editor.add_clause_below'),
     addNewClause: this.I18n.t('js.work_item_queries.editor.add_new_clause'),
     and: this.I18n.t('js.work_item_queries.editor.and'),
     andOr: this.I18n.t('js.work_item_queries.editor.and_or'),
     breadcrumb: this.I18n.t('js.work_item_queries.editor.breadcrumb'),
-    clauseOperator: this.I18n.t('js.work_item_queries.editor.clause_operator'),
+    clauseGroup: this.I18n.t('js.work_item_queries.editor.clause_group'),
     columnOptions: this.I18n.t('js.work_item_queries.editor.column_options'),
+    confirmRevert: this.I18n.t('js.work_item_queries.editor.confirm_revert'),
     copied: this.I18n.t('js.work_item_queries.editor.copied'),
     copyFailed: this.I18n.t('js.work_item_queries.editor.copy_failed'),
     copyUrl: this.I18n.t('js.work_item_queries.editor.copy_url'),
@@ -101,27 +135,35 @@ export class WorkItemQueryEditorComponent implements OnInit, OnDestroy {
     exportCsvTitle: this.I18n.t('js.work_item_queries.editor.export_csv_title', { max: PAGE_SIZE }),
     filtersHint: this.I18n.t('js.work_item_queries.editor.filters_hint'),
     filtersTitle: this.I18n.t('js.work_item_queries.editor.filters_title'),
-    groupHint: this.I18n.t('js.work_item_queries.editor.group_hint'),
+    incompleteClauses: this.I18n.t('js.work_item_queries.errors.incomplete_clauses'),
+    loadingQuery: this.I18n.t('js.work_item_queries.editor.loading_query'),
     modeFlat: this.I18n.t('js.work_item_queries.editor.mode_flat'),
     modeLabel: this.I18n.t('js.work_item_queries.editor.mode_label'),
     modeTree: this.I18n.t('js.work_item_queries.editor.mode_tree'),
     nameLabel: this.I18n.t('js.work_item_queries.editor.name_label'),
     namePlaceholder: this.I18n.t('js.work_item_queries.editor.name_placeholder'),
+    nameRequired: this.I18n.t('js.work_item_queries.errors.name_required'),
     noOwnProject: this.I18n.t('js.work_item_queries.editor.no_own_project'),
     or: this.I18n.t('js.work_item_queries.editor.or'),
     publicDenied: this.I18n.t('js.work_item_queries.editor.public_denied'),
     queryAcrossProjects: this.I18n.t('js.work_item_queries.editor.query_across_projects'),
-    removeClause: this.I18n.t('js.work_item_queries.editor.remove_clause'),
     results: this.I18n.t('js.work_item_queries.editor.results'),
+    resultsStale: this.I18n.t('js.work_item_queries.editor.results_stale'),
     revert: this.I18n.t('js.work_item_queries.editor.revert'),
     run: this.I18n.t('js.work_item_queries.editor.run'),
     running: this.I18n.t('js.work_item_queries.editor.running'),
     save: this.I18n.t('js.work_item_queries.editor.save'),
-    selectClause: this.I18n.t('js.work_item_queries.editor.select_clause'),
+    saving: this.I18n.t('js.work_item_queries.editor.saving'),
     settingsLabel: this.I18n.t('js.work_item_queries.editor.settings_label'),
     sharedWithEveryone: this.I18n.t('js.work_item_queries.editor.shared_with_everyone'),
     ungroup: this.I18n.t('js.work_item_queries.editor.ungroup'),
+    unsavedChanges: this.I18n.t('js.work_item_queries.editor.unsaved_changes'),
     where: this.I18n.t('js.work_item_queries.editor.where'),
+    addBelow: (name:string) => this.I18n.t('js.work_item_queries.editor.add_below_named', { name }),
+    opBefore: (name:string) => this.I18n.t('js.work_item_queries.editor.operator_named', { name }),
+    remove: (name:string) => this.I18n.t('js.work_item_queries.editor.remove_named', { name }),
+    select: (name:string) => this.I18n.t('js.work_item_queries.editor.select_named', { name }),
+    ungroupNamed: (name:string) => this.I18n.t('js.work_item_queries.editor.ungroup_named', { name }),
     showingFirst: (shown:number, total:number) => this.I18n.t('js.work_item_queries.editor.showing_first', { shown, total }),
     workItemsCount: (count:number) => this.I18n.t('js.work_item_queries.editor.work_items_count', { count }),
   };
@@ -129,7 +171,7 @@ export class WorkItemQueryEditorComponent implements OnInit, OnDestroy {
   // Signals: the app is zoneless, so state changed in HTTP callbacks must notify the view itself.
   readonly tree = signal<Group>(emptyTree());
 
-  readonly mode = signal<'flat'|'tree'>('flat');
+  readonly mode = signal<QueryMode>('flat');
 
   readonly acrossProjects = signal(false);
 
@@ -141,62 +183,134 @@ export class WorkItemQueryEditorComponent implements OnInit, OnDestroy {
 
   readonly isPublic = signal(false);
 
-  // Set when the API refused to share with everyone (missing manage_public_queries).
+  // Set when the API refused to share with everyone (422 on `public`: missing manage_public_queries).
   readonly publicDenied = signal(false);
-
-  readonly results = signal<ResultRow[]>([]);
-
-  readonly error = signal<string|null>(null);
-
-  readonly selected = signal(new Set<string>());
-
-  readonly currentId = signal<number|null>(null);
 
   readonly name = signal('');
 
-  readonly copyState = signal<'idle'|'copied'|'failed'>('idle');
+  readonly nameInvalid = signal(false);
 
-  private copyTimer?:ReturnType<typeof setTimeout>;
+  // 'loading'/'failed' only apply to an existing query (?id=); the form is shown once 'ready'.
+  readonly status = signal<'loading'|'ready'|'failed'>('ready');
 
-  readonly loading = signal(false);
+  readonly currentId = signal<number|null>(null);
 
-  readonly saving = signal(false);
+  // Project of the saved query being edited (null for a new or a global query).
+  private readonly savedProjectId = signal<number|null>(null);
 
-  private loadToken = 0;
+  readonly baseline = signal<EditorState|null>(null);
 
-  private subs:Partial<Record<'load'|'run'|'save', Subscription>> = {};
+  readonly results = signal<ResultRow[]>([]);
 
   readonly total = signal(0);
 
   // True once a run has finished, to tell "not run yet" from "no matches".
   readonly ran = signal(false);
 
-  // The saved query being edited (as last loaded or saved); null for a new query.
-  readonly loaded = signal<WorkItemQueryItem|null>(null);
+  // What the shown results were run with, to flag them as stale after edits.
+  private readonly lastRun = signal<string|null>(null);
+
+  readonly running = signal(false);
+
+  readonly saving = signal(false);
+
+  readonly error = signal<string|null>(null);
+
+  // Highlight clauses that still need values (after Run/Save was refused because of them).
+  readonly showInvalid = signal(false);
+
+  readonly selected = signal(new Set<string>());
+
+  readonly copyState = signal<'idle'|'copied'|'failed'>('idle');
+
+  // Text of the page's single, persistent live region.
+  readonly announcement = signal('');
+
+  private copyTimer?:ReturnType<typeof setTimeout>;
+
+  private subs:Partial<Record<'load'|'run'|'save', Subscription>> = {};
+
+  private destroyed = false;
 
   // projectId is a plain input but is fixed once the constructor has read the dataset.
-  readonly queryProjectId = computed(() => resolveProjectId(this.acrossProjects(), this.loaded(), this.projectId));
+  readonly queryProjectId = computed(() => resolveProjectId(this.acrossProjects(), this.savedProjectId(), this.projectId));
 
   // Neither the query nor the page has a project: it can only run across projects.
-  readonly hasOwnProject = computed(() => resolveProjectId(false, this.loaded(), this.projectId) != null);
+  readonly hasOwnProject = computed(() => resolveProjectId(false, this.savedProjectId(), this.projectId) != null);
+
+  readonly layoutRows = computed(() => layout(this.tree()));
+
+  // Same cached form request as the rows; used to name rows and to find clauses without values.
+  private readonly fields = toSignal(
+    toObservable(this.queryProjectId).pipe(switchMap((id) => this.schema.fields(id).pipe(catchError(() => of(null))))),
+    { initialValue: null as FieldSchema[]|null },
+  );
+
+  // Accessible name of every row ("Clause 2 (Status)", "Group 1"), so row controls are distinct.
+  readonly rowNames = computed(() => {
+    let clauses = 0;
+    let groups = 0;
+    const fields = this.fields();
+    return this.layoutRows().map((row) => {
+      if (row.kind === 'group') {
+        groups += 1;
+        return this.I18n.t('js.work_item_queries.editor.group_name', { n: groups });
+      }
+      clauses += 1;
+      const field = row.node.field && (fields?.find((f) => f.id === row.node.field)?.name ?? row.node.field);
+      return field
+        ? this.I18n.t('js.work_item_queries.editor.clause_name_field', { n: clauses, field })
+        : this.I18n.t('js.work_item_queries.editor.clause_name', { n: clauses });
+    });
+  });
+
+  readonly incompleteKeys = computed(() => new Set(
+    this.layoutRows().filter((r) => r.kind === 'condition' && needsValues(this.fields(), r.node)).map((r) => r.key),
+  ));
+
+  readonly canGroup = computed(() => canGroup([...this.selected()].map((k) => k.split('.').map(Number))));
+
+  readonly state = computed(():EditorState => ({
+    name: this.name(),
+    mode: this.mode(),
+    acrossProjects: this.acrossProjects(),
+    columns: this.columns(),
+    isPublic: this.isPublic(),
+    tree: this.tree(),
+  }));
+
+  readonly dirty = computed(() => {
+    const base = this.baseline();
+    return base != null && comparable(this.state()) !== comparable(base);
+  });
+
+  readonly stale = computed(() => this.ran() && this.lastRun() !== JSON.stringify(this.runBody()));
 
   constructor() {
     populateInputsFromDataset(this);
   }
 
   ngOnInit():void {
-    this.acrossProjects.set(this.projectId == null);
     if (this.queryId == null) {
+      this.acrossProjects.set(this.projectId == null);
       this.ensureClause();
+      this.baseline.set(this.state());
       return;
     }
+    this.status.set('loading');
+    this.announce(this.text.loadingQuery);
     this.subs.load = this.service.get(Number(this.queryId)).subscribe({
-      next: (item) => { this.load(item); this.run(); },
-      error: (err:HttpErrorResponse) => { this.error.set(errorMessage(err, this.I18n.t('js.work_item_queries.errors.load_failed'))); },
+      next: (query) => {
+        this.load(query);
+        this.status.set('ready');
+        this.run();
+      },
+      error: (err:HttpErrorResponse) => {
+        this.status.set('failed');
+        this.error.set(errorText(err, this.I18n.t('js.work_item_queries.errors.load_failed')));
+      },
     });
   }
-
-  private destroyed = false;
 
   ngOnDestroy():void {
     this.destroyed = true;
@@ -204,74 +318,67 @@ export class WorkItemQueryEditorComponent implements OnInit, OnDestroy {
     Object.values(this.subs).forEach((sub) => sub?.unsubscribe());
   }
 
-  get listUrl():string { return this.projectId ? `/projects/${this.projectId}/queries` : '/queries'; }
+  @HostListener('window:beforeunload', ['$event'])
+  onBeforeUnload(event:BeforeUnloadEvent):void {
+    if (this.dirty()) {
+      event.preventDefault();
+      event.returnValue = ''; // older browsers only prompt with returnValue set
+    }
+  }
 
-  get editorPath():string { return `${this.listUrl}/editor`; }
+  columnLabel(id:string):string {
+    const key = columnLabelKey(id);
+    return key ? this.I18n.t(key) : id;
+  }
 
   exportCsv():void {
-    const url = URL.createObjectURL(new Blob([toCsv(this.results(), this.columns())], { type: 'text/csv;charset=utf-8' }));
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${safeFileName(this.name())}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => { URL.revokeObjectURL(url); }, 1000);
+    const csv = toCsv(this.results(), this.columns(), {
+      label: (c) => this.columnLabel(c),
+      format: timezoneFormat(this.timezone),
+    });
+    downloadCsv(this.document, `${safeFileName(this.name(), this.text.newQuery)}.csv`, csv);
   }
 
   copyUrl():void {
     const id = this.currentId();
     if (id == null) { return; }
+    const win = this.document.defaultView;
     const done = (state:'copied'|'failed'):void => {
       if (this.destroyed) { return; }
       this.copyState.set(state);
+      this.announce(state === 'copied' ? this.text.copied : this.text.copyFailed);
       clearTimeout(this.copyTimer);
       this.copyTimer = setTimeout(() => { this.copyState.set('idle'); }, 2000);
     };
-    void copyText((navigator as { clipboard?:Clipboard }).clipboard, `${window.location.origin}${this.editorPath}?id=${id}`).then(done);
+    void copyText(win?.navigator.clipboard, `${win?.location.origin ?? ''}${this.queryUrl(id)}`).then(done);
   }
 
-  get rows():Row[] { return rows(this.tree()); }
-
   run():void {
-    this.subs.run?.unsubscribe(); // last request wins; finalize resets loading before we set it again
-    this.loading.set(true);
+    if (this.blockIncomplete()) { return; }
+    this.subs.run?.unsubscribe(); // last request wins; finalize resets `running` before we set it again
+    this.running.set(true);
     this.error.set(null);
+    this.announce(this.text.running);
+    const body = this.runBody();
     this.subs.run = this.service
-      .execute({
-        tree: pruneIncomplete(this.tree()),
-        mode: this.mode(),
-        project_id: this.queryProjectId(),
-        columns: this.columns(),
-        pageSize: PAGE_SIZE,
-      })
-      .pipe(finalize(() => { this.loading.set(false); }))
+      .execute({ ...body, pageSize: PAGE_SIZE })
+      .pipe(finalize(() => { this.running.set(false); }))
       .subscribe({
         next: (res) => {
           this.ran.set(true);
+          this.lastRun.set(JSON.stringify(body));
           this.total.set(res._embedded.results.total ?? 0);
-          this.results.set(res._embedded.results._embedded.elements.map((element) => {
-            const parentHref = element._links.parent?.href;
-            return {
-              id: element.id, parentId: parentHref ? Number(parentHref.split('/').pop()) : null, element, children: [],
-            };
-          }));
+          this.results.set(toResultRows(res));
+          this.announce(this.text.workItemsCount(this.total()));
         },
         error: (err:HttpErrorResponse) => {
-          this.results.set([]);
-          this.total.set(0);
-          this.ran.set(false);
-          this.error.set(errorMessage(err, this.I18n.t('js.work_item_queries.errors.run_failed')));
+          this.clearResults();
+          this.error.set(errorText(err, this.I18n.t('js.work_item_queries.errors.run_failed')));
         },
       });
   }
 
   add(parent:Path = []):void { this.tree.update((t) => addCondition(t, parent)); }
-
-  // The editor always shows at least one (possibly blank) clause, like the Azure DevOps editor.
-  private ensureClause():void {
-    if (rows(this.tree()).length === 0) { this.tree.update((t) => addCondition(t, [])); }
-  }
 
   remove(path:Path):void {
     this.tree.update((t) => removeAt(t, path));
@@ -280,6 +387,10 @@ export class WorkItemQueryEditorComponent implements OnInit, OnDestroy {
   }
 
   update(path:Path, patch:Partial<Condition>):void { this.tree.update((t) => updateCondition(t, path, patch)); }
+
+  setOp(path:Path, op:Op):void { this.tree.update((t) => setOp(t, path, op)); }
+
+  pathKey(row:LayoutRow):string { return row.path.join('.'); }
 
   toggleSelected(path:Path, checked:boolean):void {
     const key = path.join('.');
@@ -293,6 +404,7 @@ export class WorkItemQueryEditorComponent implements OnInit, OnDestroy {
   toggleColumn(id:string, on:boolean):void { this.columns.update((cols) => toggleColumn(cols, id, on)); }
 
   group():void {
+    if (!this.canGroup()) { return; }
     this.tree.update((t) => group(t, [...this.selected()].map((s) => s.split('.').map(Number))));
     this.selected.set(new Set());
   }
@@ -302,81 +414,131 @@ export class WorkItemQueryEditorComponent implements OnInit, OnDestroy {
     this.selected.set(new Set());
   }
 
-  toggleOp(row:Row):void { this.tree.update((t) => setOp(t, row.parentPath, row.parentOp === 'and' ? 'or' : 'and')); }
+  setName(value:string):void {
+    this.name.set(value);
+    if (value.trim()) { this.nameInvalid.set(false); }
+  }
 
   save():void {
-    if (this.saving()) { return; }
+    if (this.saving() || this.status() !== 'ready') { return; }
     const name = this.name().trim();
     if (!name) {
-      this.error.set(this.I18n.t('js.work_item_queries.errors.name_required'));
+      this.nameInvalid.set(true);
+      this.error.set(this.text.nameRequired);
+      this.nameInput()?.nativeElement.focus();
       return;
     }
+    if (this.blockIncomplete()) { return; }
     this.error.set(null);
-    const loaded = this.loaded();
-    const item = buildSavePayload(
-      {
-        name,
-        mode: this.mode(),
-        project_id: this.queryProjectId(),
-        tree: pruneIncomplete(this.tree()),
-        public: this.isPublic(),
-        columns: this.columns(),
-      },
-      loaded,
-    );
-    this.saving.set(true);
-    const token = this.loadToken;
+    const sent = { ...this.state(), name };
     const id = this.currentId();
-    const req = id != null ? this.service.update(id, item) : this.service.create(item);
+    const body = { ...this.payload(sent), name };
+    this.saving.set(true);
+    this.announce(this.text.saving);
+    const req = id != null ? this.service.update(id, body) : this.service.create(body);
     this.subs.save = req.pipe(finalize(() => { this.saving.set(false); })).subscribe({
-      next: (saved) => {
-        const next = applySaved(
-          { currentId: this.currentId(), lastLoaded: this.loaded(), loadToken: this.loadToken, name: this.name() }, token, saved,
-        );
-        this.name.set(next.name);
-        const wasNew = this.currentId() == null;
-        this.currentId.set(next.currentId);
-        if (wasNew && next.currentId != null) {
-          window.history.replaceState(null, '', `${this.editorPath}?id=${next.currentId}`);
-        }
-        this.loaded.set(next.lastLoaded);
-      },
+      next: (saved) => { this.saved(saved, sent, id == null); },
       error: (err:HttpErrorResponse) => {
-        if (err.status === 403 && item.public && !loaded?.public) {
+        const errors = apiErrors(err);
+        if (errors.some((e) => e.attribute === 'public')) {
           this.publicDenied.set(true);
           this.isPublic.set(false);
         }
-        this.error.set(errorMessage(err, this.I18n.t('js.work_item_queries.errors.save_failed')));
+        if (errors.some((e) => e.attribute === 'name')) { this.nameInvalid.set(true); }
+        this.error.set(errorText(err, this.I18n.t('js.work_item_queries.errors.save_failed')));
       },
     });
   }
 
-  load(item:WorkItemQueryItem):void {
-    this.loadToken += 1;
-    this.loaded.set(item);
-    this.currentId.set(item.id ?? null);
-    this.name.set(item.name);
-    this.mode.set(item.mode);
-    this.acrossProjects.set(item.project_id == null);
-    this.columns.set([...item.columns]);
-    this.isPublic.set(item.public);
-    this.tree.set(structuredClone(item.tree));
+  // Revert restores every field from the baseline and clears the results (it does not re-run).
+  revert():void {
+    const base = this.baseline();
+    if (!base) { return; }
+    if (this.dirty() && !this.document.defaultView?.confirm(this.text.confirmRevert)) { return; }
+    this.restore(base);
+    this.clearResults();
+    this.error.set(null);
+    this.nameInvalid.set(false);
+    this.showInvalid.set(false);
+  }
+
+  private saved(saved:WorkItemQuery, sent:EditorState, wasNew:boolean):void {
+    // Keep a name typed while the request was in flight.
+    if (this.name().trim() === sent.name) { this.name.set(saved.name); }
+    this.currentId.set(saved.id);
+    this.savedProjectId.set(linkId(saved._links.project));
+    this.baseline.set({ ...sent, name: saved.name });
+    if (wasNew) {
+      this.document.defaultView?.history.replaceState(null, '', this.queryUrl(saved.id));
+    }
+    this.toast.addSuccess(this.I18n.t(wasNew ? 'js.notice_successful_create' : 'js.notice_successful_update'));
+  }
+
+  private load(query:WorkItemQuery):void {
+    const projectId = linkId(query._links.project);
+    this.currentId.set(query.id);
+    this.savedProjectId.set(projectId);
+    this.restore({
+      name: query.name,
+      mode: query.mode,
+      acrossProjects: projectId == null,
+      columns: [...query.columns],
+      isPublic: query.public,
+      tree: withKeys(query.tree ?? emptyTree()),
+    });
     this.ensureClause();
+    this.baseline.set(this.state());
+  }
+
+  private restore(s:EditorState):void {
+    this.name.set(s.name);
+    this.mode.set(s.mode);
+    this.acrossProjects.set(s.acrossProjects);
+    this.columns.set([...s.columns]);
+    this.isPublic.set(s.isPublic);
+    this.tree.set(structuredClone(s.tree));
     this.selected.set(new Set());
   }
 
-  revert():void {
-    const loaded = this.loaded();
-    if (loaded) {
-      this.load(loaded);
-      return;
-    }
-    this.tree.set(emptyTree());
-    this.ensureClause();
+  // The editor always shows at least one (possibly blank) clause, like the Azure DevOps editor.
+  private ensureClause():void {
+    if (rows(this.tree()).length === 0) { this.tree.update((t) => addCondition(t, [])); }
+  }
+
+  private runBody():WorkItemQueryPayload {
+    // name and public do not change the results
+    const { name: _name, public: _public, ...body } = this.payload(this.state());
+    return body;
+  }
+
+  private payload(s:EditorState):WorkItemQueryPayload {
+    const projectId = resolveProjectId(s.acrossProjects, this.savedProjectId(), this.projectId);
+    return {
+      name: s.name,
+      mode: s.mode,
+      public: s.isPublic,
+      columns: s.columns,
+      tree: pruneIncomplete(s.tree),
+      _links: { project: { href: this.service.projectHref(projectId) } },
+    };
+  }
+
+  // Refuses Run/Save while a clause has a field but not the values its operator needs.
+  private blockIncomplete():boolean {
+    const incomplete = this.incompleteKeys().size > 0;
+    this.showInvalid.set(incomplete);
+    if (incomplete) { this.error.set(this.text.incompleteClauses); }
+    return incomplete;
+  }
+
+  private clearResults():void {
     this.results.set([]);
     this.total.set(0);
     this.ran.set(false);
-    this.error.set(null);
-    this.selected.set(new Set());
+    this.lastRun.set(null);
   }
+
+  private queryUrl(id:number):string { return `${this.editorUrl}?id=${id}`; }
+
+  private announce(message:string):void { this.announcement.set(message); }
 }

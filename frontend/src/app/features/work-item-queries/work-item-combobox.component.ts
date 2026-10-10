@@ -26,27 +26,36 @@
 //++
 
 import {
-  Component, computed, ElementRef, HostListener, inject, input, output, signal,
+  Component, computed, DestroyRef, DOCUMENT, ElementRef, inject, input, output, signal, viewChild,
 } from '@angular/core';
+import { CheckIconComponent, TriangleDownIconComponent } from '@openproject/octicons-angular';
 import { I18nService } from 'core-app/core/i18n/i18n.service';
 import { Option } from './work-item-filter-schema';
-import { filterOptions, popoverPosition } from './work-item-multi-select';
-import { highlightParts, initialActive, moveActive } from './work-item-combobox';
+import { filterOptions } from './work-item-multi-select';
+import {
+  exactMatch, highlightParts, initialActive, moveActive,
+} from './work-item-combobox';
+import {
+  claimPopover, closeOnViewportChange, popoverPosition, PopoverPosition, releasePopover,
+} from './work-item-popover';
 
 let nextId = 0;
 
-// Type-ahead single select (replaces the plain <select> for the field picker): the input shows the
-// chosen option, typing filters the list, arrows + Enter pick. The list is position: fixed so the
-// scrolling filter card cannot clip it. Signals: the app runs zoneless.
+// Type-ahead single select (the field picker), following the APG combobox with list autocomplete:
+// the list opens on typing, click, ArrowDown or Alt+ArrowDown (not on Tab focus), arrows move the
+// active option, Enter picks it, Escape closes. Tab commits the typed text only when it exactly
+// matches an option label, otherwise the current value stays. The list is position: fixed so the
+// scrolling filter card cannot clip it; it closes when anything scrolls. Signals: the app is zoneless.
 @Component({
   selector: 'op-work-item-combobox',
   standalone: true,
+  imports: [CheckIconComponent, TriangleDownIconComponent],
   styleUrls: ['./work-item-queries.shared.css', './work-item-combobox.component.css'],
   template: `
     <div class="wrap">
       <input
         #box
-        class="wiq-control"
+        class="FormControl-input FormControl-medium"
         type="text"
         role="combobox"
         autocomplete="off"
@@ -54,38 +63,43 @@ let nextId = 0;
         aria-autocomplete="list"
         [attr.aria-expanded]="open()"
         [attr.aria-controls]="listId"
-        [attr.aria-activedescendant]="open() && active() >= 0 ? listId + '-' + active() : null"
+        [attr.aria-activedescendant]="activeId()"
         [attr.aria-label]="label()"
         [placeholder]="placeholder()"
-        [value]="text()"
-        (focus)="openList(box)"
-        (click)="openList(box)"
+        [value]="inputText()"
+        (click)="openList()"
         (input)="onInput($any($event.target).value)"
-        (keydown)="onKey($event, box)"
+        (keydown)="onKey($event)"
         (blur)="close()"
       />
-      <svg class="caret" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
+      <svg triangle-down-icon size="small" class="caret" aria-hidden="true"></svg>
     </div>
 
     @if (open()) {
-      <ul class="pop" role="listbox" [id]="listId" [style.left.px]="pos().left" [style.top.px]="pos().top" [style.width.px]="pos().width">
-        @for (o of shown(); track o.id; let i = $index) {
-          <li
-            role="option"
-            [id]="listId + '-' + i"
-            [class.is-active]="i === active()"
-            [class.is-selected]="o.id === value()"
-            [attr.aria-selected]="o.id === value()"
-            (mousedown)="pick(o, $event)"
-            (mousemove)="active.set(i)"
-          >
-            @let p = parts(o.name);
-            {{ p.before }}<mark>{{ p.match }}</mark>{{ p.after }}
-          </li>
-        } @empty {
-          <li class="none">{{ noMatchText }}</li>
-        }
-      </ul>
+      <div class="pop" [style.left.px]="pos().left" [style.top.px]="pos().top" [style.bottom.px]="pos().bottom"
+           [style.width.px]="pos().width" [style.max-height.px]="pos().maxHeight" (mousedown)="$event.preventDefault()">
+        <ul role="listbox" [id]="listId" [attr.aria-label]="label()">
+          @for (o of shown(); track o.id; let i = $index) {
+            <li
+              role="option"
+              [id]="listId + '-' + i"
+              [class.is-active]="i === active()"
+              [class.is-current]="o.id === value()"
+              [attr.aria-selected]="i === active()"
+              (mousedown)="select(o)"
+              (mousemove)="active.set(i)"
+            >
+              @let p = parts(o.name);
+              <span>{{ p.before }}<mark>{{ p.match }}</mark>{{ p.after }}</span>
+              @if (o.id === value()) {
+                <svg check-icon size="small" class="current" aria-hidden="true"></svg>
+                <span class="sr-only">{{ text.current }}</span>
+              }
+            </li>
+          }
+        </ul>
+        @if (shown().length === 0) { <p class="none">{{ text.noMatch }}</p> }
+      </div>
     }
   `,
 })
@@ -103,7 +117,16 @@ export class WorkItemComboboxComponent {
 
   private host = inject<ElementRef<HTMLElement>>(ElementRef);
 
-  readonly noMatchText = inject(I18nService).t('js.work_item_queries.combobox.no_matching_field');
+  private document = inject(DOCUMENT);
+
+  private box = viewChild.required<ElementRef<HTMLInputElement>>('box');
+
+  private I18n = inject(I18nService);
+
+  readonly text = {
+    noMatch: this.I18n.t('js.work_item_queries.combobox.no_matching_field'),
+    current: this.I18n.t('js.work_item_queries.combobox.current'),
+  };
 
   readonly listId = `wiq-cb-${(nextId += 1)}`;
 
@@ -114,44 +137,67 @@ export class WorkItemComboboxComponent {
 
   readonly active = signal(0);
 
-  readonly pos = signal({ left: 0, top: 0, width: 260 });
+  readonly pos = signal<PopoverPosition>({
+    left: 0, width: 260, top: 0, bottom: null, maxHeight: 280,
+  });
 
   readonly displayText = computed(() => this.options().find((o) => o.id === this.value())?.name ?? this.value());
 
-  readonly text = computed(() => this.typed() ?? this.displayText());
+  readonly inputText = computed(() => this.typed() ?? this.displayText());
 
   readonly shown = computed(() => filterOptions(this.options(), this.typed() ?? ''));
 
+  // Only reference an option that exists (no dangling id when nothing matches).
+  readonly activeId = computed(() => {
+    const i = this.active();
+    return this.open() && i >= 0 && i < this.shown().length ? `${this.listId}-${i}` : null;
+  });
+
+  constructor() {
+    closeOnViewportChange(
+      this.document,
+      inject(DestroyRef),
+      () => (this.open() ? this.host.nativeElement.querySelector('.pop') : null),
+      () => this.close(),
+    );
+  }
+
   parts(name:string) { return highlightParts(name, this.typed() ?? ''); }
 
-  openList(input:HTMLInputElement):void {
+  openList():void {
     if (this.open()) { return; }
-    this.pos.set(popoverPosition(input.getBoundingClientRect(), window.innerHeight, 280));
-    this.typed.set(null);
+    const win = this.document.defaultView;
+    this.pos.set(popoverPosition(
+      this.box().nativeElement.getBoundingClientRect(),
+      { width: win?.innerWidth ?? 1024, height: win?.innerHeight ?? 768 },
+      280,
+    ));
     this.active.set(initialActive(this.shown().map((o) => o.id), this.value()));
+    claimPopover(this);
     this.open.set(true);
-    input.select();
     this.scrollToActive();
   }
 
   close():void {
+    releasePopover(this);
     this.open.set(false);
     this.typed.set(null);
   }
 
   onInput(text:string):void {
+    this.openList();
     this.typed.set(text);
     this.active.set(0);
-    this.open.set(true);
   }
 
-  onKey(event:KeyboardEvent, input:HTMLInputElement):void {
+  onKey(event:KeyboardEvent):void {
     const n = this.shown().length;
     switch (event.key) {
       case 'ArrowDown':
       case 'ArrowUp':
         event.preventDefault();
-        if (!this.open()) { this.openList(input); return; }
+        if (!this.open()) { this.openList(); return; }
+        if (event.altKey) { return; }
         this.active.set(moveActive(this.active(), event.key === 'ArrowDown' ? 1 : -1, n));
         this.scrollToActive();
         break;
@@ -163,21 +209,23 @@ export class WorkItemComboboxComponent {
         break;
       }
       case 'Escape':
-        if (this.open()) { event.preventDefault(); this.close(); }
+        if (this.open()) {
+          event.preventDefault();
+          event.stopPropagation();
+          this.close();
+        }
         break;
-      case 'Tab':
-        this.close();
+      case 'Tab': {
+        const typed = this.typed();
+        const match = typed == null ? null : exactMatch(this.options(), typed);
+        if (match) { this.select(match); } else { this.close(); }
         break;
+      }
       default:
     }
   }
 
-  pick(option:Option, event:MouseEvent):void {
-    event.preventDefault(); // keep focus in the input
-    this.select(option);
-  }
-
-  private select(option:Option):void {
+  select(option:Option):void {
     if (option.id !== this.value()) { this.changed.emit(option.id); }
     this.close();
   }
@@ -187,8 +235,4 @@ export class WorkItemComboboxComponent {
       this.host.nativeElement.querySelector(`#${this.listId}-${this.active()}`)?.scrollIntoView({ block: 'nearest' });
     });
   }
-
-  @HostListener('window:resize')
-  @HostListener('window:scroll')
-  onViewportChange():void { if (this.open()) { this.close(); } }
 }

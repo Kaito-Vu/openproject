@@ -82,8 +82,16 @@ function parseOperator(link:Link, deps:Record<string, { values?:ValuesSchema }>)
 }
 
 // Body for POST /api/v3/queries/form; without a project the form only knows global filters.
-export function queryFormBody(projectId:number|null):object {
-  return projectId == null ? {} : { _links: { project: { href: `/api/v3/projects/${projectId}` } } };
+export function queryFormBody(projectHref:string|null):object {
+  return projectHref == null ? {} : { _links: { project: { href: projectHref } } };
+}
+
+// Whether a condition still lacks the values its operator needs (e.g. "Status is" with nothing picked).
+// Unknown fields or operators (schema not loaded, filter no longer offered) are left to the server.
+export function needsValues(fields:FieldSchema[]|null|undefined, c:{ field:string; operator:string; values:string[] }):boolean {
+  if (!c.field || c.values.length > 0) { return false; }
+  const op = fields?.find((f) => f.id === c.field)?.operators.find((o) => o.id === c.operator);
+  return !!op && op.kind !== 'none';
 }
 
 export function parseQueryForm(form:unknown):FieldSchema[] {

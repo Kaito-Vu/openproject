@@ -44,11 +44,3 @@ export function selectedChips(options:Option[], selected:string[]):Option[] {
   const byId = new Map(options.map((o) => [o.id, o.name]));
   return selected.map((id) => ({ id, name: byId.get(id) ?? id }));
 }
-
-// Where to place a fixed popover under its trigger: below by default, above when there is no room.
-export function popoverPosition(
-  rect:{ left:number; bottom:number; top:number; width:number }, viewportHeight:number, height = 300,
-):{ left:number; top:number; width:number } {
-  const below = viewportHeight - rect.bottom >= height || rect.top < height;
-  return { left: rect.left, top: below ? rect.bottom + 4 : rect.top - height - 4, width: Math.max(rect.width, 260) };
-}

@@ -25,20 +25,22 @@
 // See COPYRIGHT and LICENSE files for more details.
 //++
 
-import { WorkItemQueryItem } from './work-item-query.service';
+import { linkId, WorkItemQuery } from './work-item-query.service';
 
 export interface ListOptions { tab:'favorites'|'all'; keyword:string; currentUserId:number }
 
-export function groupAndFilter(items:WorkItemQueryItem[], opts:ListOptions):{ my:WorkItemQueryItem[]; shared:WorkItemQueryItem[] } {
+export const isOwnedBy = (item:WorkItemQuery, userId:number):boolean => linkId(item._links.user) === userId;
+
+export function groupAndFilter(items:WorkItemQuery[], opts:ListOptions):{ my:WorkItemQuery[]; shared:WorkItemQuery[] } {
   const keyword = opts.keyword.trim().toLowerCase();
-  const keep = (i:WorkItemQueryItem):boolean => (opts.tab === 'all' || !!i.favorite)
+  const keep = (i:WorkItemQuery):boolean => (opts.tab === 'all' || i.favorite)
     && (!keyword || i.name.toLowerCase().includes(keyword));
-  const byName = (a:WorkItemQueryItem, b:WorkItemQueryItem):number => a.name.localeCompare(b.name);
+  const byName = (a:WorkItemQuery, b:WorkItemQuery):number => a.name.localeCompare(b.name);
   const visible = items.filter(keep);
 
   return {
-    my: visible.filter((i) => i.user_id === opts.currentUserId).sort(byName),
-    shared: visible.filter((i) => i.user_id !== opts.currentUserId && i.public).sort(byName),
+    my: visible.filter((i) => isOwnedBy(i, opts.currentUserId)).sort(byName),
+    shared: visible.filter((i) => !isOwnedBy(i, opts.currentUserId) && i.public).sort(byName),
   };
 }
 

@@ -41,7 +41,10 @@ RSpec.describe "Work item queries pages", type: :rails_request do
       ["/queries/editor", "/projects/#{project.identifier}/queries/editor"].each do |path|
         get path
         expect(response).to have_http_status(:ok)
-        expect(response.body).to include("opce-work-item-query-editor")
+        tag = Capybara.string(response.body).find("opce-work-item-query-editor", visible: :all)
+        # UI URLs come from the route helpers, so they carry the relative URL root.
+        expect(JSON.parse(tag["data-editor-url"])).to eq path
+        expect(JSON.parse(tag["data-list-url"])).to eq path.delete_suffix("/editor")
       end
     end
 
@@ -49,7 +52,8 @@ RSpec.describe "Work item queries pages", type: :rails_request do
       ["/queries", "/projects/#{project.identifier}/queries"].each do |path|
         get path
         expect(response).to have_http_status(:ok)
-        expect(response.body).to include("opce-work-item-query-list")
+        tag = Capybara.string(response.body).find("opce-work-item-query-list", visible: :all)
+        expect(JSON.parse(tag["data-editor-url"])).to eq "#{path}/editor"
         menu = path == "/queries" ? ".op-app-header" : "#main-menu"
         expect(Capybara.string(response.body)).to have_css("#{menu} a[href$='#{path}']")
       end

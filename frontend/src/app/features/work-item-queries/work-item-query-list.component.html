@@ -1,65 +1,75 @@
 <div class="wiq">
   <header class="wiq-page-head">
     <div>
-      <h1>{{ text.title }}</h1>
+      <h1 tabindex="-1">{{ text.title }}</h1>
       <p class="wiq-sub">{{ text.subtitle }}</p>
     </div>
-    <button type="button" class="wiq-btn wiq-btn--primary" (click)="newQuery()">
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg>
-      {{ text.newQuery }}
-    </button>
+    <a class="Button Button--primary Button--medium" [href]="editorUrl">
+      <span class="Button-content">
+        <span class="Button-visual Button-leadingVisual"><svg plus-icon size="small" aria-hidden="true"></svg></span>
+        <span class="Button-label">{{ text.newQuery }}</span>
+      </span>
+    </a>
   </header>
 
   <div class="wiq-toolbar">
-    <div class="wiq-tabs" role="group" [attr.aria-label]="text.show">
-      <button type="button" [class.is-active]="tab() === 'favorites'" [attr.aria-pressed]="tab() === 'favorites'" (click)="tab.set('favorites')">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1.6l1.9 4 4.4.5-3.3 3 .9 4.3L8 11.1l-3.9 2.3.9-4.3-3.3-3 4.4-.5z"/></svg>
-        {{ text.favorites }}
-      </button>
-      <button type="button" [class.is-active]="tab() === 'all'" [attr.aria-pressed]="tab() === 'all'" (click)="tab.set('all')">{{ text.all }}</button>
-    </div>
+    <ul class="SegmentedControl" role="list" [attr.aria-label]="text.show">
+      <li class="SegmentedControl-item" role="listitem" [class.SegmentedControl-item--selected]="tab() === 'favorites'">
+        <button type="button" class="Button Button--invisible Button--small" [attr.aria-pressed]="tab() === 'favorites'" (click)="tab.set('favorites')">
+          <span class="Button-content">
+            <span class="Button-visual Button-leadingVisual"><svg star-icon size="small" aria-hidden="true"></svg></span>
+            <span class="Button-label">{{ text.favorites }}</span>
+          </span>
+        </button>
+      </li>
+      <li class="SegmentedControl-item" role="listitem" [class.SegmentedControl-item--selected]="tab() === 'all'">
+        <button type="button" class="Button Button--invisible Button--small" [attr.aria-pressed]="tab() === 'all'" (click)="tab.set('all')">
+          <span class="Button-content"><span class="Button-label">{{ text.all }}</span></span>
+        </button>
+      </li>
+    </ul>
 
-    <label class="wiq-search">
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 14 14"/></svg>
-      <input type="search" [placeholder]="text.filterPlaceholder" [attr.aria-label]="text.filterPlaceholder" [ngModel]="keyword()" (ngModelChange)="keyword.set($event)" />
-    </label>
+    <span class="FormControl-input-wrap FormControl-input-wrap--leadingVisual wiq-search">
+      <span class="FormControl-input-leadingVisualWrap"><svg search-icon size="small" class="FormControl-input-leadingVisual" aria-hidden="true"></svg></span>
+      <input type="search" class="FormControl-input FormControl-medium" [placeholder]="text.filterPlaceholder" [attr.aria-label]="text.filterPlaceholder"
+             [ngModel]="keyword()" (ngModelChange)="keyword.set($event)" />
+    </span>
   </div>
 
   @if (error(); as message) {
-    <div class="wiq-alert" role="alert">{{ message }}</div>
+    <div class="flash flash-error wiq-flash" role="alert">{{ message }}</div>
   }
 
+  <div class="sr-only" role="status">{{ loading() ? text.loading : '' }}</div>
+
   @if (loading()) {
-    <div class="wiq-card"><div class="wiq-empty"><span>{{ text.loading }}</span></div></div>
+    <div class="wiq-card blankslate" aria-hidden="true"><p>{{ text.loading }}</p></div>
   } @else {
     @let v = view();
     @if (items().length === 0) {
-      <div class="wiq-card">
-        <div class="wiq-empty">
-          <svg width="40" height="40" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><rect x="2" y="2.5" width="12" height="11" rx="1.5"/><path d="M2 6h12M6 6v7.5"/></svg>
-          <strong>{{ text.emptyTitle }}</strong>
-          <span>{{ text.emptyText }}</span>
-          <button type="button" class="wiq-btn wiq-btn--primary wiq-empty-cta" (click)="newQuery()">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg>
-            {{ text.createFirst }}
-          </button>
+      <div class="wiq-card blankslate">
+        <svg list-unordered-icon size="medium" class="blankslate-icon" aria-hidden="true"></svg>
+        <h2 class="blankslate-heading">{{ text.emptyTitle }}</h2>
+        <p>{{ text.emptyText }}</p>
+        <div class="blankslate-action">
+          <a class="Button Button--primary Button--medium" [href]="editorUrl">
+            <span class="Button-content"><span class="Button-label">{{ text.createFirst }}</span></span>
+          </a>
         </div>
       </div>
     } @else if (v.my.length + v.shared.length === 0) {
-      <div class="wiq-card">
-        <div class="wiq-empty">
-          <strong>{{ keyword().trim() ? text.noMatchesTitle : (tab() === 'favorites' ? text.emptyFavoritesTitle : text.emptyNoneTitle) }}</strong>
-          <span>{{ keyword().trim() ? text.noMatchesText : (tab() === 'favorites' ? text.emptyFavoritesText : text.emptyNoneText) }}</span>
-        </div>
+      <div class="wiq-card blankslate">
+        <h2 class="blankslate-heading">{{ keyword().trim() ? text.noMatchesTitle : (tab() === 'favorites' ? text.emptyFavoritesTitle : text.emptyNoneTitle) }}</h2>
+        <p>{{ keyword().trim() ? text.noMatchesText : (tab() === 'favorites' ? text.emptyFavoritesText : text.emptyNoneText) }}</p>
       </div>
     } @else {
-      @for (section of [{ key: 'my', label: text.myQueries, rows: v.my }, { key: 'shared', label: text.sharedQueries, rows: v.shared }]; track section.key) {
+      @for (section of sections(); track section.key) {
         <section class="wiq-card">
           <h2 class="wiq-section-head">
             <button type="button" [attr.aria-expanded]="!collapsed()[section.key]" (click)="toggleSection(section.key)">
-              <svg class="chev" [class.is-collapsed]="collapsed()[section.key]" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
+              <svg chevron-down-icon size="small" class="chev" [class.is-collapsed]="collapsed()[section.key]" aria-hidden="true"></svg>
               {{ section.label }}
-              <span class="wiq-chip">{{ section.rows.length }}</span>
+              <span class="Counter">{{ section.rows.length }}</span>
             </button>
           </h2>
 
@@ -75,27 +85,34 @@
                       <div class="wiq-title-cell">
                         <span class="wiq-kind" aria-hidden="true">
                           @if (item.mode === 'tree') {
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 3v4.5a1.5 1.5 0 0 0 1.5 1.5H8M3 9v2.5A1.5 1.5 0 0 0 4.5 13H8"/><rect x="8" y="7" width="5" height="4" rx="1"/><rect x="8" y="11" width="5" height="4" rx="1" transform="translate(0 -1)"/></svg>
+                            <svg workflow-icon size="small"></svg>
                           } @else {
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 4h10M3 8h10M3 12h10"/></svg>
+                            <svg list-unordered-icon size="small"></svg>
                           }
                         </span>
                         <a [href]="href(item)">{{ item.name }}</a>
-                        @if (item.public) { <span class="wiq-chip">{{ text.shared }}</span> }
+                        @if (item.public) { <span class="Label">{{ text.shared }}</span> }
                       </div>
                     </td>
                     <td>
                       <div class="wiq-meta">
-                        <span class="avatar" aria-hidden="true" [style.background]="avatarColor(item.updated_by_name)">{{ initials(item.updated_by_name) }}</span>
-                        <span>{{ item.updated_by_name }} <span class="muted">{{ text.updated(item.updated_at | date:'shortDate') }}</span></span>
+                        @let by = updatedBy(item);
+                        <span class="avatar" aria-hidden="true" [style.background]="avatarColor(by)">{{ initials(by) }}</span>
+                        <span>{{ by }} <span class="muted">{{ updatedOn(item) }}</span></span>
                         <span class="row-actions">
-                          <button type="button" class="wiq-icon-btn star" [class.is-on]="item.favorite" [attr.aria-pressed]="item.favorite"
+                          <button type="button" class="Button Button--iconOnly Button--invisible Button--medium star" [class.is-on]="item.favorite"
+                            [attr.aria-pressed]="item.favorite" [disabled]="isPending(item)"
                             [attr.aria-label]="item.favorite ? text.removeFavorite(item.name) : text.addFavorite(item.name)" (click)="toggleFavorite(item)">
-                            <svg width="16" height="16" viewBox="0 0 16 16" [attr.fill]="item.favorite ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.6l1.9 4 4.4.5-3.3 3 .9 4.3L8 11.1l-3.9 2.3.9-4.3-3.3-3 4.4-.5z"/></svg>
+                            @if (item.favorite) {
+                              <svg star-fill-icon size="small" class="Button-visual" aria-hidden="true"></svg>
+                            } @else {
+                              <svg star-icon size="small" class="Button-visual" aria-hidden="true"></svg>
+                            }
                           </button>
                           @if (isOwn(item)) {
-                            <button type="button" class="wiq-icon-btn is-danger" [attr.aria-label]="text.deleteNamed(item.name)" [title]="text.delete" (click)="remove(item)">
-                              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4.5h10M6.5 4.5V3h3v1.5M4.5 4.5l.6 8.5h5.8l.6-8.5M7 7v3.5M9 7v3.5"/></svg>
+                            <button type="button" class="Button Button--iconOnly Button--invisible Button--medium wiq-delete" [attr.aria-label]="text.deleteNamed(item.name)"
+                              [title]="text.delete" [disabled]="isPending(item)" (click)="remove(item)">
+                              <svg trash-icon size="small" class="Button-visual" aria-hidden="true"></svg>
                             </button>
                           }
                         </span>

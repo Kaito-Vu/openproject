@@ -26,7 +26,7 @@
 //++
 
 import {
-  parseCollection, parseQueryForm, valueKind, valuesAfterOperatorChange, withSavedValues,
+  needsValues, parseCollection, parseQueryForm, valueKind, valuesAfterOperatorChange, withSavedValues,
 } from './work-item-filter-schema';
 
 const op = (sym:string, title:string) => ({ href: `/api/v3/queries/operators/${encodeURIComponent(sym)}`, title });
@@ -159,5 +159,24 @@ describe('withSavedValues', () => {
     expect(withSavedValues([{ id: '1', name: 'New' }], '[]Status', ['1', '7'], 'me')).toEqual([
       { id: '1', name: 'New' }, { id: '7', name: '7' },
     ]);
+  });
+});
+
+describe('needsValues', () => {
+  const opSchema = (id:string, kind:'list'|'none') => ({
+    id, name: id, kind, type: kind === 'none' ? null : '[]Status', allowedHref: null, options: null,
+  });
+  const fields = [{ id: 'status', name: 'Status', operators: [opSchema('=', 'list'), opSchema('*', 'none')] }];
+
+  it('flags a condition whose operator takes values but has none', () => {
+    expect(needsValues(fields, { field: 'status', operator: '=', values: [] })).toBe(true);
+    expect(needsValues(fields, { field: 'status', operator: '=', values: ['1'] })).toBe(false);
+  });
+
+  it('accepts operators without values, blank rows and unknown fields or a schema still loading', () => {
+    expect(needsValues(fields, { field: 'status', operator: '*', values: [] })).toBe(false);
+    expect(needsValues(fields, { field: '', operator: '=', values: [] })).toBe(false);
+    expect(needsValues(fields, { field: 'nope', operator: '=', values: [] })).toBe(false);
+    expect(needsValues(null, { field: 'status', operator: '=', values: [] })).toBe(false);
   });
 });

@@ -26,19 +26,25 @@
 //++
 
 import { groupAndFilter } from './work-item-query-list';
+import { WorkItemQuery } from './work-item-query.service';
 
-const item = (over:any) => ({
-  id: 1, name: 'Bugs', mode: 'flat', public: false, project_id: null, columns: [], sort_criteria: [],
-  tree: { op: 'and', children: [] }, user_id: 1, favorite: false, updated_at: '2026-01-01T00:00:00Z',
-  updated_by_name: 'A', ...over,
-});
+const user = (id:number) => ({ href: `/api/v3/users/${id}`, title: `U${id}` });
+const item = (over:Partial<WorkItemQuery>&{ owner?:number }):WorkItemQuery => {
+  const { owner = 1, ...rest } = over;
+  return {
+    id: 1, name: 'Bugs', mode: 'flat', public: false, columns: [], sortCriteria: [], favorite: false,
+    createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z',
+    _links: { self: { href: '/api/v3/work_item_queries/1' }, project: { href: null }, user: user(owner), updatedBy: user(owner) },
+    ...rest,
+  };
+};
 
 describe('groupAndFilter', () => {
   const items = [
-    item({ id: 1, name: 'Bugs', user_id: 1 }),
-    item({ id: 2, name: 'Assigned to me', user_id: 1, favorite: true }),
-    item({ id: 3, name: 'Release bugs', user_id: 2, public: true, favorite: true }),
-    item({ id: 4, name: 'Other private', user_id: 2, public: false }),
+    item({ id: 1, name: 'Bugs', owner: 1 }),
+    item({ id: 2, name: 'Assigned to me', owner: 1, favorite: true }),
+    item({ id: 3, name: 'Release bugs', owner: 2, public: true, favorite: true }),
+    item({ id: 4, name: 'Other private', owner: 2, public: false }),
   ];
 
   it('splits own queries from shared public ones and hides private queries of others', () => {

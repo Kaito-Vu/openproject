@@ -25,7 +25,17 @@
 // See COPYRIGHT and LICENSE files for more details.
 //++
 
-import { nestByParent } from './work-item-results.component';
+import { nestByParent, toResultRows } from './work-item-results.component';
+
+describe('toResultRows', () => {
+  it('maps elements to rows with the parent id read from the parent link', () => {
+    const element = (id:number, parent?:string) => ({
+      id, subject: `s${id}`, _links: parent ? { parent: { href: parent } } : { parent: { href: null } },
+    });
+    const res = { _embedded: { results: { total: 2, _embedded: { elements: [element(1), element(2, '/sub/api/v3/work_packages/1')] } } } };
+    expect(toResultRows(res).map((r) => [r.id, r.parentId])).toEqual([[1, null], [2, 1]]);
+  });
+});
 
 describe('nestByParent', () => {
   it('nests children under a parent present in the result and keeps orphans as roots', () => {

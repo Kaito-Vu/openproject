@@ -25,65 +25,102 @@
 // See COPYRIGHT and LICENSE files for more details.
 //++
 
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
+import { PathHelperService } from 'core-app/core/path-helper/path-helper.service';
 import { Group } from './work-item-query-tree';
 import { ResultElement } from './work-item-columns';
+import { idFromHref } from './work-item-filter-schema';
 
-export interface WorkItemQueryItem {
-  id?:number; name:string; mode:'flat'|'tree'; public:boolean; project_id:number|null;
-  columns:string[]; sort_criteria:string[][]; tree:Group;
-  user_id?:number; favorite?:boolean; updated_at?:string; updated_by_name?:string;
+export type QueryMode = 'flat'|'tree';
+
+interface HalLink { href:string|null; title?:string }
+
+// WorkItemQueryRepresenter (HAL). The list's elements carry no `tree`; GET by id does.
+export interface WorkItemQuery {
+  id:number;
+  name:string;
+  mode:QueryMode;
+  public:boolean;
+  columns:string[];
+  sortCriteria:[string, string][];
+  tree?:Group;
+  favorite:boolean;
+  createdAt:string;
+  updatedAt:string;
+  _links:{ self:HalLink; project:HalLink; user:HalLink; updatedBy:HalLink };
 }
 
-export interface EditorState {
-  name:string; mode:'flat'|'tree'; project_id:number|null; tree:Group; public:boolean; columns:string[];
+// Body of POST/PATCH and /execute; omitted keys keep their stored value (PATCH) or the server default.
+export interface WorkItemQueryPayload {
+  name?:string;
+  mode?:QueryMode;
+  public?:boolean;
+  columns?:string[];
+  tree?:Group;
+  _links?:{ project:{ href:string|null } };
 }
 
-// sort_criteria is not edited in the UI: existing queries keep theirs, new ones get the default.
-export function buildSavePayload(state:EditorState, loaded:WorkItemQueryItem|null):WorkItemQueryItem {
-  return { ...state, sort_criteria: loaded?.sort_criteria ?? [['id', 'asc']] };
+export interface ExecuteResponse { _embedded:{ results:{ total?:number; _embedded:{ elements:ResultElement[] } } } }
+
+// Numeric id at the end of a HAL link, or null for an unset link (e.g. a global query's project).
+export function linkId(link:HalLink|undefined):number|null {
+  return link?.href ? Number(idFromHref(link.href)) : null;
 }
 
 // Project a query runs and saves in: none when "Query across projects" is checked, otherwise the
 // loaded query's own project, falling back to the page's project (new query, or a loaded global one).
-export function resolveProjectId(
-  acrossProjects:boolean,
-  loaded:Pick<WorkItemQueryItem, 'project_id'>|null,
-  pageProjectId:number|null,
-):number|null {
-  return acrossProjects ? null : (loaded?.project_id ?? pageProjectId);
+export function resolveProjectId(acrossProjects:boolean, queryProjectId:number|null, pageProjectId:number|null):number|null {
+  return acrossProjects ? null : (queryProjectId ?? pageProjectId);
 }
 
-export interface SaveState { currentId:number|null; lastLoaded:WorkItemQueryItem|null; loadToken:number; name:string }
+export interface ApiError { message:string; attribute:string|null }
 
-// Ignore a save response if the editor loaded another query since the save was clicked.
-export function applySaved(state:SaveState, tokenAtClick:number, saved:WorkItemQueryItem):SaveState {
-  if (state.loadToken !== tokenAtClick) { return state; }
-  return { ...state, currentId: saved.id ?? state.currentId, lastLoaded: saved, name: saved.name };
+interface ErrorBody { message?:string; _embedded?:{ details?:{ attribute?:string }; errors?:ErrorBody[] } }
+
+// The API v3 error(s) in a failed response: one entry per violation (MultipleErrors are expanded).
+export function apiErrors(err:HttpErrorResponse):ApiError[] {
+  const body = err.error as ErrorBody|null;
+  if (!body || typeof body !== 'object') { return []; }
+  const nested = body._embedded?.errors;
+  const list = nested?.length ? nested : [body];
+  return list
+    .filter((e) => e.message)
+    .map((e) => ({ message: e.message!, attribute: e._embedded?.details?.attribute ?? null }));
 }
 
-export interface ExecuteResponse { _embedded:{ results:{ total?:number; _embedded:{ elements:ResultElement[] } } } }
+// All messages of a failed response, or the fallback when the body has none (network error, 500).
+export function errorText(err:HttpErrorResponse, fallback:string):string {
+  return apiErrors(err).map((e) => e.message).join(' ') || fallback;
+}
 
 @Injectable({ providedIn: 'root' })
 export class WorkItemQueryService {
   private http = inject(HttpClient);
 
-  private base = '/api/v3/work_item_queries';
+  private apiV3Base = inject(PathHelperService).api.v3.apiV3Base;
 
-  list():Observable<{ items:WorkItemQueryItem[] }> { return this.http.get<{ items:WorkItemQueryItem[] }>(this.base); }
+  private base = `${this.apiV3Base}/work_item_queries`;
 
-  get(id:number):Observable<WorkItemQueryItem> { return this.http.get<WorkItemQueryItem>(`${this.base}/${id}`); }
+  projectHref(projectId:number|null):string|null {
+    return projectId == null ? null : `${this.apiV3Base}/projects/${projectId}`;
+  }
 
-  execute(body:Partial<WorkItemQueryItem>&{ pageSize?:number }):Observable<ExecuteResponse> {
+  list():Observable<WorkItemQuery[]> {
+    return this.http.get<{ _embedded:{ elements:WorkItemQuery[] } }>(this.base).pipe(map((res) => res._embedded.elements));
+  }
+
+  get(id:number):Observable<WorkItemQuery> { return this.http.get<WorkItemQuery>(`${this.base}/${id}`); }
+
+  execute(body:WorkItemQueryPayload&{ pageSize?:number }):Observable<ExecuteResponse> {
     return this.http.post<ExecuteResponse>(`${this.base}/execute`, body);
   }
 
-  create(item:WorkItemQueryItem):Observable<WorkItemQueryItem> { return this.http.post<WorkItemQueryItem>(this.base, item); }
+  create(body:WorkItemQueryPayload):Observable<WorkItemQuery> { return this.http.post<WorkItemQuery>(this.base, body); }
 
-  update(id:number, patch:Partial<WorkItemQueryItem>):Observable<WorkItemQueryItem> {
-    return this.http.patch<WorkItemQueryItem>(`${this.base}/${id}`, patch);
+  update(id:number, body:WorkItemQueryPayload):Observable<WorkItemQuery> {
+    return this.http.patch<WorkItemQuery>(`${this.base}/${id}`, body);
   }
 
   setFavorite(id:number, on:boolean):Observable<void> {

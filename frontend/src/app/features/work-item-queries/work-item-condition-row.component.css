@@ -1,6 +1,7 @@
 :host { display: contents; }
 .cell { min-width: 0; }
 .values { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-.values .wiq-control { flex: 1 1 140px; }
-.sep { color: var(--wiq-fg-muted); }
-.error { color: var(--wiq-danger); font-size: 12px; }
+.values > .FormControl-input, .values > .FormControl-select-wrap { flex: 1 1 140px; width: auto; }
+.values > op-work-item-multi-select { flex: 1 1 100%; }
+.sep { color: var(--fgColor-muted); }
+.error { margin-top: 4px; color: var(--fgColor-danger); font-size: var(--text-body-size-small); }

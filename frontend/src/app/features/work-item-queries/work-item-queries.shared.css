@@ -1,169 +1,42 @@
-/* Shared look of the query editor and list. Colours come from the Primer variables the app
-   already defines (so dark mode follows), with light fallbacks. */
+/* Shared look of the query editor and list. Buttons, flash, blankslate, Counter, Label, SegmentedControl,
+   FormControl inputs/selects and sr-only come from the Primer CSS the app ships; only the layout
+   pieces Primer has no class for live here, on Primer tokens (so themes and dark mode follow). */
 :host {
-  --wiq-border: var(--borderColor-default, #d1d9e0);
-  --wiq-border-muted: var(--borderColor-muted, #d1d9e0b3);
-  --wiq-bg: var(--bgColor-default, #ffffff);
-  --wiq-bg-muted: var(--bgColor-muted, #f6f8fa);
-  --wiq-bg-inset: var(--bgColor-inset, #f6f8fa);
-  --wiq-fg: var(--fgColor-default, #1f2328);
-  --wiq-fg-muted: var(--fgColor-muted, #59636e);
-  --wiq-accent: var(--bgColor-accent-emphasis, #0969da);
-  --wiq-accent-fg: var(--fgColor-accent, #0969da);
-  --wiq-accent-soft: var(--bgColor-accent-muted, #ddf4ff);
-  --wiq-danger: var(--fgColor-danger, #d1242f);
-  --wiq-danger-soft: var(--bgColor-danger-muted, #ffebe9);
-  --wiq-radius: var(--borderRadius-medium, 6px);
-  --wiq-shadow: var(--shadow-resting-small, 0 1px 0 rgba(31, 35, 40, 0.04));
   display: block;
-  color: var(--wiq-fg);
-  font-size: 14px;
+  color: var(--fgColor-default);
+  font-size: var(--text-body-size-medium);
   line-height: 1.5;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
 
-/* ---------- buttons ---------- */
-.wiq-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 32px;
-  padding: 0 12px;
-  border: 1px solid var(--wiq-border);
-  border-radius: var(--wiq-radius);
-  background: var(--wiq-bg-muted);
-  color: var(--wiq-fg);
-  font: inherit;
-  font-weight: 500;
-  white-space: nowrap;
-  cursor: pointer;
-  box-shadow: var(--wiq-shadow);
-  transition: background-color 0.12s, border-color 0.12s;
-}
-.wiq-btn:hover:not(:disabled) { background: var(--bgColor-neutral-muted, #eaeef2); }
-.wiq-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.wiq-btn svg { flex: none; display: block; }
-.wiq-btn, .wiq-icon-btn { margin: 0; line-height: 1; vertical-align: middle; }
-.wiq-icon-btn svg { display: block; }
-.wiq-btn--primary {
-  background: var(--bgColor-success-emphasis, #1f883d);
-  border-color: transparent;
-  color: var(--fgColor-onEmphasis, #ffffff);
-}
-.wiq-btn--primary:hover:not(:disabled) { background: var(--bgColor-success-emphasis, #1a7f37); filter: brightness(0.93); }
-.wiq-btn--ghost { background: transparent; border-color: transparent; box-shadow: none; }
-.wiq-btn--ghost:hover:not(:disabled) { background: var(--bgColor-neutral-muted, #eaeef2); }
-.wiq-btn--small { height: 28px; padding: 0 10px; font-size: 13px; }
-.wiq-icon-btn {
-  display: inline-grid;
-  place-items: center;
-  flex: none;
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  border: 0;
-  border-radius: var(--wiq-radius);
-  background: transparent;
-  color: var(--wiq-fg-muted);
-  cursor: pointer;
-}
-.wiq-icon-btn:hover:not(:disabled) { background: var(--bgColor-neutral-muted, #eaeef2); color: var(--wiq-fg); }
-.wiq-icon-btn.is-danger:hover:not(:disabled) { background: var(--wiq-danger-soft); color: var(--wiq-danger); }
-.wiq-icon-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+/* OpenProject's legacy form styles add margins to inputs and buttons. */
+input, select, button { margin: 0; }
+.FormControl-input, .FormControl-select-wrap { width: 100%; }
 
-/* ---------- form controls ---------- */
-.wiq-control {
-  margin: 0;
-  width: 100%;
-  min-width: 0;
-  height: 32px;
-  padding: 0 10px;
-  border: 1px solid var(--control-borderColor-rest, var(--wiq-border));
-  border-radius: var(--wiq-radius);
-  background: var(--wiq-bg);
-  color: var(--wiq-fg);
-  font: inherit;
+/* One focus ring for the custom interactive elements (Primer components bring their own). */
+a:focus-visible,
+input[type='checkbox']:focus-visible,
+button:not(.Button):focus-visible {
+  outline: 2px solid var(--focus-outlineColor);
+  outline-offset: 2px;
 }
-select.wiq-control {
-  padding-right: 30px;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16' fill='none' stroke='%2359636e' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  text-overflow: ellipsis;
-  cursor: pointer;
-}
-select.wiq-control:disabled { cursor: not-allowed; opacity: 0.6; }
-.wiq-control:focus-visible,
-.wiq-btn:focus-visible,
-.wiq-icon-btn:focus-visible,
-.wiq-segmented button:focus-visible {
-  outline: 2px solid var(--focus-outlineColor, #0969da);
-  outline-offset: -1px;
-}
-.wiq-control::placeholder { color: var(--wiq-fg-muted); }
 
-/* ---------- cards ---------- */
+input[type='checkbox'] { width: 16px; height: 16px; accent-color: var(--bgColor-accent-emphasis); }
+
 .wiq-card {
-  margin-bottom: 16px;
-  border: 1px solid var(--wiq-border);
-  border-radius: calc(var(--wiq-radius) + 2px);
-  background: var(--wiq-bg);
-  box-shadow: var(--wiq-shadow);
+  margin-bottom: var(--stack-gap-normal, 16px);
+  border: var(--borderWidth-thin) solid var(--borderColor-default);
+  border-radius: var(--borderRadius-large);
+  background: var(--bgColor-default);
 }
 .wiq-card-head {
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  border-bottom: 1px solid var(--wiq-border-muted);
+  border-bottom: var(--borderWidth-thin) solid var(--borderColor-muted);
 }
-.wiq-card-head h2 { margin: 0; font-size: 14px; font-weight: 600; }
-.wiq-card-head .wiq-spacer { flex: 1; }
-
-.wiq-chip {
-  display: inline-block;
-  padding: 0 8px;
-  border: 1px solid var(--wiq-border);
-  border-radius: 2em;
-  background: var(--wiq-bg-muted);
-  color: var(--wiq-fg-muted);
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 20px;
-}
-
-.wiq-alert {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 16px;
-  padding: 10px 14px;
-  border: 1px solid var(--borderColor-danger-muted, #ff818266);
-  border-radius: var(--wiq-radius);
-  background: var(--wiq-danger-soft);
-  color: var(--wiq-danger);
-}
-
-.wiq-empty {
-  display: grid;
-  justify-items: center;
-  gap: 4px;
-  padding: 40px 16px;
-  color: var(--wiq-fg-muted);
-  text-align: center;
-}
-.wiq-empty strong { color: var(--wiq-fg); font-size: 16px; }
-.wiq-empty > svg { margin-bottom: 8px; color: var(--wiq-border); }
-.wiq-empty-cta { margin-top: 14px; }
-
-.wiq-sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-}
+.wiq-card-head h2 { margin: 0; font-size: var(--text-body-size-medium); font-weight: var(--base-text-weight-semibold); }
+.wiq-spacer { flex: 1; }
+.wiq-flash { margin-bottom: 16px; }

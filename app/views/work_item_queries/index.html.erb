@@ -27,4 +27,8 @@ See COPYRIGHT and LICENSE files for more details.
 
 ++#%>
 <% html_title t("label_work_item_queries") %>
-<%= angular_component_tag "opce-work-item-query-list", inputs: { projectId: @project&.id, currentUserId: current_user.id } %>
+<%= angular_component_tag "opce-work-item-query-list",
+                          inputs: {
+                            currentUserId: current_user.id,
+                            editorUrl: @project ? project_work_item_query_editor_path(@project) : work_item_query_editor_path
+                          } %>

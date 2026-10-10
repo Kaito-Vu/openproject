@@ -1,23 +1,21 @@
 :host { display: block; min-width: 0; width: 100%; }
 .wrap { position: relative; }
-.wiq-control { height: 32px; margin: 0; padding-right: 30px; line-height: normal; text-overflow: ellipsis; }
-.caret { position: absolute; top: 0; bottom: 0; right: 10px; display: block; margin: auto 0; color: var(--wiq-fg-muted); pointer-events: none; }
+.wrap .FormControl-input { padding-inline-end: 30px; text-overflow: ellipsis; }
+.caret { position: absolute; inset-block: 0; inset-inline-end: 10px; margin: auto 0; color: var(--fgColor-muted); pointer-events: none; }
 
 .pop {
   position: fixed;
-  z-index: 1000;
-  max-height: 280px;
-  margin: 0;
+  z-index: var(--zIndex-overlay, 1000);
   padding: 4px;
-  border: 1px solid var(--wiq-border);
-  border-radius: calc(var(--wiq-radius) + 2px);
-  background: var(--wiq-bg);
-  box-shadow: 0 8px 24px rgba(31, 35, 40, 0.18);
-  list-style: none;
+  border: var(--borderWidth-thin) solid var(--borderColor-default);
+  border-radius: var(--borderRadius-large);
+  background: var(--overlay-bgColor, var(--bgColor-default));
+  box-shadow: var(--shadow-floating-small);
   overflow-y: auto;
 }
-.pop li { padding: 6px 10px; border-radius: var(--wiq-radius); cursor: pointer; }
-.pop li.is-active { background: var(--wiq-accent-soft); }
-.pop li.is-selected { color: var(--wiq-accent-fg); font-weight: 600; }
-.pop mark { background: transparent; color: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
-.pop .none { color: var(--wiq-fg-muted); cursor: default; text-align: center; }
+ul { margin: 0; padding: 0; list-style: none; }
+li { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 10px; border-radius: var(--borderRadius-medium); cursor: pointer; }
+li.is-active { background: var(--bgColor-accent-muted); }
+li.is-current { color: var(--fgColor-accent); font-weight: var(--base-text-weight-semibold); }
+mark { background: transparent; color: inherit; font-weight: var(--base-text-weight-semibold); text-decoration: underline; text-underline-offset: 2px; }
+.none { margin: 0; padding: 6px 10px; color: var(--fgColor-muted); text-align: center; }
