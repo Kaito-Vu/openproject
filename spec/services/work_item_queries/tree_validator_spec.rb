@@ -106,6 +106,31 @@ RSpec.describe WorkItemQueries::TreeValidator do
     end
   end
 
+  it "counts groups as nodes, so many empty groups are rejected" do
+    empty = { "op" => "and", "children" => [] }
+    tree = { "op" => "and", "children" => Array.new(WorkItemQuery::MAX_NODES) { empty } } # root + MAX_NODES
+    expect(described_class.errors(tree)).to eq [[:too_many_nodes, { max: WorkItemQuery::MAX_NODES }]]
+    tree["children"].pop
+    expect(described_class.errors(tree)).to be_empty
+  end
+
+  it "caps the number and length of values and the length of field and operator" do
+    cap = ->(node) { described_class.errors({ "op" => "and", "children" => [node] }).map(&:first) }
+    long = "x" * (WorkItemQuery::MAX_VALUE_LENGTH + 1)
+
+    expect(cap.(leaf.merge("values" => Array.new(WorkItemQuery::MAX_VALUES + 1) { "1" }))).to eq [:too_many_values]
+    expect(cap.(leaf.merge("values" => Array.new(WorkItemQuery::MAX_VALUES) { "1" }))).to be_empty
+    expect(cap.(leaf.merge("values" => [long]))).to eq [:value_too_long]
+    expect(cap.(leaf.merge("field" => "f" * (WorkItemQuery::MAX_TOKEN_LENGTH + 1)))).to eq [:token_too_long]
+    expect(cap.(leaf.merge("operator" => "o" * (WorkItemQuery::MAX_TOKEN_LENGTH + 1)))).to eq [:token_too_long]
+  end
+
+  it "translates the size limit problems" do
+    tree = { "op" => "and", "children" => [leaf.merge("values" => ["x" * (WorkItemQuery::MAX_VALUE_LENGTH + 1)])] }
+    expect(described_class.messages(tree))
+      .to eq ["a value is longer than #{WorkItemQuery::MAX_VALUE_LENGTH} characters"]
+  end
+
   it "does not blow the stack on absurdly deep input" do
     expect(described_class.errors(nest(10_000))).not_to be_empty
   end

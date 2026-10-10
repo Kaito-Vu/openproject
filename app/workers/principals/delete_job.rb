@@ -87,6 +87,8 @@ class Principals::DeleteJob < ApplicationJob
 
   def delete_private_queries(principal)
     ::Query.where(user_id: principal.id, public: false).destroy_all
+    # Public ones are handed to DeletedUser by ReplaceReferencesService; favorites go by FK cascade.
+    ::WorkItemQuery.where(user_id: principal.id, public: false).delete_all
   end
 
   # Private persisted views belong to their owner and are removed with them.

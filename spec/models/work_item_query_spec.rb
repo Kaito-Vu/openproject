@@ -55,42 +55,73 @@ RSpec.describe WorkItemQuery do
     )
   end
 
-  it "scopes visible to own queries and public ones that are global or in a visible project" do
-    visible_project = create(:project, member_with_permissions: { user => %i[view_work_packages] })
-    hidden_project = create(:project)
-    mine = described_class.create!(name: "mine", user:, project: hidden_project)
-    pub = described_class.create!(name: "pub", user: create(:user), public: true)
-    pub_visible = described_class.create!(name: "pv", user: create(:user), public: true, project: visible_project)
-    described_class.create!(name: "ph", user: create(:user), public: true, project: hidden_project)
-    described_class.create!(name: "other", user: create(:user))
-    expect(described_class.visible(user)).to contain_exactly(mine, pub, pub_visible)
+  describe ".visible" do
+    let(:project) { create(:project, member_with_permissions: { user => %i[view_work_packages] }) }
+    let(:no_wp_project) { create(:project, member_with_permissions: { user => %i[view_project] }) }
+    let(:hidden_project) { create(:project) }
+    let(:owner) { create(:user) }
+
+    it "follows Queries::Scopes::Visible (view_work_packages in the project, own or public)" do
+      visible = [
+        create(:work_item_query, user:, project:),
+        create(:work_item_query, user:),
+        create(:work_item_query, :public, user: owner),
+        create(:work_item_query, :public, user: owner, project:)
+      ]
+      create(:work_item_query, user:, project: hidden_project) # own, but access to the project is gone
+      create(:work_item_query, :public, user: owner, project: no_wp_project) # project visible, work packages not
+      create(:work_item_query, :public, user: owner, project: hidden_project)
+      create(:work_item_query, user: owner)
+
+      expect(described_class.visible(user)).to match_array(visible)
+    end
+
+    it "shows nothing global to a user without view_work_packages anywhere" do
+      create(:work_item_query, :public, user: owner)
+      expect(described_class.visible(create(:user))).to be_empty
+    end
+  end
+
+  it "rejects public: nil and oversized trees" do
+    expect(described_class.new(name: "q", user:, public: nil)).not_to be_valid
+
+    leaf = { "field" => "subject", "operator" => "~", "values" => ["x" * 900] }
+    big = described_class.new(name: "q", user:, tree: { "op" => "and", "children" => Array.new(80) { leaf } })
+    expect(big).not_to be_valid
+    expect(big.errors.details[:tree]).to eq [{ error: :too_large, max: described_class::MAX_TREE_BYTES / 1.kilobyte }]
+  end
+
+  it "stores the tree with string keys" do
+    query = described_class.new(tree: { op: "and", children: [{ field: "status", operator: "o", values: [] }] })
+    expect(query.tree).to eq("op" => "and", "children" => [{ "field" => "status", "operator" => "o", "values" => [] }])
   end
 
   describe "deleting referenced records" do
     let(:other) { create(:user) }
     let(:project) { create(:project) }
 
-    it "removes the user's queries and favourites and nullifies updated_by via Principals::DeleteJob" do
-      create(:deleted_user)
-      own = described_class.create!(name: "own", user:)
-      described_class.create!(name: "own fav", user:).favorites.create!(user: other)
-      edited = described_class.create!(name: "edited", user: other, updated_by: user)
+    it "deletes private queries, hands public ones and updated_by to DeletedUser via Principals::DeleteJob" do
+      deleted_user = create(:deleted_user)
+      own = create(:work_item_query, user:)
+      shared = create(:work_item_query, :public, user:)
+      shared.favorites.create!(user: other)
+      edited = create(:work_item_query, user: other, updated_by: user)
       WorkItemQueryFavorite.create!(user:, work_item_query: edited)
 
       Principals::DeleteJob.perform_now(user)
 
       expect(User.exists?(user.id)).to be false
       expect(described_class.exists?(own.id)).to be false
-      expect(described_class.where(user_id: user.id)).to be_empty
-      expect(edited.reload.updated_by_id).to be_nil
+      expect(shared.reload.user_id).to eq deleted_user.id
+      expect(shared.favorites.pluck(:user_id)).to eq [other.id]
+      expect(edited.reload.updated_by_id).to eq deleted_user.id
       expect(WorkItemQueryFavorite.where(user_id: user.id)).to be_empty
-      expect(WorkItemQueryFavorite.where.not(work_item_query_id: described_class.select(:id))).to be_empty
     end
 
     it "removes project scoped queries (and their favourites) when the project is deleted" do
-      scoped = described_class.create!(name: "scoped", user:, project:)
+      scoped = create(:work_item_query, user:, project:)
       scoped.favorites.create!(user: other)
-      global = described_class.create!(name: "global", user:)
+      global = create(:work_item_query, user:)
 
       result = Projects::DeleteService.new(user: create(:admin), model: project).call
 

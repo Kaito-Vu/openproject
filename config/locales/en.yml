@@ -525,6 +525,7 @@ en:
         mode: "Mode"
         name: "Name"
         project: "Project"
+        public: "Sharing with everyone"
         sort_criteria: "Sort criteria"
         tree: "Conditions"
       work_package:
@@ -1034,6 +1035,8 @@ en:
               invalid_shape: "must be an array of at most %{max} non-blank strings"
             mode:
               inclusion: "must be one of %{modes}"
+            public:
+              not_allowed: "requires the permission to manage public queries."
             sort_criteria:
               invalid_shape: "must be an array of at most %{max} [field, asc|desc] pairs"
             tree:
@@ -1041,9 +1044,14 @@ en:
               incomplete_condition: "condition needs field and operator"
               invalid_node: "node must be a group or a condition"
               root_not_group: "root must be a group"
+              token_too_long: "field and operator must be at most %{max} characters"
               too_deep: "group nested deeper than %{max}"
+              too_large: "must be at most %{max} KB"
               too_many_conditions: "more than %{max} conditions"
+              too_many_nodes: "more than %{max} groups and conditions"
+              too_many_values: "a condition has more than %{max} values"
               unknown_op: "unknown op %{op}"
+              value_too_long: "a value is longer than %{max} characters"
               values_not_strings: "values must be an array of strings"
         work_package:
           attributes:

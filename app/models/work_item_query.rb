@@ -29,12 +29,22 @@
 #++
 
 class WorkItemQuery < ApplicationRecord
+  # Same visibility as legacy queries: view_work_packages in the query's project (own and public
+  # queries alike), or in any project for global ones.
+  include Queries::Scopes::Visible
+
   MODES = %w[flat tree].freeze
+  SORT_DIRECTIONS = %w[asc desc].freeze
+  MAX_COLUMNS = 50
+  MAX_SORT_CRITERIA = 10
+  # Condition tree limits (see WorkItemQueries::TreeValidator).
   MAX_DEPTH = 5
   MAX_CONDITIONS = 50
-  MAX_COLUMNS = 50
-  SORT_DIRECTIONS = %w[asc desc].freeze
-  MAX_SORT_CRITERIA = 10
+  MAX_NODES = 200 # groups and conditions
+  MAX_VALUES = 500 # per condition
+  MAX_VALUE_LENGTH = 1000
+  MAX_TOKEN_LENGTH = 100 # field and operator
+  MAX_TREE_BYTES = 64.kilobytes # serialized JSON
 
   belongs_to :user
   belongs_to :updated_by, class_name: "User", optional: true
@@ -42,20 +52,21 @@ class WorkItemQuery < ApplicationRecord
   has_many :favorites, class_name: "WorkItemQueryFavorite", dependent: :delete_all
 
   validates :name, presence: true, length: { maximum: 255 }
+  validates :public, inclusion: { in: [true, false] }
   # Extra validator options are passed on to the message as interpolation values.
   validates :mode, inclusion: { in: MODES, modes: MODES.join(", ") }
   validate :tree_shape
   validate :columns_shape
   validate :sort_criteria_shape
 
-  # Own queries always; public ones only when global or in a project the user can see.
-  scope :visible, ->(user) {
-    in_reach = where(project_id: nil).or(where(project_id: Project.visible(user).select(:id)))
-    where(user_id: user.id).or(where(public: true).and(in_reach))
-  }
+  # Store the JSON form (string keys) so in-memory values match what is read back from jsonb.
+  def tree=(value)
+    super(value.as_json)
+  end
 
+  # Works with favorites preloaded for just this user (see the list endpoint) or not loaded at all.
   def favorite_of?(user)
-    favorites.exists?(user_id: user.id)
+    favorites.loaded? ? favorites.any? { it.user_id == user.id } : favorites.exists?(user_id: user.id)
   end
 
   private
@@ -73,6 +84,8 @@ class WorkItemQuery < ApplicationRecord
   end
 
   def tree_shape
+    return errors.add(:tree, :too_large, max: MAX_TREE_BYTES / 1.kilobyte) if tree.to_json.bytesize > MAX_TREE_BYTES
+
     WorkItemQueries::TreeValidator.errors(tree).each { |key, options| errors.add(:tree, key, **options) }
   end
 end

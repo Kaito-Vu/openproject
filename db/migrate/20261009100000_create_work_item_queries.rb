@@ -32,7 +32,8 @@ class CreateWorkItemQueries < ActiveRecord::Migration[8.1]
   def change
     create_table :work_item_queries do |t|
       t.string :name, null: false
-      t.references :user, null: false, foreign_key: { on_delete: :cascade }
+      # No cascade: Principals::DeleteJob deletes private queries and hands public ones to DeletedUser.
+      t.references :user, null: false, foreign_key: true
       t.references :updated_by, null: true, foreign_key: { to_table: :users, on_delete: :nullify }
       t.references :project, null: true, foreign_key: { on_delete: :cascade }
       t.boolean :public, null: false, default: false
@@ -44,7 +45,8 @@ class CreateWorkItemQueries < ActiveRecord::Migration[8.1]
     end
 
     create_table :work_item_query_favorites do |t|
-      t.references :user, null: false, foreign_key: { on_delete: :cascade }
+      # Indexed through the unique (user_id, work_item_query_id) index below.
+      t.references :user, null: false, index: false, foreign_key: { on_delete: :cascade }
       t.references :work_item_query, null: false, foreign_key: { on_delete: :cascade }
       t.timestamps null: false
     end

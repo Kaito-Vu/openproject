@@ -408,6 +408,16 @@ RSpec.describe Principals::ReplaceReferencesService, "#call", type: :model do
       end
     end
 
+    context "with WorkItemQuery" do
+      it_behaves_like "rewritten record", WorkItemQuery, :user_id do
+        let(:attributes) { { name: "'abc'" } }
+      end
+
+      it_behaves_like "rewritten record", WorkItemQuery, :updated_by_id do
+        let(:attributes) { { name: "'abc'", user_id: create(:user).id } }
+      end
+    end
+
     context "with PersistedQuery" do
       it_behaves_like "rewritten record",
                       :cost_report_query,
