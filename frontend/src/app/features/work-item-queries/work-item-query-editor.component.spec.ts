@@ -25,7 +25,6 @@
 // See COPYRIGHT and LICENSE files for more details.
 //++
 
-
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
@@ -259,12 +258,12 @@ describe('WorkItemQueryEditorComponent', () => {
 
   it('asks before leaving the page only when dirty', () => {
     const { editor } = create();
-    const clean = new Event('beforeunload', { cancelable: true }) as BeforeUnloadEvent;
+    const clean = new Event('beforeunload', { cancelable: true });
     editor.onBeforeUnload(clean);
     expect(clean.defaultPrevented).toBe(false);
 
     editor.setName('Draft');
-    const dirty = new Event('beforeunload', { cancelable: true }) as BeforeUnloadEvent;
+    const dirty = new Event('beforeunload', { cancelable: true });
     editor.onBeforeUnload(dirty);
     expect(dirty.defaultPrevented).toBe(true);
   });
