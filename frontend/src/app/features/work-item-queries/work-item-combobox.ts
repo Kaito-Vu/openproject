@@ -43,3 +43,10 @@ export function highlightParts(label:string, query:string):{ before:string; matc
   if (at < 0) { return { before: label, match: '', after: '' }; }
   return { before: label.slice(0, at), match: label.slice(at, at + q.length), after: label.slice(at + q.length) };
 }
+
+// The option whose label equals the typed text (ignoring case and outer blanks), if any. Tab commits
+// only such an exact match; anything else keeps the current value.
+export function exactMatch<T extends { name:string }>(options:T[], typed:string):T|null {
+  const q = typed.trim().toLowerCase();
+  return q ? options.find((o) => o.name.toLowerCase() === q) ?? null : null;
+}

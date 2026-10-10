@@ -26,7 +26,7 @@
 //++
 
 import {
-  pruneIncomplete,
+  pruneIncomplete, layout, withKeys, Condition,
   addCondition, canGroup, emptyTree, group, Group, removeAt, rows, setOp, ungroup, updateCondition,
 } from './work-item-query-tree';
 
@@ -161,6 +161,58 @@ describe('work item query tree', () => {
       const tree = t();
       [[0], [9]].forEach((p) => expect(addCondition(tree, p)).toBe(tree));
     });
+  });
+});
+
+describe('layout', () => {
+  it('lists group headers before their children, so every group op is shown on a row at index > 0', () => {
+    // A and (B or C): the root "and" sits on the group header row, the "or" on C.
+    const t = g('and', c('a'), g('or', c('b'), c('c')));
+    const r = layout(t);
+    expect(r.map((x) => [x.kind, x.path.join('.'), x.depth, x.indexInParent, x.parentOp])).toEqual([
+      ['condition', '0', 0, 0, 'and'],
+      ['group', '1', 0, 1, 'and'],
+      ['condition', '1.0', 1, 0, 'or'],
+      ['condition', '1.1', 1, 1, 'or'],
+    ]);
+  });
+
+  it('shows an op whose following siblings are all groups (the review case)', () => {
+    const t = g('or', g('and', c('a'), c('b')), g('and', c('c'), c('d')));
+    const atIndex1 = layout(t).filter((x) => x.indexInParent > 0);
+    expect(atIndex1.map((x) => [x.kind, x.parentPath.join('.'), x.parentOp])).toEqual([
+      ['condition', '0', 'and'], ['group', '', 'or'], ['condition', '1', 'and'],
+    ]);
+  });
+
+  it('keys conditions by their client key and groups by path; rows() keeps listing conditions only', () => {
+    const t = g('and', { key: 'k1', ...c('a') }, g('or', c('b')));
+    expect(layout(t).map((x) => x.key)).toEqual(['k1', 'g1', '1.0']);
+    expect(rows(t).map((x) => x.path)).toEqual([[0], [1, 0]]);
+  });
+});
+
+describe('client keys', () => {
+  it('gives new conditions a unique key', () => {
+    const t = addCondition(addCondition(emptyTree(), []), []);
+    const [a, b] = t.children as Condition[];
+    expect(a.key).toBeTruthy();
+    expect(a.key).not.toBe(b.key);
+  });
+
+  it('withKeys adds keys to loaded conditions without mutating or replacing existing keys', () => {
+    const t = g('and', { key: 'keep', ...c('a') }, g('or', c('b')));
+    const before = JSON.stringify(t);
+    const next = withKeys(t);
+    expect(JSON.stringify(t)).toBe(before);
+    expect((next.children[0] as Condition).key).toBe('keep');
+    expect(((next.children[1] as Group).children[0] as Condition).key).toBeTruthy();
+  });
+
+  it('pruneIncomplete strips keys so they never reach the API', () => {
+    const t = withKeys(g('and', c('a'), g('or', c('b'))));
+    expect(JSON.stringify(pruneIncomplete(t))).not.toContain('key');
+    expect(pruneIncomplete(t)).toEqual(g('and', c('a'), g('or', c('b'))));
   });
 });
 

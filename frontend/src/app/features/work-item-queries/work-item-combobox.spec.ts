@@ -25,7 +25,9 @@
 // See COPYRIGHT and LICENSE files for more details.
 //++
 
-import { highlightParts, initialActive, moveActive } from './work-item-combobox';
+import {
+  exactMatch, highlightParts, initialActive, moveActive,
+} from './work-item-combobox';
 
 describe('work item combobox helpers', () => {
   it('moves the active option and wraps around', () => {
@@ -46,5 +48,12 @@ describe('work item combobox helpers', () => {
     expect(highlightParts('Assignee', 'ASS')).toEqual({ before: '', match: 'Ass', after: 'ignee' });
     expect(highlightParts('Assignee', '')).toEqual({ before: 'Assignee', match: '', after: '' });
     expect(highlightParts('Assignee', 'zz')).toEqual({ before: 'Assignee', match: '', after: '' });
+  });
+
+  it('finds an exact (case-insensitive) label match for Tab, and nothing for partial text', () => {
+    const opts = [{ id: 'a', name: 'Assignee' }, { id: 's', name: 'Status' }];
+    expect(exactMatch(opts, ' status ')?.id).toBe('s');
+    expect(exactMatch(opts, 'stat')).toBeNull();
+    expect(exactMatch(opts, '')).toBeNull();
   });
 });

@@ -68,6 +68,13 @@ describe('cellValue', () => {
     expect(cellValue(el, 'createdAt')).toBe('2026-10-09 08:27');
     expect(cellValue(el, 'updatedAt')).toBe('2026-10-10 09:05');
   });
+
+  it('formats dates and timestamps with the given formatters', () => {
+    const format = { date: (v:string) => `d(${v})`, datetime: (v:string) => `t(${v})` };
+    expect(cellValue(el, 'startDate', format)).toBe('d(2026-01-02)');
+    expect(cellValue(el, 'createdAt', format)).toBe('t(2026-10-09T08:27:15.317Z)');
+    expect(cellValue(el, 'subject', format)).toBe('Fix login');
+  });
 });
 
 describe('toggleColumn', () => {

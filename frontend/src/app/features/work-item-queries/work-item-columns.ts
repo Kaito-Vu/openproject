@@ -59,13 +59,23 @@ const LINK_COLUMNS = new Set(['type', 'status', 'assignee', 'priority', 'project
 // i18n key of a column's label; null for columns outside the catalog (shown by id).
 export function columnLabelKey(id:string):string|null { return COLUMN_CATALOG.find((c) => c.id === id)?.labelKey ?? null; }
 
-// Display text of one cell; timestamps are shown as "YYYY-MM-DD HH:MM" (UTC, as sent by the API).
-export function cellValue(el:ResultElement, column:string):string {
+// How dates (YYYY-MM-DD) and timestamps (ISO, UTC) are displayed. The components pass
+// TimezoneService-based formatters (user's timezone and date format); RAW_FORMAT is for tests.
+export interface CellFormat { date:(value:string) => string; datetime:(value:string) => string }
+
+export const RAW_FORMAT:CellFormat = { date: (v) => v, datetime: (v) => v.replace('T', ' ').slice(0, 16) };
+
+const DATE_COLUMNS = new Set(['startDate', 'dueDate']);
+const DATETIME_COLUMNS = new Set(['createdAt', 'updatedAt']);
+
+// Display text of one cell.
+export function cellValue(el:ResultElement, column:string, format:CellFormat = RAW_FORMAT):string {
   if (LINK_COLUMNS.has(column)) { return el._links[column]?.title ?? ''; }
   const value = el[column] as string|number|null|undefined; // the catalog's plain columns are scalars
   if (value == null) { return ''; }
   if (column === 'percentageDone') { return `${String(value)}%`; }
-  if (column === 'createdAt' || column === 'updatedAt') { return String(value).replace('T', ' ').slice(0, 16); }
+  if (DATE_COLUMNS.has(column)) { return format.date(String(value)); }
+  if (DATETIME_COLUMNS.has(column)) { return format.datetime(String(value)); }
   return String(value);
 }
 

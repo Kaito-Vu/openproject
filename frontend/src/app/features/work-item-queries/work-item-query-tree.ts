@@ -26,18 +26,27 @@
 //++
 
 export type Op = 'and'|'or';
-export interface Condition { field:string; operator:string; values:string[] }
+// key: client-side identity for rendering (tracking a row across edits); never sent to the API.
+export interface Condition { key?:string; field:string; operator:string; values:string[] }
 export interface Group { op:Op; children:TreeNode[] }
 export type TreeNode = Condition|Group;
 export type Path = number[];
 export interface Row {
   path:Path; node:Condition; depth:number; parentPath:Path; indexInParent:number; parentOp:Op;
 }
+export interface GroupRow {
+  path:Path; node:Group; depth:number; parentPath:Path; indexInParent:number; parentOp:Op;
+}
+// One line of the editor: a condition, or the header of a nested group (shown before its children).
+export type LayoutRow = ({ kind:'condition'; key:string } & Row)|({ kind:'group'; key:string } & GroupRow);
 
 export const isGroup = (n:TreeNode|undefined):n is Group => !!n && 'children' in n;
 export const emptyTree = ():Group => ({ op: 'and', children: [] });
 
 const clone = <T>(v:T):T => structuredClone(v);
+
+let lastKey = 0;
+export const newKey = ():string => { lastKey += 1; return `c${lastKey}`; };
 const find = (tree:Group, path:Path):TreeNode|undefined => path.reduce<TreeNode|undefined>(
   (n, i) => (isGroup(n) ? n.children[i] : undefined),
   tree,
@@ -55,7 +64,7 @@ function prune(g:Group):Group {
 export function addCondition(tree:Group, parent:Path):Group {
   if (!isGroup(find(tree, parent))) { return tree; }
   const next = clone(tree);
-  (find(next, parent) as Group).children.push({ field: '', operator: '=', values: [] });
+  (find(next, parent) as Group).children.push({ key: newKey(), field: '', operator: '=', values: [] });
   return next;
 }
 
@@ -108,28 +117,47 @@ export function ungroup(tree:Group, path:Path):Group {
   return next;
 }
 
-// Lists conditions only; groups are addressed by path (e.g. row.parentPath).
-export function rows(tree:Group):Row[] {
-  const out:Row[] = [];
+// Conditions and nested-group headers in display order. A row at indexInParent > 0 shows (and edits)
+// its parent's op, so every group's And/Or is visible: on its second child, condition or group.
+export function layout(tree:Group):LayoutRow[] {
+  const out:LayoutRow[] = [];
   const walk = (g:Group, path:Path) => g.children.forEach((child, i) => {
     const p = [...path, i];
+    const base = { path: p, depth: path.length, parentPath: path, indexInParent: i, parentOp: g.op };
     if (isGroup(child)) {
+      out.push({ kind: 'group', key: `g${p.join('.')}`, node: child, ...base });
       walk(child, p);
     } else {
-      out.push({ path: p, node: child, depth: path.length, parentPath: path, indexInParent: i, parentOp: g.op });
+      out.push({ kind: 'condition', key: child.key ?? p.join('.'), node: child, ...base });
     }
   });
   walk(tree, []);
   return out;
 }
 
+// Condition rows only; groups are addressed by path (e.g. row.parentPath).
+export function rows(tree:Group):Row[] {
+  return layout(tree).flatMap((r) => (r.kind === 'condition'
+    ? [{ path: r.path, node: r.node, depth: r.depth, parentPath: r.parentPath, indexInParent: r.indexInParent, parentOp: r.parentOp }]
+    : []));
+}
+
+// Copy of a tree (e.g. as loaded from the API) where every condition has a client-side key.
+export function withKeys(tree:Group):Group {
+  const next = clone(tree);
+  const walk = (g:Group):void => g.children.forEach((c) => { if (isGroup(c)) { walk(c); } else { c.key ??= newKey(); } });
+  walk(next);
+  return next;
+}
+
 // Drops conditions that have no field yet (the starter row, half-filled rows) and the groups that
-// become empty, so Run/Save only send complete conditions. The root group is always kept.
+// become empty, so Run/Save only send complete conditions. The root group is always kept, and the
+// client-side keys are stripped: this is the shape sent to the API.
 export function pruneIncomplete(tree:Group):Group {
   const keep = (g:Group):Group => ({
     op: g.op,
     children: g.children.flatMap((c):TreeNode[] => {
-      if (!isGroup(c)) { return c.field ? [c] : []; }
+      if (!isGroup(c)) { return c.field ? [{ field: c.field, operator: c.operator, values: [...c.values] }] : []; }
       const inner = keep(c);
       return inner.children.length ? [inner] : [];
     }),

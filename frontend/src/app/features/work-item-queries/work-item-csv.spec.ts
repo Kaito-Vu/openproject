@@ -25,7 +25,7 @@
 // See COPYRIGHT and LICENSE files for more details.
 //++
 
-import { toCsv } from './work-item-csv';
+import { safeFileName, toCsv } from './work-item-csv';
 
 describe('toCsv', () => {
   const links = { type: { title: 'Task' }, status: { title: 'New' }, assignee: { title: 'Ann' } };
@@ -61,5 +61,23 @@ describe('toCsv with selected columns', () => {
   it('uses the given columns in the given order', () => {
     const element = { id: 5, subject: 's', percentageDone: 40, _links: { priority: { title: 'High' } } };
     expect(toCsv([{ element }], ['priority', 'percentageDone', 'id'])).toBe('﻿priority,percentageDone,id\r\nHigh,40%,5\r\n');
+  });
+});
+
+describe('toCsv labels and formats', () => {
+  it('uses the given header labels and cell formatters', () => {
+    const element = { id: 5, subject: 's', startDate: '2026-01-02', _links: {} };
+    const out = toCsv([{ element }], ['id', 'startDate'], {
+      label: (c) => c.toUpperCase(),
+      format: { date: (v) => `d:${v}`, datetime: (v) => v },
+    });
+    expect(out).toBe('﻿ID,STARTDATE\r\n5,d:2026-01-02\r\n');
+  });
+});
+
+describe('safeFileName', () => {
+  it('replaces invalid characters and falls back for an empty name', () => {
+    expect(safeFileName('a/b:c', 'x')).toBe('a_b_c');
+    expect(safeFileName('  ', 'New query')).toBe('New query');
   });
 });
