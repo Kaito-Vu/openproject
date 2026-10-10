@@ -55,7 +55,8 @@ module WorkItemQueries
 
     # WorkItemQuery stores API property names (e.g. assignee); Query expects AR names (assigned_to).
     def to_ar_name(name)
-      ::API::Utilities::PropertyNameConverter.to_ar_name(name, context: WorkPackage.new)
+      @context ||= WorkPackage.new
+      ::API::Utilities::PropertyNameConverter.to_ar_name(name, context: @context)
     end
   end
 end

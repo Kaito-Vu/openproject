@@ -38,8 +38,13 @@ module WorkItemQueries
     # relatable) does its real work in apply_to, which tree queries never call.
     PLAIN_APPLY_TO_OWNERS = [::Queries::Filters::Base, ::Queries::WorkPackages::Filter::WorkPackageFilter].freeze
 
+    # INNER JOINs on to-one associations whose foreign key is NOT NULL (work_packages.status_id,
+    # work_packages.type_id): they neither drop nor duplicate rows, so the filter's #where can be
+    # OR-ed safely. Any other join (nullable, to-many, raw SQL) would filter rows before the OR runs.
+    OR_SAFE_JOINS = %i[status type].freeze
+
     def self.or_unsafe?(filter)
-      !Array(filter.joins).all?(Symbol)
+      !Array(filter.joins).all? { OR_SAFE_JOINS.include?(it) }
     end
 
     # Filters whose condition does not live in #where (custom apply_to, from, left_outer_joins)
@@ -87,8 +92,7 @@ module WorkItemQueries
     end
 
     def build_filter(node)
-      key = ::API::Utilities::QueryFiltersNameConverter.to_ar_name(node["field"], refer_to_ids: true)
-      filter = ::Queries::WorkPackages::FilterSerializer.filter_for(key, no_memoization: true)
+      filter = ::Queries::WorkPackages::FilterSerializer.filter_for(filter_key(node["field"]), no_memoization: true)
       filter.context = @query
       filter.operator = node["operator"]
       filter.values = node["values"]
@@ -97,6 +101,12 @@ module WorkItemQueries
       raise InvalidTree, I18n.t("work_item_queries.errors.unsupported_filter", field:) if self.class.unsupported?(filter)
 
       filter
+    end
+
+    # Same alias mapping as Query#filter_for (which memoizes per field, so it cannot be used here).
+    def filter_key(field)
+      key = ::API::Utilities::QueryFiltersNameConverter.to_ar_name(field, refer_to_ids: true)
+      ::Queries::WorkPackages::StoredNames.offered_filter(key)
     end
   end
 end

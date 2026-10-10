@@ -93,13 +93,50 @@ RSpec.describe WorkItemQueries::Compiler do
   end
 
   describe ".or_unsafe?" do
-    it "flags filters with string joins" do
-      expect(described_class.or_unsafe?(double(joins: "INNER JOIN x ON x.id = 1"))).to be true
+    let(:file_link_filter) do
+      Queries::Storages::WorkPackages::Filter::FileLinkOriginIdFilter.create!(name: :file_link_origin_id)
     end
 
-    it "allows symbol joins and no joins" do
+    it "flags string joins and joins outside the NOT NULL to-one allowlist" do
+      expect(described_class.or_unsafe?(double(joins: "INNER JOIN x ON x.id = 1"))).to be true
+      expect(described_class.or_unsafe?(double(joins: :watchers))).to be true
+      expect(described_class.or_unsafe?(file_link_filter)).to be true
+    end
+
+    it "allows status and type joins and no joins" do
       expect(described_class.or_unsafe?(double(joins: :status))).to be false
+      expect(described_class.or_unsafe?(double(joins: %i[type status]))).to be false
       expect(described_class.or_unsafe?(double(joins: nil))).to be false
+    end
+
+    it "rejects the real file link filter (to-many INNER JOIN) inside OR but runs it under AND" do
+      leaf = { "field" => "fileLinkOriginId", "operator" => "=", "values" => ["abc"] }
+
+      expect { run(group("or", cond("status", s1), leaf)) }.to raise_error(described_class::InvalidTree, /OR group/)
+      expect(run(group("and", cond("status", s1), leaf))).to be_empty
+    end
+  end
+
+  describe "project limit" do
+    let(:other_project) { create(:project, types: [t1]) }
+    let(:subproject) { create(:project, parent: project, types: [t1]) }
+    let!(:needle_here) { create(:work_package, project:, type: t1, status: s1, subject: "needle here") }
+    let!(:needle_sub) { create(:work_package, project: subproject, type: t1, status: s1, subject: "needle sub") }
+    let!(:needle_elsewhere) { create(:work_package, project: create(:project, types: [t1]), type: t1, subject: "needle") }
+    let!(:in_other) { create(:work_package, project: other_project, type: t1, status: s1) }
+    let(:tree) do
+      group("or", { "field" => "subject", "operator" => "~", "values" => ["needle"] },
+            { "field" => "project", "operator" => "=", "values" => [other_project.id.to_s] })
+    end
+
+    before { project.reload } # nested set columns changed by creating the subproject
+
+    it "keeps a project filter inside OR from widening the result", with_settings: { display_subprojects_work_packages: false } do
+      expect(run(tree)).to contain_exactly(needle_here)
+    end
+
+    it "includes subprojects when configured", with_settings: { display_subprojects_work_packages: true } do
+      expect(run(tree)).to contain_exactly(needle_here, needle_sub)
     end
   end
 

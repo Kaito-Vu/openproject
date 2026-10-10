@@ -452,6 +452,10 @@ class Query < ApplicationRecord
   def project_limiting_filter
     return if project_filter_set?
 
+    build_project_limit
+  end
+
+  def build_project_limit
     subproject_filter = Queries::WorkPackages::Filter::SubprojectFilter.create!
     subproject_filter.context = self
 
@@ -503,13 +507,13 @@ class Query < ApplicationRecord
     @for_all ||= project.nil?
   end
 
-  # A condition tree (see WorkItemQueries::Compiler) replaces the AND-joined filter list;
-  # the project limit still applies.
+  # A condition tree (see WorkItemQueries::Compiler) replaces the AND-joined filter list.
+  # The project limit is always applied: a project filter inside an OR branch would widen,
+  # not narrow, the result, so project_filter_set? must not lift the limit here.
   def statement_clauses
     return statement_filters.map { |filter| "(#{filter.where})" } if filter_tree_sql.nil?
 
-    limit = project ? project_limiting_filter : nil
-    ["(#{filter_tree_sql})", (limit && "(#{limit.where})")]
+    ["(#{filter_tree_sql})", project && "(#{build_project_limit.where})"]
   end
 
   def statement_filters
