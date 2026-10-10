@@ -32,150 +32,97 @@ module API
   module V3
     module WorkItemQueries
       class WorkItemQueriesAPI < ::API::OpenProjectAPI
-        ATTRS = %i[name mode public project_id columns sort_criteria tree].freeze
-
         resources :work_item_queries do
           helpers ::API::V3::Queries::Helpers::QueryRepresenterResponse
 
           helpers do
-            def item(record, favorite: record.favorite_of?(current_user))
-              record.slice(:id, :name, :mode, :public, :project_id, :columns, :sort_criteria, :tree, :user_id)
-                    .merge(favorite:,
-                           updated_at: record.updated_at,
-                           updated_by_name: (record.updated_by || record.user)&.name)
-            end
-
-            # Plain `params` slice: Grape `params do` blocks only bind to the next route,
-            # so shared declarations would silently apply to just one verb.
-            def attrs
-              params.to_h.symbolize_keys.slice(*ATTRS).tap do |h|
-                h[:tree] = JSON.parse(h[:tree].to_json) if h.key?(:tree)
-                check_project!(h[:project_id])
-              end
-            end
-
-            def check_project!(project_id)
-              return if project_id.nil?
-
-              return if Project.visible(current_user).exists?(id: project_id)
-
-              render_invalid(I18n.t("work_item_queries.errors.project_not_found"))
-            end
-
             def find_visible!
               WorkItemQuery.visible(current_user).find_by(id: params[:id]) || raise(::API::Errors::NotFound)
             end
 
-            def find_owned!
-              record = find_visible!
-              raise ::API::Errors::Unauthorized unless record.user_id == current_user.id
+            # Runs an unsaved query from the request body (same payload as POST, nothing is persisted).
+            def adhoc_query
+              attributes = ::API::V3::ParseResourceParamsService
+                             .new(current_user, model: WorkItemQuery, representer: WorkItemQueryPayloadRepresenter)
+                             .call(request_body)
+                             .result
+              call = ::WorkItemQueries::SetAttributesService
+                       .new(user: current_user, model: WorkItemQuery.new(name: "adhoc"),
+                            contract_class: ::WorkItemQueries::BaseContract)
+                       .call(attributes)
+              raise ::API::Errors::ErrorBase.create_and_merge_errors(call.errors) if call.failure?
 
-              record
+              call.result
             end
 
-            # Mirrors Queries::BaseContract#user_allowed_to_make_public: only flipping public on is checked,
-            # so owners without the permission can still edit their already public queries.
-            def check_public!(record)
-              return unless record.public && record.public_changed?
-
-              allowed = if record.project
-                          current_user.allowed_in_project?(:manage_public_queries, record.project)
-                        else
-                          current_user.allowed_in_any_project?(:manage_public_queries)
-                        end
-              return if allowed
-
-              raise ::API::Errors::Unauthorized.new(message: I18n.t("work_item_queries.errors.public_not_allowed"))
-            end
-
+            # Responds with the regular QueryRepresenter (columns, sortBy, embedded results).
             def run_query(wiq)
               query = begin
                 ::WorkItemQueries::BuildQuery.new(wiq, user: current_user).call
               rescue ::WorkItemQueries::Compiler::InvalidTree => e
-                render_invalid(e.message)
+                raise ::API::Errors::Validation.new(:tree, e.message)
               end
               query_representer_response(query, params.slice(:pageSize, :offset).to_h.symbolize_keys)
-            end
-
-            def error_text(record)
-              record.errors.full_messages.to_sentence
-            end
-
-            def render_invalid(message)
-              raise ::API::Errors::UnprocessableContent.new(message)
             end
           end
 
           # Authentication happens in after_validation, so authorize there too (a `before`
           # block would still see the anonymous user).
           after_validation do
-            authorize_by_with_raise(current_user.logged?)
+            authorize_by_with_raise(current_user.logged?) { raise ::API::Errors::Unauthenticated }
             authorize_in_any_work_package(:view_work_packages)
           end
 
           get do
-            records = WorkItemQuery.visible(current_user).includes(:updated_by, :user).order(:name).to_a
-            fav_ids = WorkItemQueryFavorite.where(user: current_user, work_item_query_id: records.map(&:id))
-                                           .pluck(:work_item_query_id)
-            { items: records.map { |r| item(r, favorite: fav_ids.include?(r.id)) } }
+            records = WorkItemQuery.visible(current_user).includes(:user, :updated_by, :project).order(:name).to_a
+            # Only the current user's favorites, for WorkItemQuery#favorite_of?.
+            ActiveRecord::Associations::Preloader.new(records:, associations: :favorites,
+                                                      scope: WorkItemQueryFavorite.where(user: current_user)).call
+            WorkItemQueryCollectionRepresenter.new(records, self_link: api_v3_paths.work_item_queries, current_user:)
           end
 
-          params do
-            requires :name, type: String
-          end
-          post do
-            record = WorkItemQuery.new(attrs.merge(user: current_user, updated_by: current_user))
-            check_public!(record)
-            if record.save
-              status 201
-              item(record)
-            else
-              render_invalid(error_text(record))
-            end
-          end
+          post &::API::V3::Utilities::Endpoints::Create.new(model: WorkItemQuery).mount
 
           post :execute do
             status 200
-            wiq = WorkItemQuery.new(attrs.merge(name: "adhoc", user: current_user))
-            render_invalid(error_text(wiq)) unless wiq.valid?
-            run_query(wiq)
+            run_query(adhoc_query)
           end
 
           route_param :id, type: Integer do
-            get { item(find_visible!) }
+            after_validation do
+              @work_item_query = find_visible!
+            end
+
+            get do
+              WorkItemQueryRepresenter.create(@work_item_query, current_user:, embed_links: true)
+            end
 
             get :results do
-              run_query(find_visible!)
+              run_query(@work_item_query)
             end
 
-            patch do
-              record = find_owned!
-              record.assign_attributes(attrs.merge(updated_by: current_user))
-              check_public!(record)
-              if record.save
-                item(record)
-              else
-                render_invalid(error_text(record))
-              end
-            end
+            patch &::API::V3::Utilities::Endpoints::Update.new(model: WorkItemQuery).mount
 
             delete do
-              find_owned!.destroy!
+              raise ::API::Errors::Unauthorized unless @work_item_query.user_id == current_user.id
+
+              @work_item_query.destroy!
               status 204
               body false
             end
 
             namespace :favorite do
               put do
-                record = find_visible!
                 # create_or_find_by! (not find_or_create_by!) so concurrent PUTs hit the unique index and stay 204.
-                WorkItemQueryFavorite.create_or_find_by!(user: current_user, work_item_query: record)
+                WorkItemQueryFavorite.create_or_find_by!(user: current_user, work_item_query: @work_item_query)
                 status 204
                 body false
+              rescue ActiveRecord::InvalidForeignKey # the query was deleted meanwhile
+                raise ::API::Errors::NotFound
               end
 
               delete do
-                WorkItemQueryFavorite.where(user: current_user, work_item_query_id: find_visible!.id).delete_all
+                WorkItemQueryFavorite.where(user: current_user, work_item_query: @work_item_query).delete_all
                 status 204
                 body false
               end

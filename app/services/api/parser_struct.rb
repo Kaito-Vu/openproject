@@ -37,5 +37,9 @@ module API
     # This clashes with names (e.g. +group_by+) occurring when parsing in the API.
     # Undefining the method allows to set and get the parsed value without conflicts.
     undef_method :group_by
+
+    # Free-form JSON payloads (e.g. work item query condition trees) carry "values" keys,
+    # which would otherwise log a method-conflict warning for every nested hash.
+    disable_warnings :values
   end
 end

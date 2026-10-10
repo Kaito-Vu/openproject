@@ -686,6 +686,9 @@ module API
 
           resources :work_package, except: :schema
 
+          index :work_item_query
+          show :work_item_query
+
           def self.work_package(id, timestamps: nil)
             "#{root}/work_packages/#{id}" +
               if (param_value = timestamps_to_param_value(timestamps)).present? && Array(timestamps).any?(&:historic?)

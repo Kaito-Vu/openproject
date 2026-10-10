@@ -7862,8 +7862,6 @@ en:
     errors:
       invalid_condition: "invalid condition on %{field}"
       or_unsafe: "%{field} cannot be used inside an OR group"
-      project_not_found: "Project not found"
-      public_not_allowed: "Sharing a query with everyone requires the permission to manage public queries."
       unsupported_filter: "%{field} is not supported in the query editor"
 
   # TODO: merge with work_packages top level key

@@ -35,266 +35,309 @@ RSpec.describe "API v3 work_item_queries" do
   include Rack::Test::Methods
   include API::V3::Utilities::PathHelper
 
-  let(:user) { create(:admin) }
-  let(:project) { create(:project) }
-  let(:status) { create(:status) }
-  let!(:wp) { create(:work_package, project:, status:) }
+  shared_let(:project) { create(:project) }
+  shared_let(:status) { create(:status) }
+  shared_let(:wp) { create(:work_package, project:, status:) }
+
+  let(:permissions) { %i[view_work_packages save_queries] }
+  let(:user) { create(:user, member_with_permissions: { project => permissions }) }
   let(:tree) { { op: "and", children: [{ field: "status", operator: "=", values: [status.id.to_s] }] } }
+  let(:body) { JSON.parse(last_response.body) }
 
-  before { login_as(user) }
-
-  def post_json(path, body)
+  before do
+    login_as(user)
     header("Content-Type", "application/json")
-    post(path, body.to_json)
   end
 
-  def patch_json(path, body)
-    header("Content-Type", "application/json")
-    patch(path, body.to_json)
+  def send_json(verb, path, payload) = public_send(verb, path, payload.to_json)
+
+  def project_link(id) = { project: { href: id && api_v3_paths.project(id) } }
+
+  def error_attributes
+    errors = body["errorIdentifier"].end_with?("MultipleErrors") ? body.dig("_embedded", "errors") : [body]
+    errors.map { it.dig("_embedded", "details", "attribute") }
   end
 
-  it "creates, lists, reads, updates and deletes" do
-    post_json "/api/v3/work_item_queries", { name: "Mine", tree:, mode: "tree" }
-    expect(last_response).to have_http_status(201)
-    id = JSON.parse(last_response.body)["id"]
-
-    get "/api/v3/work_item_queries"
-    expect(JSON.parse(last_response.body)["items"].pluck("id")).to include(id)
-
-    patch_json "/api/v3/work_item_queries/#{id}", { name: "Renamed" }
-    expect(JSON.parse(last_response.body)["name"]).to eq "Renamed"
-
-    delete "/api/v3/work_item_queries/#{id}"
-    expect(last_response).to have_http_status(204)
-    expect(WorkItemQuery.exists?(id)).to be false
-  end
-
-  it "rejects an invalid tree on create" do
-    post_json "/api/v3/work_item_queries", { name: "x", tree: { op: "xor", children: [] } }
-    expect(last_response).to have_http_status(422)
-  end
-
-  it "hides a private query of another user (404 on GET and PATCH)" do
-    other = WorkItemQuery.create!(name: "o", user: create(:user))
-    get "/api/v3/work_item_queries/#{other.id}"
-    expect(last_response).to have_http_status(404)
-    patch_json "/api/v3/work_item_queries/#{other.id}", { name: "hacked" }
-    expect(last_response).to have_http_status(404)
-  end
-
-  it "rejects PATCH by a non-owner on a public query with 403" do
-    other = WorkItemQuery.create!(name: "pub", public: true, user: create(:user))
-    patch_json "/api/v3/work_item_queries/#{other.id}", { name: "hacked" }
-    expect(last_response).to have_http_status(403)
-    expect(other.reload.name).to eq "pub"
-  end
-
-  it "executes an unsaved tree and returns matching work packages" do
-    post_json "/api/v3/work_item_queries/execute", { tree:, mode: "flat", project_id: project.id }
-    expect(last_response).to have_http_status(200)
-    ids = JSON.parse(last_response.body).dig("_embedded", "results", "_embedded", "elements").pluck("id")
-    expect(ids).to contain_exactly(wp.id)
-  end
-
-  it "returns 422 when the tree uses an unsupported filter in OR" do
-    bad = { op: "or", children: [{ field: "nope", operator: "=", values: ["1"] }] }
-    post_json "/api/v3/work_item_queries/execute", { tree: bad }
-    expect(last_response).to have_http_status(422)
-    expect(JSON.parse(last_response.body)["message"]).to eq I18n.t("work_item_queries.errors.invalid_condition", field: "nope")
-  end
-
-  it "lists favorite flag and last modifier, and toggles favorites" do
-    post_json "/api/v3/work_item_queries", { name: "Fav", tree: }
-    id = JSON.parse(last_response.body)["id"]
-
-    put "/api/v3/work_item_queries/#{id}/favorite"
-    expect(last_response).to have_http_status(204)
-    get "/api/v3/work_item_queries"
-    item = JSON.parse(last_response.body)["items"].find { it["id"] == id }
-    expect(item["favorite"]).to be true
-    expect(item["updated_by_name"]).to eq user.name
-
-    delete "/api/v3/work_item_queries/#{id}/favorite"
-    get "/api/v3/work_item_queries"
-    expect(JSON.parse(last_response.body)["items"].find { it["id"] == id }["favorite"]).to be false
-  end
-
-  describe "as a non-admin user" do
-    let(:user) { create(:user, member_with_permissions: { project => %i[view_work_packages] }) }
+  describe "GET /api/v3/work_item_queries" do
     let(:owner) { create(:user) }
-    let!(:pub) { WorkItemQuery.create!(name: "pub", public: true, user: owner) }
-    let!(:priv) { WorkItemQuery.create!(name: "priv", user: owner) }
+    let!(:mine) { create(:work_item_query, user:, project:, tree:, updated_by: owner) }
+    let!(:pub) { create(:work_item_query, :public, user: owner, name: "A public") }
 
-    it "rejects DELETE by a non-owner on a public query with 403" do
-      delete "/api/v3/work_item_queries/#{pub.id}"
-      expect(last_response).to have_http_status(403)
-      expect(WorkItemQuery.exists?(pub.id)).to be true
+    before do
+      create(:work_item_query, user: owner) # private, not listed
+      create(:work_item_query, :public, user: owner, project: create(:project)) # project not visible
+      WorkItemQueryFavorite.create!(user:, work_item_query: pub)
+      get api_v3_paths.work_item_queries
     end
 
-    it "returns 404 for favorite PUT/DELETE on an invisible query" do
-      header "Content-Type", "application/json"
-      put "/api/v3/work_item_queries/#{priv.id}/favorite"
-      expect(last_response).to have_http_status(404)
-      delete "/api/v3/work_item_queries/#{priv.id}/favorite"
-      expect(last_response).to have_http_status(404)
+    it "returns a HAL collection of own and visible public queries without their trees" do
+      expect(last_response).to have_http_status(200)
+      expect(body).to include("_type" => "Collection", "total" => 2, "count" => 2)
+      elements = body.dig("_embedded", "elements")
+      expect(elements.pluck("id")).to eq [pub.id, mine.id] # ordered by name
+      expect(elements).to all(include("_type" => "WorkItemQuery"))
+      expect(elements.map { it.key?("tree") }).to eq [false, false]
+      expect(elements.pluck("favorite")).to eq [true, false]
+
+      element = elements.last
+      expect(element).to include("name" => mine.name, "mode" => "flat", "public" => false,
+                                 "columns" => %w[id type subject status assignee], "sortCriteria" => [%w[id asc]])
+      expect(element["_links"]).to include(
+        "self" => { "href" => api_v3_paths.work_item_query(mine.id), "title" => mine.name },
+        "project" => { "href" => api_v3_paths.project(project.id), "title" => project.name },
+        "user" => { "href" => api_v3_paths.user(user.id), "title" => user.name },
+        "updatedBy" => { "href" => api_v3_paths.user(owner.id), "title" => owner.name }
+      )
+      expect(elements.first.dig("_links", "project")).to eq("href" => nil)
+    end
+  end
+
+  describe "GET /api/v3/work_item_queries/:id" do
+    it "returns the query with its tree" do
+      query = create(:work_item_query, user:, tree:)
+      get api_v3_paths.work_item_query(query.id)
+      expect(last_response).to have_http_status(200)
+      expect(body).to include("id" => query.id, "tree" => tree.as_json, "favorite" => false)
+      expect(body).to include("createdAt", "updatedAt")
     end
 
-    it "ignores a client-sent user_id on create" do
-      post_json "/api/v3/work_item_queries", { name: "x", user_id: owner.id }
+    it "is 404 for another user's private query and a public one in a project the user cannot see" do
+      [create(:work_item_query),
+       create(:work_item_query, :public, project: create(:project))].each do |query|
+        get api_v3_paths.work_item_query(query.id)
+        expect(last_response).to have_http_status(404)
+        get "#{api_v3_paths.work_item_query(query.id)}/results"
+        expect(last_response).to have_http_status(404)
+      end
+    end
+  end
+
+  describe "POST /api/v3/work_item_queries" do
+    it "creates a query from a camelCase body with a project link" do
+      send_json :post, api_v3_paths.work_item_queries,
+                { name: "Mine", mode: "tree", tree:, columns: %w[id subject], sortCriteria: [%w[subject desc]],
+                  _links: project_link(project.id) }
+
       expect(last_response).to have_http_status(201)
-      expect(WorkItemQuery.find(JSON.parse(last_response.body)["id"]).user_id).to eq user.id
+      query = WorkItemQuery.find(body["id"])
+      expect(query).to have_attributes(name: "Mine", mode: "tree", tree: tree.as_json, columns: %w[id subject],
+                                       sort_criteria: [%w[subject desc]], project:, user:, updated_by: user)
+      expect(body).to include("tree" => tree.as_json, "sortCriteria" => [%w[subject desc]])
     end
 
-    it "lists own and public queries but not other private ones" do
-      mine = WorkItemQuery.create!(name: "mine", user:)
-      get "/api/v3/work_item_queries"
-      expect(JSON.parse(last_response.body)["items"].pluck("id")).to contain_exactly(pub.id, mine.id)
+    it "applies the stored defaults and ignores read-only properties" do
+      send_json :post, api_v3_paths.work_item_queries, { name: "x", id: 999, favorite: true }
+
+      expect(last_response).to have_http_status(201)
+      expect(body).to include("columns" => %w[id type subject status assignee], "sortCriteria" => [%w[id asc]],
+                              "tree" => { "op" => "and", "children" => [] }, "public" => false, "favorite" => false)
+      expect(body["id"]).not_to eq 999
+      expect(body.dig("_links", "project", "href")).to be_nil
     end
 
-    it "rejects invalid project_id with 422 on create, update and execute" do
-      other_project = create(:project)
-      [other_project.id, 0].each do |pid|
-        post_json "/api/v3/work_item_queries", { name: "x", project_id: pid }
-        expect(last_response).to have_http_status(422)
-        expect(JSON.parse(last_response.body)["message"]).to eq I18n.t("work_item_queries.errors.project_not_found")
-        post_json "/api/v3/work_item_queries/execute", { project_id: pid }
-        expect(last_response).to have_http_status(422)
-      end
-      mine = WorkItemQuery.create!(name: "mine", user:)
-      patch_json "/api/v3/work_item_queries/#{mine.id}", { project_id: other_project.id }
+    it "renders validation errors per attribute" do
+      send_json :post, api_v3_paths.work_item_queries,
+                { name: "", mode: "grid", public: nil, columns: "id", tree: { op: "xor", children: [] } }
+
       expect(last_response).to have_http_status(422)
+      expect(body["errorIdentifier"]).to eq "urn:openproject-org:api:v3:errors:MultipleErrors"
+      expect(error_attributes).to include("name", "mode", "public", "columns", "tree")
     end
-  end
 
-  it "rejects invalid columns, sort_criteria and null values with 422" do
-    [{ columns: nil }, { columns: "id" }, { sort_criteria: nil }, { sort_criteria: [%w[id up]] }, { mode: "grid" }].each do |bad|
-      post_json "/api/v3/work_item_queries", { name: "x" }.merge(bad)
+    it "rejects a project the user cannot see as an error on project" do
+      send_json :post, api_v3_paths.work_item_queries, { name: "x", _links: project_link(create(:project).id) }
+
       expect(last_response).to have_http_status(422)
-      post_json "/api/v3/work_item_queries/execute", bad
+      expect(body["errorIdentifier"]).to eq "urn:openproject-org:api:v3:errors:PropertyConstraintViolation"
+      expect(error_attributes).to eq ["project"]
+    end
+
+    it "rejects public without manage_public_queries as an error on public" do
+      send_json :post, api_v3_paths.work_item_queries, { name: "x", public: true }
+
       expect(last_response).to have_http_status(422)
-    end
-    # The last case ({ mode: "grid" }) renders the translated model error.
-    expect(JSON.parse(last_response.body)["message"]).to eq "Mode must be one of flat, tree"
-  end
-
-  it "does not persist anything on execute and honours pageSize" do
-    create(:work_package, project:, status:)
-    expect do
-      post_json "/api/v3/work_item_queries/execute", { tree:, project_id: project.id, pageSize: 1 }
-    end.not_to change(WorkItemQuery, :count)
-    expect(last_response).to have_http_status(200)
-    expect(JSON.parse(last_response.body).dig("_embedded", "results", "_embedded", "elements").size).to eq 1
-  end
-
-  it "accepts the editor's column catalog on execute" do
-    catalog = %w[id type subject status assignee priority project author startDate dueDate percentageDone createdAt updatedAt]
-    post_json "/api/v3/work_item_queries/execute", { tree:, project_id: project.id, columns: catalog }
-    expect(last_response).to have_http_status(200)
-    body = JSON.parse(last_response.body)
-    expect(body.dig("_links", "columns").map { it["href"].split("/").last }).to eq catalog
-    expect(body.dig("_embedded", "results", "_embedded", "elements").pluck("id")).to contain_exactly(wp.id)
-  end
-
-  it "keeps PUT favorite idempotent" do
-    record = WorkItemQuery.create!(name: "f", user:)
-    header "Content-Type", "application/json"
-    2.times do
-      put "/api/v3/work_item_queries/#{record.id}/favorite"
-      expect(last_response).to have_http_status(204)
-    end
-    expect(WorkItemQueryFavorite.where(user:, work_item_query: record).count).to eq 1
-  end
-
-  describe "GET /:id/results" do
-    let(:record) { WorkItemQuery.create!(name: "r", user:, project:, tree:) }
-
-    it "runs the saved query with pageSize passthrough" do
-      create(:work_package, project:, status:)
-      get "/api/v3/work_item_queries/#{record.id}/results?pageSize=1"
-      expect(last_response).to have_http_status(200)
-      results = JSON.parse(last_response.body).dig("_embedded", "results")
-      expect(results["total"]).to eq 2
-      expect(results.dig("_embedded", "elements").size).to eq 1
+      expect(error_attributes).to eq ["public"]
+      expect(body["message"]).to eq "Sharing with everyone requires the permission to manage public queries."
     end
 
-    it "returns 422 for a stored tree the compiler rejects" do
-      record.update!(tree: { "op" => "and", "children" => [{ "field" => "nope", "operator" => "=", "values" => ["1"] }] })
-      get "/api/v3/work_item_queries/#{record.id}/results"
-      expect(last_response).to have_http_status(422)
-    end
+    context "without save_queries" do
+      let(:permissions) { %i[view_work_packages] }
 
-    it "returns 404 for a query that is not visible" do
-      other = WorkItemQuery.create!(name: "o", user: create(:user))
-      get "/api/v3/work_item_queries/#{other.id}/results"
-      expect(last_response).to have_http_status(404)
-    end
-  end
-
-  describe "sharing with everyone (public)" do
-    let(:user) { create(:user, member_with_permissions: { project => %i[view_work_packages] }) }
-
-    it "rejects public: true without manage_public_queries on create and update" do
-      post_json "/api/v3/work_item_queries", { name: "x", public: true }
-      expect(last_response).to have_http_status(403)
-      expect(JSON.parse(last_response.body)["message"]).to eq I18n.t("work_item_queries.errors.public_not_allowed")
-      post_json "/api/v3/work_item_queries", { name: "x", public: true, project_id: project.id }
-      expect(last_response).to have_http_status(403)
-
-      mine = WorkItemQuery.create!(name: "mine", user:)
-      patch_json "/api/v3/work_item_queries/#{mine.id}", { public: true }
-      expect(last_response).to have_http_status(403)
-      expect(mine.reload.public).to be false
-    end
-
-    it "lets the owner of an already public query edit it without the permission" do
-      mine = WorkItemQuery.create!(name: "mine", user:, public: true)
-      patch_json "/api/v3/work_item_queries/#{mine.id}", { name: "renamed", public: true }
-      expect(last_response).to have_http_status(200)
-      expect(mine.reload.name).to eq "renamed"
-    end
-
-    context "with manage_public_queries in the project" do
-      let(:other_project) { create(:project) }
-      let(:user) do
-        create(:user, member_with_permissions: { project => %i[view_work_packages manage_public_queries],
-                                                 other_project => %i[view_work_packages] })
-      end
-
-      it "allows public queries in that project and global ones" do
-        post_json "/api/v3/work_item_queries", { name: "x", public: true, project_id: project.id }
-        expect(last_response).to have_http_status(201)
-        expect(JSON.parse(last_response.body)["public"]).to be true
-        post_json "/api/v3/work_item_queries", { name: "y", public: true }
-        expect(last_response).to have_http_status(201)
-      end
-
-      it "rejects public queries in a project where the permission is missing" do
-        post_json "/api/v3/work_item_queries", { name: "x", public: true, project_id: other_project.id }
+      it "is forbidden" do
+        expect { send_json :post, api_v3_paths.work_item_queries, { name: "x" } }.not_to change(WorkItemQuery, :count)
         expect(last_response).to have_http_status(403)
       end
     end
   end
 
-  describe "public queries in projects the viewer cannot see" do
-    let(:user) { create(:user, member_with_permissions: { project => %i[view_work_packages] }) }
-    let(:hidden) { WorkItemQuery.create!(name: "hidden", public: true, user: create(:admin), project: create(:project)) }
+  describe "PATCH /api/v3/work_item_queries/:id" do
+    let(:query) { create(:work_item_query, user:, project:) }
 
-    it "is absent from the list and 404 on GET, results and favorite" do
-      get "/api/v3/work_item_queries"
-      expect(JSON.parse(last_response.body)["items"].pluck("id")).not_to include(hidden.id)
-      ["", "/results"].each do |suffix|
-        get "/api/v3/work_item_queries/#{hidden.id}#{suffix}"
-        expect(last_response).to have_http_status(404)
+    it "updates the given properties and keeps the others" do
+      send_json :patch, api_v3_paths.work_item_query(query.id), { name: "Renamed", tree:, _links: project_link(nil) }
+
+      expect(last_response).to have_http_status(200)
+      expect(query.reload).to have_attributes(name: "Renamed", tree: tree.as_json, project: nil, mode: "flat")
+      expect(body).to include("name" => "Renamed", "tree" => tree.as_json)
+    end
+
+    it "is forbidden for a non-owner of a public query" do
+      other = create(:work_item_query, :public, user: create(:user), project:)
+      send_json :patch, api_v3_paths.work_item_query(other.id), { name: "hacked" }
+      expect(last_response).to have_http_status(403)
+      expect(other.reload.name).not_to eq "hacked"
+    end
+
+    it "is 404 for another user's private query" do
+      send_json :patch, api_v3_paths.work_item_query(create(:work_item_query).id), { name: "hacked" }
+      expect(last_response).to have_http_status(404)
+    end
+
+    it "rejects making it public without the permission as an error on public" do
+      send_json :patch, api_v3_paths.work_item_query(query.id), { public: true }
+      expect(last_response).to have_http_status(422)
+      expect(error_attributes).to eq ["public"]
+      expect(query.reload.public).to be false
+    end
+
+    it "rejects a malformed project link" do
+      send_json :patch, api_v3_paths.work_item_query(query.id), { _links: { project: { href: "/api/v3/users/1" } } }
+      expect(last_response).to have_http_status(422)
+      expect(query.reload.project).to eq project
+    end
+  end
+
+  describe "DELETE /api/v3/work_item_queries/:id" do
+    it "deletes the owner's query" do
+      query = create(:work_item_query, user:)
+      delete api_v3_paths.work_item_query(query.id)
+      expect(last_response).to have_http_status(204)
+      expect(WorkItemQuery.exists?(query.id)).to be false
+    end
+
+    it "is forbidden for a non-owner of a public query" do
+      other = create(:work_item_query, :public)
+      delete api_v3_paths.work_item_query(other.id)
+      expect(last_response).to have_http_status(403)
+      expect(WorkItemQuery.exists?(other.id)).to be true
+    end
+  end
+
+  describe "favorite" do
+    let(:query) { create(:work_item_query, user:) }
+
+    it "is idempotent on PUT and DELETE and shows up as favorite" do
+      2.times do
+        put "#{api_v3_paths.work_item_query(query.id)}/favorite"
+        expect(last_response).to have_http_status(204)
       end
-      header "Content-Type", "application/json"
-      put "/api/v3/work_item_queries/#{hidden.id}/favorite"
+      get api_v3_paths.work_item_query(query.id)
+      expect(body["favorite"]).to be true
+
+      2.times do
+        delete "#{api_v3_paths.work_item_query(query.id)}/favorite"
+        expect(last_response).to have_http_status(204)
+      end
+      expect(WorkItemQueryFavorite.where(user:)).to be_empty
+    end
+
+    it "is 404 for an invisible query" do
+      other = create(:work_item_query)
+      put "#{api_v3_paths.work_item_query(other.id)}/favorite"
+      expect(last_response).to have_http_status(404)
+      delete "#{api_v3_paths.work_item_query(other.id)}/favorite"
       expect(last_response).to have_http_status(404)
     end
   end
 
-  it "rejects anonymous requests and creates nothing" do
+  describe "POST /api/v3/work_item_queries/execute" do
+    let(:path) { "#{api_v3_paths.work_item_queries}/execute" }
+
+    it "runs an unsaved tree, persists nothing and honours pageSize" do
+      create(:work_package, project:, status:)
+      expect do
+        send_json :post, path, { tree:, _links: project_link(project.id), pageSize: 1 }
+      end.not_to change(WorkItemQuery, :count)
+
+      expect(last_response).to have_http_status(200)
+      expect(body["_type"]).to eq "Query"
+      results = body.dig("_embedded", "results")
+      expect(results["total"]).to eq 2
+      expect(results.dig("_embedded", "elements").size).to eq 1
+    end
+
+    it "accepts the editor's column catalog" do
+      catalog = %w[id type subject status assignee priority project author startDate dueDate percentageDone createdAt
+                   updatedAt]
+      send_json :post, path, { tree:, _links: project_link(project.id), columns: catalog }
+
+      expect(last_response).to have_http_status(200)
+      expect(body.dig("_links", "columns").map { it["href"].split("/").last }).to eq catalog
+      expect(body.dig("_embedded", "results", "_embedded", "elements").pluck("id")).to contain_exactly(wp.id)
+    end
+
+    context "without save_queries" do
+      let(:permissions) { %i[view_work_packages] }
+
+      it "still runs" do
+        send_json :post, path, { tree: }
+        expect(last_response).to have_http_status(200)
+      end
+    end
+
+    it "renders compiler errors as an error on tree" do
+      send_json :post, path, { tree: { op: "or", children: [{ field: "nope", operator: "=", values: ["1"] }] } }
+
+      expect(last_response).to have_http_status(422)
+      expect(error_attributes).to eq ["tree"]
+      expect(body["message"]).to eq I18n.t("work_item_queries.errors.invalid_condition", field: "nope")
+    end
+
+    it "renders validation errors and invisible projects as 422" do
+      [{ mode: "grid" }, { columns: nil }, { sortCriteria: [%w[id up]] }, { _links: project_link(create(:project).id) }]
+        .each do |bad|
+        send_json :post, path, bad
+        expect(last_response).to have_http_status(422)
+      end
+    end
+  end
+
+  describe "GET /api/v3/work_item_queries/:id/results" do
+    let(:query) { create(:work_item_query, user:, project:, tree:) }
+
+    it "runs the saved query with pageSize passthrough" do
+      create(:work_package, project:, status:)
+      get "#{api_v3_paths.work_item_query(query.id)}/results?pageSize=1"
+
+      expect(last_response).to have_http_status(200)
+      results = body.dig("_embedded", "results")
+      expect(results["total"]).to eq 2
+      expect(results.dig("_embedded", "elements").size).to eq 1
+    end
+
+    it "returns 422 for a stored tree the compiler rejects" do
+      query.update_columns(tree: { "op" => "and",
+                                   "children" => [{ "field" => "nope", "operator" => "=", "values" => ["1"] }] })
+      get "#{api_v3_paths.work_item_query(query.id)}/results"
+      expect(last_response).to have_http_status(422)
+    end
+  end
+
+  context "with manage_public_queries in the project" do
+    let(:permissions) { %i[view_work_packages save_queries manage_public_queries] }
+
+    it "allows public queries in that project and globally" do
+      send_json :post, api_v3_paths.work_item_queries, { name: "x", public: true, _links: project_link(project.id) }
+      expect(last_response).to have_http_status(201)
+      expect(body["public"]).to be true
+      send_json :post, api_v3_paths.work_item_queries, { name: "y", public: true }
+      expect(last_response).to have_http_status(201)
+    end
+  end
+
+  it "rejects anonymous requests with 401 and creates nothing" do
     login_as(User.anonymous)
-    expect { post_json "/api/v3/work_item_queries", { name: "x" } }.not_to change(WorkItemQuery, :count)
-    expect(last_response.status).to be_in([401, 403])
+    expect { send_json :post, api_v3_paths.work_item_queries, { name: "x" } }.not_to change(WorkItemQuery, :count)
+    expect(last_response).to have_http_status(401)
   end
 end
