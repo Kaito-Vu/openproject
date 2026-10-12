@@ -246,9 +246,70 @@ CMD ["./docker/prod/web"]
 # local: allocator defaults, nothing hardened.
 FROM env-base AS local
 
-# staging and production: jemalloc, matching what runs in production.
-FROM env-base AS staging
-ENV USE_JEMALLOC=true
+# -------------------------------------
+# distroless runtime for staging and production: no apt, no dpkg tooling and no
+# package manager; only bash/busybox for the docker/prod/* scripts.
+# The rootfs is assembled from the Debian slim runtime (see the script header).
+# -------------------------------------
+FROM app-runtime-slim AS distroless-rootfs
+COPY ./docker/prod/setup/build-distroless-rootfs.sh ./docker/prod/setup/build-distroless-rootfs.sh
+RUN ./docker/prod/setup/build-distroless-rootfs.sh
 
-FROM env-base AS production
-ENV USE_JEMALLOC=true
+FROM gcr.io/distroless/base-debian13 AS env-distroless
+ARG EDITION=standard
+ARG VERSION=unknown
+ARG REVISION=unknown
+ARG CREATED=unknown
+
+COPY --from=distroless-rootfs /rootfs/ /
+COPY --from=app-runtime-slim --chown=app:app /app /app
+
+# Environment of the Debian runtime-base stage and the ruby image (not inherited here).
+ENV LANG=C.UTF-8 \
+    GEM_HOME=/usr/local/bundle \
+    BUNDLE_SILENCE_ROOT_WARNING=1 \
+    BUNDLE_JOBS=8 \
+    BUNDLE_RETRY=3 \
+    BUNDLE_WITHOUT="development:test" \
+    DOCKER=1 \
+    APP_USER=app \
+    APP_PATH=/app \
+    APP_DATA_PATH=/var/openproject/assets \
+    BUNDLE_PATH=/app/vendor/bundle \
+    BUNDLE_APP_CONFIG=/app/.bundle \
+    PGVERSION=17 \
+    PGVERSION_CHOICES="13 15 17" \
+    PGBIN=/usr/lib/postgresql/17/bin \
+    PATH=/usr/lib/postgresql/17/bin:/usr/local/bundle/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
+    SECRET_KEY_BASE=OVERWRITE_ME \
+    RAILS_ENV=production \
+    RAILS_LOG_TO_STDOUT=1 \
+    RAILS_SERVE_STATIC_FILES=1 \
+    OPENPROJECT_EDITION=$EDITION \
+    OPENPROJECT_INSTALLATION__TYPE=docker \
+    OPENPROJECT_ATTACHMENTS__STORAGE__PATH=/var/openproject/assets/files \
+    OPENPROJECT_RAILS__CACHE__STORE=file_store \
+    OPENPROJECT_ANGULAR_UGLIFY=true \
+    OPENPROJECT_COLLABORATIVE__EDITING__HOCUSPOCUS__URL=auto \
+    OPENPROJECT_COLLABORATIVE__EDITING__HOCUSPOCUS__SECRET= \
+    USE_JEMALLOC=true
+
+LABEL org.opencontainers.image.title="OpenProject" \
+      org.opencontainers.image.vendor="OpenProject GmbH" \
+      org.opencontainers.image.licenses="GPL-3.0-only" \
+      org.opencontainers.image.source="https://github.com/opf/openproject" \
+      org.opencontainers.image.version=$VERSION \
+      org.opencontainers.image.revision=$REVISION \
+      org.opencontainers.image.created=$CREATED
+
+WORKDIR /app
+USER app
+EXPOSE 8080
+VOLUME ["/var/openproject/assets"]
+STOPSIGNAL SIGTERM
+ENTRYPOINT ["./docker/prod/entrypoint-slim.sh"]
+CMD ["./docker/prod/web"]
+
+FROM env-distroless AS staging
+
+FROM env-distroless AS production
