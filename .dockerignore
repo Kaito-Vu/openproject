@@ -66,3 +66,4 @@ coverage
 frontend/coverage
 modules/*/frontend/node_modules
 public/uploads
+.oss-scanner
