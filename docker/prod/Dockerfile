@@ -83,11 +83,11 @@ RUN rm -f /usr/local/lib/ruby/gems/4.0.0/specifications/default/json-*.gemspec \
 
 # runtime dependencies
 COPY ./docker/prod/setup/preinstall-common.sh ./docker/prod/setup/preinstall-common.sh
-RUN ./docker/prod/setup/preinstall-common.sh
+RUN sed -i 's/\r$//' ./docker/prod/setup/preinstall-common.sh && ./docker/prod/setup/preinstall-common.sh
 
 # npm vendors vulnerable dependencies (CVE-2026-69192, CVE-2026-14257, CVE-2026-102276, CVE-2026-102278).
 COPY ./docker/prod/setup/patch-npm-bundled-deps.sh ./docker/prod/setup/patch-npm-bundled-deps.sh
-RUN ./docker/prod/setup/patch-npm-bundled-deps.sh
+RUN sed -i 's/\r$//' ./docker/prod/setup/patch-npm-bundled-deps.sh && ./docker/prod/setup/patch-npm-bundled-deps.sh
 
 FROM runtime-base AS build-base
 ARG NODE_VERSION="24.19.0"
@@ -95,11 +95,11 @@ ARG NPM_VERSION="11.19.0"
 
 # build-only dependencies
 COPY ./docker/prod/setup/preinstall-build.sh ./docker/prod/setup/preinstall-build.sh
-RUN ./docker/prod/setup/preinstall-build.sh
+RUN sed -i 's/\r$//' ./docker/prod/setup/preinstall-build.sh && ./docker/prod/setup/preinstall-build.sh
 
 # npm vendors vulnerable dependencies (CVE-2026-69192, CVE-2026-14257, CVE-2026-102276, CVE-2026-102278).
 COPY ./docker/prod/setup/patch-npm-bundled-deps.sh ./docker/prod/setup/patch-npm-bundled-deps.sh
-RUN ./docker/prod/setup/patch-npm-bundled-deps.sh
+RUN sed -i 's/\r$//' ./docker/prod/setup/patch-npm-bundled-deps.sh && ./docker/prod/setup/patch-npm-bundled-deps.sh
 
 # Node dependencies only depend on the package manifests, so they stay cached
 # across source changes. node_modules are copied into app-build below.
@@ -118,16 +118,26 @@ COPY modules ./modules
 COPY vendor ./vendor
 # Add lib in case a plugin tries to load VERSION file under lib
 COPY lib ./lib
+# Normalize CRLF -> LF (sources checked out on Windows with autocrlf)
+RUN find . \( -path ./vendor/bundle -o -path ./node_modules -o -path ./frontend/node_modules \) -prune -o \
+      -type f \( -name '*.rb' -o -name '*.erb' -o -name '*.rake' -o -name '*.ru' -o -name '*.sh' \
+      -o -name '*.yml' -o -name '*.yaml' -o -name '*.js' -o -name '*.ts' -o -name '*.json' \
+      -o -name '*.gemspec' -o -name 'Gemfile*' -o -path './docker/*' \) -print0 | xargs -0 -r sed -i 's/\r$//'
 
 # The restored vendor/bundle cache already arrives with `COPY vendor` above. Naming
 # it again here copied its *contents* into vendor/, leaving a stale second gem tree.
 COPY ./docker/prod/setup/bundle-install.sh ./vendor/
-RUN bash vendor/bundle-install.sh && rm vendor/bundle-install.sh
+RUN sed -i 's/\r$//' vendor/bundle-install.sh && bash vendor/bundle-install.sh && rm vendor/bundle-install.sh
 
 COPY --from=node-deps /app/node_modules ./node_modules
 COPY --from=node-deps /app/frontend/node_modules ./frontend/node_modules
 
 COPY . .
+# Normalize CRLF -> LF (sources checked out on Windows with autocrlf)
+RUN find . \( -path ./vendor/bundle -o -path ./node_modules -o -path ./frontend/node_modules \) -prune -o \
+      -type f \( -name '*.rb' -o -name '*.erb' -o -name '*.rake' -o -name '*.ru' -o -name '*.sh' \
+      -o -name '*.yml' -o -name '*.yaml' -o -name '*.js' -o -name '*.ts' -o -name '*.json' \
+      -o -name '*.gemspec' -o -name 'Gemfile*' -o -path './docker/*' \) -print0 | xargs -0 -r sed -i 's/\r$//'
 
 # Copy lock file again as the updated version was overriden by COPY just now.
 # `COPY . .` also restores the CI vendor/bundle cache over the installed bundle, so
