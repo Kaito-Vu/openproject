@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 #-- copyright
 # OpenProject is an open source project management software.
 # Copyright (C) the OpenProject GmbH
@@ -27,19 +28,12 @@
 # See COPYRIGHT and LICENSE files for more details.
 #++
 
-module MeetingAgendaItems
-  module AfterPerformHook
-    extend ActiveSupport::Concern
+Rails.application.config.to_prepare do
+  Highlighting::Registry.register_model key: "status", model: Status
+  Highlighting::Registry.register_model key: "priority", model: IssuePriority
+  Highlighting::Registry.register_model key: "type", model: Type
+  Highlighting::Registry.register_model key: "project_phase_definition", model: Project::PhaseDefinition
+  Highlighting::Registry.register_model key: "color", model: Color
 
-    included do
-      def after_perform(call)
-        meeting_agenda_item = call.result
-        meeting = meeting_agenda_item.meeting
-
-        meeting&.touch_and_save_journals
-
-        call
-      end
-    end
-  end
+  Highlighting::Registry.register_static key: "project_status", values: Projects::Statuses::AVAILABLE
 end

@@ -92,6 +92,7 @@ import { CopyToClipboardService } from 'core-app/shared/components/copy-to-clipb
 import { DisplayFieldService } from 'core-app/shared/components/fields/display/display-field.service';
 import { TextDisplayField } from 'core-app/shared/components/fields/display/field-types/text-display-field.module';
 import { WorkPackageViewSelectionGesturesService } from 'core-app/features/work-packages/routing/wp-view-base/view-services/wp-view-selection-gestures.service';
+import { ConfigurationService } from 'core-app/core/config/configuration.service';
 
 export interface TableHarnessOptions {
   workPackages:WorkPackageFixture[];
@@ -109,6 +110,7 @@ export interface TableHarnessOptions {
   editing?:{ formWritable?:boolean };
   /** Whether the inline-edit setting is on; defaults to true so existing specs keep editing. */
   inlineEditEnabled?:boolean;
+  requireDoubleClickForInlineEdit?:boolean;
   /** The application-wide resource cache; pass one instance to tables that share a page. */
   states?:States;
   /** Shows the timeline side through the query, as a saved Gantt view does. */
@@ -409,6 +411,13 @@ function harnessProviders(dragService:FakeDragAndDropService, options:TableHarne
     { provide: WorkPackageContextMenuHelperService, useValue: { getPermittedActions: () => [] } },
     { provide: OPContextMenuService, useValue: { close: () => undefined, show: () => undefined } },
     {
+      provide: ConfigurationService,
+      useValue: {
+        inlineEditEnabled: () => options.inlineEditEnabled ?? true,
+        requireDoubleClickForInlineEdit: () => !!options.requireDoubleClickForInlineEdit,
+      },
+    },
+    {
       provide: OpTableActionsService,
       useFactory: () => {
         const actions = new OpTableActionsService();
@@ -417,7 +426,6 @@ function harnessProviders(dragService:FakeDragAndDropService, options:TableHarne
       },
     },
     { provide: BannersService, useValue: { eeShowBanners: false } },
-    { provide: ConfigurationService, useValue: { inlineEditEnabled: () => options.inlineEditEnabled ?? true } },
     { provide: PathHelperService, useValue: { genericWorkPackagePath: () => '/work_packages/1' } },
     { provide: CausedUpdatesService, useValue: { add: () => undefined } },
     { provide: UrlParamsService, useValue: { currentDetailsRouteParams: () => null, basePathWithoutDetails: () => '' } },

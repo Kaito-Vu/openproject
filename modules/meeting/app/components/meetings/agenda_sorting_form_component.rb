@@ -28,12 +28,14 @@
 # See COPYRIGHT and LICENSE files for more details.
 #++
 
-module HighlightingHelper
-  def highlight_css_version_tag(max_updated_at = highlight_css_updated_at)
-    OpenProject::Cache::CacheKey.expand [max_updated_at, Meetings::Statuses::AVAILABLE]
-  end
+module Meetings
+  class AgendaSortingFormComponent < ApplicationComponent
+    include OpTurbo::Streamable
+    include OpPrimer::ComponentHelpers
 
-  def highlight_css_updated_at
-    ApplicationRecord.most_recently_changed Status, IssuePriority, Type, Color, Project::PhaseDefinition
+    def initialize(meeting:)
+      super()
+      @meeting = meeting
+    end
   end
 end

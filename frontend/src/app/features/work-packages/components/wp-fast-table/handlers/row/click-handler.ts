@@ -38,6 +38,7 @@ import { tableRowClassName } from '../../builders/rows/single-row-builder';
 import { KeepTabService } from '../../../wp-single-view-tabs/keep-tab/keep-tab.service';
 import { EventType } from 'core-app/features/work-packages/routing/wp-view-base/event-handling/event-handler-registry';
 import { UrlParamsService } from 'core-app/core/navigation/url-params.service';
+import { ConfigurationService } from 'core-app/core/config/configuration.service';
 import { resolveRoutingId } from 'core-app/features/work-packages/helpers/work-package-id-resolvers';
 
 export class RowClickHandler implements TableEventHandler {
@@ -51,6 +52,8 @@ export class RowClickHandler implements TableEventHandler {
   @LazyInject() public wpTableFocus:WorkPackageViewFocusService;
 
   @LazyInject() public urlParams:UrlParamsService;
+
+  @LazyInject() public configurationService:ConfigurationService;
 
   constructor(public readonly injector:Injector) {
   }
@@ -77,9 +80,7 @@ export class RowClickHandler implements TableEventHandler {
 
     // Shortcut to any clicks within a cell
     // We don't want to handle these.
-    // (read-only display fields are not editable, so the click acts on the row)
-    if ((target.classList.contains(`${displayClassName}`) && !target.classList.contains('-read-only'))
-      || target.classList.contains(`${activeFieldClassName}`)) {
+    if (this.clickActivatesCell(target) || target.classList.contains(`${activeFieldClassName}`)) {
       debugLog('Skipping click on inner cell');
       return true;
     }
@@ -106,6 +107,13 @@ export class RowClickHandler implements TableEventHandler {
     this.switchOpenSplitViewTo(wpId);
 
     return false;
+  }
+
+  private clickActivatesCell(target:HTMLElement):boolean {
+    return target.classList.contains(displayClassName)
+      // read-only display fields are not editable, so the click acts on the row
+      && !target.classList.contains('-read-only')
+      && !this.configurationService.requireDoubleClickForInlineEdit();
   }
 
   /**
