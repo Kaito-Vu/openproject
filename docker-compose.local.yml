@@ -1,6 +1,6 @@
 # =============================================================================
 # OpenProject - LOCAL stack (standalone, built from this repository).
-# Plain HTTP on http://localhost:${PORT}. Not hardened, do not use publicly.
+# Plain HTTP on http://localhost:${HTTP_PORT}. Not hardened, do not use publicly.
 #
 #   cp .env.local.example .env.local
 #   $EDITOR .env.local
@@ -11,7 +11,7 @@
 #
 # Local integrations (Nextcloud, ...) need SSRF protection relaxed, and Entra
 # only accepts http redirect URIs for localhost:
-# http://localhost:${PORT}/auth/entra/callback
+# http://localhost:${HTTP_PORT}/auth/entra/callback
 # =============================================================================
 
 name: openproject-local
@@ -111,7 +111,7 @@ services:
       - caddy_data:/data
       - caddy_config:/config
     ports:
-      - "${PORT:-8080}:8080"
+      - "${HTTP_PORT:-8080}:8080"
     depends_on:
       web:
         condition: service_started

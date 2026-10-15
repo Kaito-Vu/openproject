@@ -152,3 +152,6 @@ acme.json
 
 # Generated seeders crowdin source file
 **/config/locales/en.seeders.yml
+
+# image exports from build-prod.bat
+/dist/

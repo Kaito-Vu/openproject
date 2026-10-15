@@ -186,6 +186,10 @@
   },
   "overrides": {
     "ip-address": "^10.7.3",
+    "@angular/build": {
+      ".": "$@angular/build",
+      "piscina": "5.3.2"
+    },
     "brace-expansion@^1.0.0": "^1.1.21",
     "brace-expansion@^2.0.0": "^2.1.7",
     "brace-expansion@^5.0.0": "^5.0.12"
@@ -209,12 +213,6 @@
     "typecheck:app": "tsc -d --noEmit -p tsconfig.app.json",
     "typecheck:spec": "tsc --noEmit -p tsconfig.spec.json",
     "postinstall": "patch-package"
-  },
-  "overrides": {
-    "@angular/build": {
-      ".": "$@angular/build",
-      "piscina": "5.3.2"
-    }
   },
   "allowScripts": {
     "@parcel/watcher@2.6.0": true,

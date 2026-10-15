@@ -597,6 +597,8 @@ module API
           end
 
           index :type
+          index :type_variant
+          show :type_variant
           show :type
 
           def self.types_by_project(project_id)

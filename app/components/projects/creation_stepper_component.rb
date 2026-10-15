@@ -34,12 +34,12 @@ module Projects
     STEPS = %i[template details configuration attributes].freeze
 
     # Blank projects: template, details, configuration (types and modules)
-    # (+ attributes when required fields exist).
+    # (+ attributes when project attribute fields exist).
     # Projects from a template only need template + details.
     def self.total_steps(project:, template:)
       return 2 if template
 
-      project.available_custom_fields.for_all.required.any? ? 4 : 3
+      project.available_custom_fields.for_all.any? ? 4 : 3
     end
 
     def initialize(current_step:, total_steps:)

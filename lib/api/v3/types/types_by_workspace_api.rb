@@ -40,6 +40,40 @@ module API
                                           self_link: api_v3_paths.types_by_workspace(@project.id),
                                           current_user:)
           end
+
+          # Replaces the project's types with the given set:
+          # { "_links": { "types": [{ "href": "/api/v3/types/1" }, ...] } }
+          # ponytail: enables each type's base variant; projects using a named variant keep it.
+          put do
+            ids = Array(params.dig(:_links, :types)).map do |link|
+              ::API::Utilities::ResourceLinkParser.parse_id link["href"],
+                                                            property: :type,
+                                                            expected_version: "3",
+                                                            expected_namespace: :types
+            end.map(&:to_i).uniq
+
+            types = Type.includes(:variants).where(id: ids).index_by(&:id)
+            raise ::API::Errors::NotFound if types.size != ids.size
+
+            current = @project.project_types.pluck(:type_id)
+            services = { user: current_user, model: @project }
+
+            (current - ids).each do |type_id|
+              variant = @project.type_variant(Type.find(type_id))
+              result = ::Projects::Types::RemoveService.new(**services).call(variant:)
+              fail ::API::Errors::ErrorBase.create_and_merge_errors(result.errors) if result.failure?
+            end
+
+            (ids - current).each do |type_id|
+              variant = types[type_id].default_variant
+              result = ::Projects::Types::AddService.new(**services).call(variant:)
+              fail ::API::Errors::ErrorBase.create_and_merge_errors(result.errors) if result.failure?
+            end
+
+            TypeCollectionRepresenter.new(@project.reload.enabled_types,
+                                          self_link: api_v3_paths.types_by_workspace(@project.id),
+                                          current_user:)
+          end
         end
       end
     end

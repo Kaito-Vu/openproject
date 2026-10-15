@@ -49,7 +49,6 @@ module Projects
           model
             .available_custom_fields
             .where(id: enabled_custom_fields)
-            .required
         end
       end
     end

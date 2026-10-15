@@ -109,15 +109,21 @@ COPY frontend/package.json frontend/package-lock.json frontend/.npmrc ./frontend
 COPY frontend/patches ./frontend/patches
 RUN --mount=type=cache,target=/root/.npm,sharing=locked   npm ci --ignore-scripts &&   cd frontend && npm ci
 
+# Only what `bundle install` reads (gemspecs, Gemfiles, version files). Everything
+# else is stripped, so the layer hash - and the bundle-install cache - only changes
+# when dependencies change, not on every edit under modules/ or lib/.
+FROM busybox AS gem-manifests
+WORKDIR /m
+COPY modules ./modules
+COPY vendor ./vendor
+COPY lib ./lib
+RUN find . -type f ! -name '*.gemspec' ! -name 'Gemfile*' ! -name 'version.rb' ! -name '.ruby-version' -delete  && find . -type d -empty -delete
+
 FROM build-base AS app-build
 
 # stuff required for gems
 COPY Gemfile Gemfile.* .ruby-version ./
-COPY modules ./modules
-# Add vendor for saas-openproject plugins
-COPY vendor ./vendor
-# Add lib in case a plugin tries to load VERSION file under lib
-COPY lib ./lib
+COPY --from=gem-manifests /m/ ./
 # Normalize CRLF -> LF (sources checked out on Windows with autocrlf)
 RUN find . \( -path ./vendor/bundle -o -path ./node_modules -o -path ./frontend/node_modules \) -prune -o \
       -type f \( -name '*.rb' -o -name '*.erb' -o -name '*.rake' -o -name '*.ru' -o -name '*.sh' \
@@ -143,6 +149,7 @@ RUN find . \( -path ./vendor/bundle -o -path ./node_modules -o -path ./frontend/
 # `COPY . .` also restores the CI vendor/bundle cache over the installed bundle, so
 # the superseded gem versions bundle-install.sh pruned are back and need pruning again.
 RUN --mount=type=cache,target=/root/.npm,sharing=locked \
+    --mount=type=cache,target=/app/frontend/.angular/cache,sharing=locked \
   cp Gemfile.lock.bak Gemfile.lock && rm Gemfile.lock.bak && \
   bundle clean --force && \
   ./docker/prod/setup/precompile-assets.sh
