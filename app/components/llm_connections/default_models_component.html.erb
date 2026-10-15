@@ -21,37 +21,25 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 See COPYRIGHT and LICENSE files for more details.
 
 ++#%>
-<section class="form--section" id="deploy_target_form">
-  <div class="form--field -required" id="deploy_target_host_attributes">
-    <%= f.text_field :host, required: true, container_class: "-middle" %>
-  </div>
 
-  <div class="form--field -required">
-    <%= f.select :type,
-                 ["OpenProject"],
-                 { container_class: "-slim" },
-                 disabled: true,
-                 required: true %>
-    <span class="form--field-instructions">
-      <%= t(:text_deploy_target_type_info) %>
-    </span>
-  </div>
+<%= component_wrapper(class: "mb-4") do %>
+  <%=
+    render(Primer::Beta::Subhead.new) do |component|
+      component.with_heading(tag: :h3) { t("admin.llm_models.defaults.heading") }
+      component.with_description { t("admin.llm_models.defaults.description") }
+    end
+  %>
 
-  <%# This field is specific to the only type of DeployTarget we support for now, which is OpenProject. %>
-  <div class="form--field">
-    <%= f.text_field "api_key", container_class: "-wide" %>
-    <span class="form--field-instructions">
-      <%= link_translate(
-            :text_deploy_target_api_key_info,
-            links: {
-              docs_url: %i[api authentication_basic_auth]
-            }
-          ) %>
-    </span>
-  </div>
-</section>
+  <% if connection.configured_from_env? %>
+    <%= render(Primer::Alpha::Banner.new(mb: 3, icon: :info)) { t("admin.banners.environment_configured_readonly") } %>
+  <% end %>
+
+  <%= settings_primer_form_with(**form_options) do |f| %>
+    <%= render(LlmConnections::DefaultModelsForm.new(f)) %>
+  <% end %>
+<% end %>
