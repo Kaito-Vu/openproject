@@ -33,7 +33,7 @@ require "work_packages/base_contract"
 module WorkPackages
   class CreateContract < BaseContract
     include AdminWritableTimestamps
-    allow_writable_timestamps :created_at
+    allow_writable_timestamps %i[created_at updated_at]
 
     attribute :author_id,
               writable: -> { default_attributes_admin_writable? }

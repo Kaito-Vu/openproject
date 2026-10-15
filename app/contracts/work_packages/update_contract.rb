@@ -31,6 +31,8 @@
 module WorkPackages
   class UpdateContract < BaseContract
     include UnchangedProject
+    include AdminWritableTimestamps
+    allow_writable_timestamps :updated_at
 
     class << self
       def update_allowed?(user:, work_package:)
