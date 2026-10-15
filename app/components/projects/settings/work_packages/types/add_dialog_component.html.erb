@@ -38,8 +38,8 @@ See COPYRIGHT and LICENSE files for more details.
 
   <% if addable_variants.any? %>
     <%= primer_form_with(url: create_path, method: :post) do |form| %>
-      <%= render(Primer::Alpha::Dialog::Body.new(classes: "Overlay-body_autocomplete_height")) do %>
-        <%= render(Primer::Beta::Text.new(tag: :p)) { t("projects.settings.types.add_dialog.description") } %>
+      <%= render(Primer::Alpha::Dialog::Body.new(classes: "Overlay-body_autocomplete_height Overlay-body_autocomplete_height--sm")) do %>
+        <%= render(Primer::Beta::Text.new(tag: :p, color: :muted, mb: 3)) { t("projects.settings.types.add_dialog.description") } %>
         <%= render(Projects::Settings::WorkPackages::Types::AddForm.new(form, variants: addable_variants)) %>
       <% end %>
 

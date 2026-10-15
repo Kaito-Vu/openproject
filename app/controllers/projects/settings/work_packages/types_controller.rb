@@ -44,11 +44,11 @@ class Projects::Settings::WorkPackages::TypesController < Projects::SettingsCont
   end
 
   def create # rubocop:disable Metrics/AbcSize
-    variant = ::TypeVariant.find_by(id: params[:variant_id])
+    variants = ::TypeVariant.where(id: Array(params[:variant_ids]).compact_blank)
 
-    return render_type_not_found if variant.nil?
+    return render_type_not_found if variants.empty?
 
-    result = ::Projects::Types::AddService.new(user: current_user, model: @project).call(variant:)
+    result = add_variants(variants)
 
     result.on_success do
       close_dialog_via_turbo_stream(Projects::Settings::WorkPackages::Types::AddDialogComponent::DIALOG_ID)
@@ -85,6 +85,21 @@ class Projects::Settings::WorkPackages::TypesController < Projects::SettingsCont
   end
 
   private
+
+  # All or nothing: a conflict between two picked variants rolls back the rest.
+  def add_variants(variants)
+    service = ::Projects::Types::AddService.new(user: current_user, model: @project)
+    result = nil
+
+    ::Project.transaction do
+      variants.each do |variant|
+        result = service.call(variant:)
+        raise ActiveRecord::Rollback if result.failure?
+      end
+    end
+
+    result
+  end
 
   # Reload so the repainted list no longer sees the association's cached types.
   def replace_types_list

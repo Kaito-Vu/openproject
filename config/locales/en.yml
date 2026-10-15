@@ -6265,12 +6265,12 @@ en:
         title: "Template settings"
       types:
         add_dialog:
-          description: "The project uses one member of each type family. Pick the type or the variant this project should use."
+          description: "The project uses one member of each type family. Pick the types or variants this project should use."
           none_addable: "All available types are already active in this project."
           submit: "Add"
           title: "Add type"
-          type_label: "Type"
-          type_placeholder: "Select a type"
+          type_label: "Types"
+          type_placeholder: "Select types"
         add_type: "Add type"
         add_variant: "Add a project-specific variant"
         base_type_in_use: "Base type used in this project"

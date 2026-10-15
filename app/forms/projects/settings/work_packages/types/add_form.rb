@@ -41,13 +41,14 @@ module Projects
 
           form do |add_form|
             add_form.autocompleter(
-              name: :variant_id,
+              name: :variant_ids,
               label: I18n.t("projects.settings.types.add_dialog.type_label"),
               required: true,
               autocomplete_options: {
                 placeholder: I18n.t("projects.settings.types.add_dialog.type_placeholder"),
                 decorated: true,
-                multiple: false,
+                multiple: true,
+                closeOnSelect: false,
                 focusDirectly: false,
                 append_to: "##{AddDialogComponent::DIALOG_ID}",
                 data: { test_selector: "project-types-add-select" }
