@@ -67,3 +67,5 @@ frontend/coverage
 modules/*/frontend/node_modules
 public/uploads
 .oss-scanner
+
+frontend/src/app/features/plugins/linked

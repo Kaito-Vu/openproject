@@ -846,12 +846,7 @@ vi:
     text_work_packages_destroy_confirmation: Bạn có chắc chắn muốn xóa (các) Work package đã chọn không?
     time_entry:
       title: Đăng nhập thời gian
-<<<<<<< HEAD
-      tracking: Theo dõi thời gian
       work_package_required: Yêu cầu chọn Work package trước tiên.
-=======
-      work_package_required: Yêu cầu chọn gói công việc trước tiên.
->>>>>>> upstream/dev
     timer:
       button_stop: Dừng bộ đếm thời gian hiện tại
       start_new_timer: Bắt đầu hẹn giờ mới
