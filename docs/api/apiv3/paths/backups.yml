@@ -1,0 +1,68 @@
+# /api/v3/backups
+---
+post:
+  summary: Trigger a backup
+  operationId: create_backup
+  tags:
+  - Backups
+  description: |-
+    Enqueues the creation of a backup. Returns `202 Accepted` with a link to the job status.
+    Returns `404` if backups are disabled in the instance configuration.
+
+    **Required permission:** create backup (global)
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+          - backupToken
+          properties:
+            backupToken:
+              type: string
+              description: The backup token of the current user
+            attachments:
+              type: boolean
+              default: true
+              description: Whether to include attachments in the backup
+        example:
+          backupToken: my-backup-token
+          attachments: true
+  responses:
+    '202':
+      description: Accepted. The backup job was enqueued.
+      content:
+        application/hal+json:
+          schema:
+            $ref: "../components/schemas/backup_model.yml"
+    '401':
+      description: Returned if the backup token is invalid or the token cooldown has not elapsed.
+      content:
+        application/hal+json:
+          schema:
+            $ref: "../components/schemas/error_response.yml"
+    '403':
+      description: Returned if the client lacks the required permission.
+      content:
+        application/hal+json:
+          schema:
+            $ref: "../components/schemas/error_response.yml"
+    '404':
+      description: Returned if backups are disabled.
+      content:
+        application/hal+json:
+          schema:
+            $ref: "../components/schemas/error_response.yml"
+    '409':
+      description: Returned if a backup is already pending.
+      content:
+        application/hal+json:
+          schema:
+            $ref: "../components/schemas/error_response.yml"
+    '429':
+      description: Returned if the backup limit has been reached.
+      content:
+        application/hal+json:
+          schema:
+            $ref: "../components/schemas/error_response.yml"

@@ -44,6 +44,7 @@ Rails.application.routes.draw do
   mount OkComputer::Engine, at: "/health_checks"
 
   get "/api/docs" => "api_docs#index"
+  get "/api/docs/scalar" => "api_docs#scalar"
 
   mount API::Mcp => "/mcp"
 

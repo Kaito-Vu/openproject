@@ -1,0 +1,25 @@
+# /api/v3/type_variants
+---
+get:
+  summary: List type variants
+  operationId: list_type_variants
+  tags:
+  - Type variants
+  description: |-
+    Lists the global type variants of all visible types, in display order.
+    Project-specific variants are not included.
+
+    **Required permission:** view work packages or manage types (in any project)
+  responses:
+    '200':
+      description: OK
+      content:
+        application/hal+json:
+          schema:
+            $ref: "../components/schemas/type_variant_collection_model.yml"
+    '403':
+      description: Returned if the client lacks the required permission.
+      content:
+        application/hal+json:
+          schema:
+            $ref: "../components/schemas/error_response.yml"

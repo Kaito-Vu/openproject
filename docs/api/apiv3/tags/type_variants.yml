@@ -1,0 +1,20 @@
+---
+description: |-
+  Type variants are named variations of a work package [type](https://www.openproject.org/docs/api/endpoints/types/).
+
+  ## Local Properties
+
+  | Property              | Description                                        | Type    | Supported operations |
+  | :-------------------: | -------------------------------------------------- | ------- | -------------------- |
+  | id                    | Variant id                                         | Integer | READ                 |
+  | variantName           | Name of the variant (may be null)                  | String  | READ                 |
+  | isDefaultVariant      | Whether this is the default variant of its type    | Boolean | READ                 |
+  | enabledInNewProjects  | Whether the variant is enabled in new projects     | Boolean | READ                 |
+
+  ## Linked Properties
+
+  | Link | Description                      | Type | Supported operations |
+  | :--: | -------------------------------- | ---- | -------------------- |
+  | self | This variant                     | TypeVariant | READ              |
+  | type | The type this variant belongs to | Type | READ                 |
+name: Type variants

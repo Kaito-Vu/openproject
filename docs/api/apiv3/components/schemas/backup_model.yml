@@ -1,0 +1,29 @@
+# Schema: BackupModel
+---
+type: object
+properties:
+  _type:
+    type: string
+    enum: [Backup]
+  jobStatusId:
+    type: string
+    description: Id of the job status of the backup job
+    readOnly: true
+  _links:
+    type: object
+    properties:
+      jobStatus:
+        allOf:
+        - "$ref": "./link.yml"
+        - description: |-
+            The job status of the backup job
+
+            **Resource**: JobStatus
+          readOnly: true
+example:
+  _type: Backup
+  jobStatusId: 6f8ec8e4-2b6d-4e9a-8d0c-5a5e6d1b2f10
+  _links:
+    jobStatus:
+      href: "/api/v3/job_statuses/6f8ec8e4-2b6d-4e9a-8d0c-5a5e6d1b2f10"
+      title: Backup job status

@@ -1,0 +1,198 @@
+# work_item_query
+---
+{
+  "get": {
+    "summary": "View work item query",
+    "operationId": "view_work_item_query",
+    "tags": [
+      "Work item queries"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Work item query id",
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "OK",
+        "content": {
+          "application/hal+json": {
+            "schema": {
+              "$ref": "../components/schemas/work_item_query_model.yml"
+            }
+          }
+        }
+      },
+      "401": {
+        "description": "Returned if the client is not authenticated.",
+        "content": {
+          "application/hal+json": {
+            "schema": {
+              "$ref": "../components/schemas/error_response.yml"
+            }
+          }
+        }
+      },
+      "403": {
+        "description": "Returned if the client lacks the required permission (*view work packages*).",
+        "content": {
+          "application/hal+json": {
+            "schema": {
+              "$ref": "../components/schemas/error_response.yml"
+            }
+          }
+        }
+      },
+      "404": {
+        "description": "Returned if the query does not exist or is not visible.",
+        "content": {
+          "application/hal+json": {
+            "schema": {
+              "$ref": "../components/schemas/error_response.yml"
+            }
+          }
+        }
+      }
+    }
+  },
+  "patch": {
+    "summary": "Update work item query",
+    "operationId": "update_work_item_query",
+    "tags": [
+      "Work item queries"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Work item query id",
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "$ref": "../components/schemas/work_item_query_model.yml"
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "OK",
+        "content": {
+          "application/hal+json": {
+            "schema": {
+              "$ref": "../components/schemas/work_item_query_model.yml"
+            }
+          }
+        }
+      },
+      "422": {
+        "description": "Returned if the payload or query tree is invalid.",
+        "content": {
+          "application/hal+json": {
+            "schema": {
+              "$ref": "../components/schemas/error_response.yml"
+            }
+          }
+        }
+      },
+      "401": {
+        "description": "Returned if the client is not authenticated.",
+        "content": {
+          "application/hal+json": {
+            "schema": {
+              "$ref": "../components/schemas/error_response.yml"
+            }
+          }
+        }
+      },
+      "403": {
+        "description": "Returned if the client lacks the required permission (*view work packages*).",
+        "content": {
+          "application/hal+json": {
+            "schema": {
+              "$ref": "../components/schemas/error_response.yml"
+            }
+          }
+        }
+      },
+      "404": {
+        "description": "Returned if the query does not exist or is not visible.",
+        "content": {
+          "application/hal+json": {
+            "schema": {
+              "$ref": "../components/schemas/error_response.yml"
+            }
+          }
+        }
+      }
+    }
+  },
+  "delete": {
+    "summary": "Delete work item query",
+    "operationId": "delete_work_item_query",
+    "tags": [
+      "Work item queries"
+    ],
+    "description": "Only the owner can delete a query.",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Work item query id",
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ],
+    "responses": {
+      "204": {
+        "description": "No content"
+      },
+      "401": {
+        "description": "Returned if the client is not authenticated.",
+        "content": {
+          "application/hal+json": {
+            "schema": {
+              "$ref": "../components/schemas/error_response.yml"
+            }
+          }
+        }
+      },
+      "403": {
+        "description": "Returned if the client lacks the required permission (*view work packages*).",
+        "content": {
+          "application/hal+json": {
+            "schema": {
+              "$ref": "../components/schemas/error_response.yml"
+            }
+          }
+        }
+      },
+      "404": {
+        "description": "Returned if the query does not exist or is not visible.",
+        "content": {
+          "application/hal+json": {
+            "schema": {
+              "$ref": "../components/schemas/error_response.yml"
+            }
+          }
+        }
+      }
+    }
+  }
+}

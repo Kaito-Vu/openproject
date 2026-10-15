@@ -31,11 +31,15 @@
 class APIDocsController < ApplicationController
   before_action :require_login,
                 :check_if_api_docs_enabled
-  no_authorization_required! :index
+  no_authorization_required! :index, :scalar
 
   helper API::APIDocsHelper
 
   def index
+    render locals: { turbo_opt_out: true }
+  end
+
+  def scalar
     render locals: { turbo_opt_out: true }
   end
 

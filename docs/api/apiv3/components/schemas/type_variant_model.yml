@@ -1,0 +1,50 @@
+# Schema: TypeVariantModel
+---
+type: object
+properties:
+  _type:
+    type: string
+    enum: [TypeVariant]
+  id:
+    type: integer
+    readOnly: true
+  variantName:
+    type: string
+    nullable: true
+    readOnly: true
+  isDefaultVariant:
+    type: boolean
+    readOnly: true
+  enabledInNewProjects:
+    type: boolean
+    readOnly: true
+  _links:
+    type: object
+    required: [self, type]
+    properties:
+      self:
+        allOf:
+        - "$ref": "./link.yml"
+        - description: |-
+            This type variant
+
+            **Resource**: TypeVariant
+      type:
+        allOf:
+        - "$ref": "./link.yml"
+        - description: |-
+            The type of this variant
+
+            **Resource**: Type
+example:
+  _type: TypeVariant
+  id: 1
+  variantName: Default
+  isDefaultVariant: true
+  enabledInNewProjects: true
+  _links:
+    self:
+      href: "/api/v3/type_variants/1"
+    type:
+      href: "/api/v3/types/1"
+      title: Task

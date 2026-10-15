@@ -1,0 +1,70 @@
+# Schema: WorkItemQueryModel
+---
+type: object
+properties:
+  _type:
+    type: string
+    enum: [WorkItemQuery]
+  id:
+    type: integer
+    readOnly: true
+  name:
+    type: string
+  mode:
+    type: string
+  public:
+    type: boolean
+  columns:
+    type: array
+    items:
+      type: string
+  sortCriteria:
+    type: array
+    items: {}
+  tree:
+    type: object
+    description: Filter condition tree. Only rendered on the single resource.
+  favorite:
+    type: boolean
+    readOnly: true
+  createdAt:
+    type: string
+    format: date-time
+    readOnly: true
+  updatedAt:
+    type: string
+    format: date-time
+    readOnly: true
+  _links:
+    type: object
+    properties:
+      self:
+        $ref: "./link.yml"
+      project:
+        allOf:
+        - $ref: "./link.yml"
+        - description: |-
+            The project of the query, `null` for global queries
+
+            **Resource**: Project
+      user:
+        $ref: "./link.yml"
+      updatedBy:
+        $ref: "./link.yml"
+example:
+  _type: WorkItemQuery
+  id: 1
+  name: My open items
+  mode: tree
+  public: false
+  favorite: false
+  createdAt: '2026-10-01T12:00:00.000Z'
+  updatedAt: '2026-10-01T12:00:00.000Z'
+  _links:
+    self:
+      href: "/api/v3/work_item_queries/1"
+    project:
+      href: null
+    user:
+      href: "/api/v3/users/1"
+      title: Admin

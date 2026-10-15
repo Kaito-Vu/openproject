@@ -73,6 +73,11 @@
                 "input": "node_modules/openapi-explorer/dist/browser/openapi-explorer.min.js",
                 "inject": false,
                 "bundleName": "openapi-explorer"
+              },
+              {
+                "input": "node_modules/@scalar/api-reference/dist/browser/standalone.js",
+                "inject": false,
+                "bundleName": "scalar-api-reference"
               }
             ]
           },

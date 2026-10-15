@@ -1,0 +1,19 @@
+---
+description: |-
+  Backups let an administrator trigger the creation of an instance backup. The backup is created asynchronously
+  by a background job; use the returned job status link to follow its progress.
+
+  The endpoint is only available if backups are enabled in the instance configuration.
+
+  ## Local Properties
+
+  | Property    | Description                              | Type   | Supported operations |
+  | :---------: | ---------------------------------------- | ------ | -------------------- |
+  | jobStatusId | Id of the job status of the backup job   | String | READ                 |
+
+  ## Linked Properties
+
+  | Link      | Description                  | Type      | Supported operations |
+  | :-------: | ---------------------------- | --------- | -------------------- |
+  | jobStatus | Status of the backup job     | JobStatus | READ                 |
+name: Backups

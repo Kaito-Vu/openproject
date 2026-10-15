@@ -1,0 +1,10 @@
+<%= nonced_javascript_include_tag variable_asset_path("scalar-api-reference.js"), skip_pipeline: true %>
+
+<div id="scalar-api-reference"></div>
+
+<%= nonced_javascript_tag do %>
+  Scalar.createApiReference('#scalar-api-reference', {
+    url: '<%= j api_v3_paths.api_spec %>',
+    servers: [{ url: '<%= j api_v3_paths.root_path %>' }]
+  });
+<% end %>

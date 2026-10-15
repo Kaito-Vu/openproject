@@ -1,0 +1,31 @@
+---
+description: |-
+  Work item queries are saved, tree-based queries over work packages. Unlike [queries](https://www.openproject.org/docs/api/endpoints/queries/),
+  they are described by a `tree` of filter conditions. Running one returns a regular `Query` resource with embedded results.
+
+  Authentication is required, as is the *view work packages* permission in at least one project.
+
+  ## Local Properties
+
+  | Property     | Description                                                  | Type     | Supported operations |
+  | :----------: | ------------------------------------------------------------ | -------- | -------------------- |
+  | id           | Query id                                                     | Integer  | READ                 |
+  | name         | Query name                                                   | String   | READ/WRITE           |
+  | mode         | Query mode                                                   | String   | READ/WRITE           |
+  | public       | Whether the query is visible to others                       | Boolean  | READ/WRITE           |
+  | columns      | Columns to display                                           | Array    | READ/WRITE           |
+  | sortCriteria | Sort criteria                                                | Array    | READ/WRITE           |
+  | tree         | Filter condition tree (only on the single resource)          | Object   | READ/WRITE           |
+  | favorite     | Whether the current user favorited the query                 | Boolean  | READ                 |
+  | createdAt    | Time of creation                                             | DateTime | READ                 |
+  | updatedAt    | Time of the last change                                      | DateTime | READ                 |
+
+  ## Linked Properties
+
+  | Link      | Description                                   | Type          | Supported operations |
+  | :-------: | --------------------------------------------- | ------------- | -------------------- |
+  | self      | This query                                    | WorkItemQuery | READ                 |
+  | project   | The project of the query (null = global)      | Project       | READ/WRITE           |
+  | user      | The owner                                     | User          | READ                 |
+  | updatedBy | The user who last changed the query           | User          | READ                 |
+name: Work item queries

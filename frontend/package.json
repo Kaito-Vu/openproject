@@ -117,6 +117,7 @@
     "@primer/primitives": "^11.5.1",
     "@primer/view-components": "npm:@openproject/primer-view-components@^0.93.0",
     "@rails/request.js": "^0.0.13",
+    "@scalar/api-reference": "^1.74.0",
     "@stimulus-components/auto-submit": "^6.0.0",
     "@stimulus-components/reveal": "^5.0.0",
     "@tiptap/extensions": "^3.26.1",
@@ -223,6 +224,7 @@
     "fsevents@2.3.2": true,
     "fsevents@2.3.3": true,
     "lmdb@3.5.6": true,
-    "msgpackr-extract@3.0.4": true
+    "msgpackr-extract@3.0.4": true,
+    "vue-demi": false
   }
 }

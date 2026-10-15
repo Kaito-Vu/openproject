@@ -1,0 +1,84 @@
+# work_item_queries_execute
+---
+{
+  "post": {
+    "summary": "Execute an unsaved work item query",
+    "operationId": "execute_work_item_query",
+    "tags": [
+      "Work item queries"
+    ],
+    "description": "Runs the query described in the body without persisting it. Returns a `Query` resource with embedded results.",
+    "parameters": [
+      {
+        "name": "pageSize",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        },
+        "description": "Number of results per page"
+      },
+      {
+        "name": "offset",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        },
+        "description": "Page number of the results"
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "$ref": "../components/schemas/work_item_query_model.yml"
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "OK. A Query resource with embedded results.",
+        "content": {
+          "application/hal+json": {
+            "schema": {
+              "$ref": "../components/schemas/query_model.yml"
+            }
+          }
+        }
+      },
+      "422": {
+        "description": "Returned if the payload or query tree is invalid.",
+        "content": {
+          "application/hal+json": {
+            "schema": {
+              "$ref": "../components/schemas/error_response.yml"
+            }
+          }
+        }
+      },
+      "401": {
+        "description": "Returned if the client is not authenticated.",
+        "content": {
+          "application/hal+json": {
+            "schema": {
+              "$ref": "../components/schemas/error_response.yml"
+            }
+          }
+        }
+      },
+      "403": {
+        "description": "Returned if the client lacks the required permission (*view work packages*).",
+        "content": {
+          "application/hal+json": {
+            "schema": {
+              "$ref": "../components/schemas/error_response.yml"
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,83 @@
+# work_item_query_results
+---
+{
+  "get": {
+    "summary": "Run saved work item query",
+    "operationId": "run_work_item_query",
+    "tags": [
+      "Work item queries"
+    ],
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Work item query id",
+        "schema": {
+          "type": "integer"
+        }
+      },
+      {
+        "name": "pageSize",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        },
+        "description": "Number of results per page"
+      },
+      {
+        "name": "offset",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        },
+        "description": "Page number of the results"
+      }
+    ],
+    "description": "Runs the saved query and returns a `Query` resource with embedded results.",
+    "responses": {
+      "200": {
+        "description": "OK",
+        "content": {
+          "application/hal+json": {
+            "schema": {
+              "$ref": "../components/schemas/query_model.yml"
+            }
+          }
+        }
+      },
+      "401": {
+        "description": "Returned if the client is not authenticated.",
+        "content": {
+          "application/hal+json": {
+            "schema": {
+              "$ref": "../components/schemas/error_response.yml"
+            }
+          }
+        }
+      },
+      "403": {
+        "description": "Returned if the client lacks the required permission (*view work packages*).",
+        "content": {
+          "application/hal+json": {
+            "schema": {
+              "$ref": "../components/schemas/error_response.yml"
+            }
+          }
+        }
+      },
+      "404": {
+        "description": "Returned if the query does not exist or is not visible.",
+        "content": {
+          "application/hal+json": {
+            "schema": {
+              "$ref": "../components/schemas/error_response.yml"
+            }
+          }
+        }
+      }
+    }
+  }
+}

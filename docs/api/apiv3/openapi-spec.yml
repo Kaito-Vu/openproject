@@ -287,6 +287,20 @@ paths:
     "$ref": "./paths/labels.yml"
   "/api/v3/labels/{id}":
     "$ref": "./paths/label.yml"
+  "/api/v3/backups":
+    "$ref": "./paths/backups.yml"
+  "/api/v3/type_variants":
+    "$ref": "./paths/type_variants.yml"
+  "/api/v3/work_item_queries":
+    "$ref": "./paths/work_item_queries.yml"
+  "/api/v3/work_item_queries/execute":
+    "$ref": "./paths/work_item_queries_execute.yml"
+  "/api/v3/work_item_queries/{id}":
+    "$ref": "./paths/work_item_query.yml"
+  "/api/v3/work_item_queries/{id}/results":
+    "$ref": "./paths/work_item_query_results.yml"
+  "/api/v3/work_item_queries/{id}/favorite":
+    "$ref": "./paths/work_item_query_favorite.yml"
   "/api/v3/meetings":
     "$ref": "./paths/meetings.yml"
   "/api/v3/meetings/{id}":
@@ -1012,6 +1026,16 @@ components:
       "$ref": "./components/schemas/label_collection_model.yml"
     LabelModel:
       "$ref": "./components/schemas/label_model.yml"
+    BackupModel:
+      "$ref": "./components/schemas/backup_model.yml"
+    TypeVariantModel:
+      "$ref": "./components/schemas/type_variant_model.yml"
+    TypeVariantCollectionModel:
+      "$ref": "./components/schemas/type_variant_collection_model.yml"
+    WorkItemQueryModel:
+      "$ref": "./components/schemas/work_item_query_model.yml"
+    WorkItemQueryCollectionModel:
+      "$ref": "./components/schemas/work_item_query_collection_model.yml"
     Link:
       "$ref": "./components/schemas/link.yml"
     List_actionsModel:
@@ -1342,6 +1366,9 @@ tags:
   - "$ref": "./tags/help_texts.yml"
   - "$ref": "./tags/hourly_rates.yml"
   - "$ref": "./tags/labels.yml"
+  - "$ref": "./tags/backups.yml"
+  - "$ref": "./tags/type_variants.yml"
+  - "$ref": "./tags/work_item_queries.yml"
   - "$ref": "./tags/memberships.yml"
   - "$ref": "./tags/news.yml"
   - "$ref": "./tags/notifications.yml"
