@@ -19,18 +19,18 @@ puts "instance: host_name=#{Setting.host_name} users=#{User.count} projects=#{Pr
 puts "expected for the ADO migration target: users=340 projects=150 work_packages>=44 (WP 40 is '[BE]'): #{WorkPackage.find_by(id: 40)&.subject.inspect}"
 user = (ENV["SYNC_USER_ID"] ? User.find_by(id: ENV["SYNC_USER_ID"]) : User.where("LOWER(login) = ?", login.downcase).first) or
        abort "no user #{login} on THIS instance: wrong OpenProject (the migration target has users=340)? set SYNC_USER_ID to override"
-wanted = %i[view_work_packages add_work_packages edit_work_packages change_work_package_status manage_subtasks
+wanted = %i[view_project view_work_packages add_work_packages edit_work_packages change_work_package_status manage_subtasks
             add_work_package_comments assign_versions move_work_packages]
 known = wanted.select { |p| OpenProject::AccessControl.permission(p) }
 puts "permissions not known in this version, skipped: #{(wanted - known).join(', ')}" if known.size != wanted.size
 
-role = Role.find_by(name: "ADO Migration")
+role = ProjectRole.find_by(name: "ADO Migration")
 if role
   puts "role exists: #{role.id}"
 else
   puts "create role ADO Migration with #{known.join(', ')}"
   if apply
-    role = Role.new(name: "ADO Migration")
+    role = ProjectRole.new(name: "ADO Migration")  # Role is abstract: its type must be ProjectRole
     role.permissions = known
     role.save!
   end
