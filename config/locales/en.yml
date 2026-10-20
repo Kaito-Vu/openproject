@@ -6236,11 +6236,19 @@ en:
     create:
       complete_wizard_link: "Complete the %{artefact_name}"
       notification_email_subject: "Your project '%{project_name}' has been created"
+    bulk_working: "Working, please wait…"
+    unarchive:
+      bulk_button: "Unarchive selected"
+      bulk_done:
+        one: "%{count} project has been unarchived."
+        other: "%{count} projects have been unarchived."
     delete:
-      bulk_button: "Delete selected"
-      bulk_confirm: "Permanently delete the selected projects, their sub-projects and ALL their work packages? This cannot be undone."
+      bulk_button: "Delete permanently"
+      bulk_confirm: "PERMANENTLY delete the selected projects, their sub-projects and ALL work packages, files and other items inside them? This cannot be undone."
       bulk_none_selected: "Select at least one project to delete."
-      bulk_scheduled: "Deletion of %{count} project(s) has been scheduled and is performed in the background."
+      bulk_scheduled:
+        one: "Deletion of %{count} project has been scheduled and is performed in the background."
+        other: "Deletion of %{count} projects has been scheduled and is performed in the background."
       completed: "Deletion of project '%{name}' completed"
       completed_text: "The request to delete project '%{name}' has been completed."
       completed_text_children: "Additionally, the following subprojects have been deleted:"

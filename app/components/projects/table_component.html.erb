@@ -28,9 +28,13 @@ See COPYRIGHT and LICENSE files for more details.
 <%= component_wrapper(tag: "turbo-frame") do %>
   <div class="project-list-page--table" data-controller="table-action-menu checkable">
     <% if bulk_delete? %>
-      <%= form_with url: bulk_destroy_projects_path, method: :delete, id: "projects-bulk-delete-form",
-                    data: { turbo_frame: "_top", turbo_confirm: t("projects.delete.bulk_confirm") } do %>
-        <%= render(Primer::Beta::Button.new(type: :submit, scheme: :danger, size: :small, mb: 2)) { t("projects.delete.bulk_button") } %>
+      <%= form_with url: bulk_action_projects_path, method: :post, id: "projects-bulk-delete-form",
+                    data: { turbo_frame: "_top" }, aria: { live: "polite" } do %>
+        <%= render(Primer::Beta::Button.new(type: :submit, name: "bulk_action", value: "unarchive", size: :small, mb: 2,
+                                            data: { turbo_submits_with: t("projects.bulk_working") })) { t("projects.unarchive.bulk_button") } %>
+        <%= render(Primer::Beta::Button.new(type: :submit, name: "bulk_action", value: "destroy", scheme: :danger, size: :small, mb: 2,
+                                            data: { turbo_confirm: t("projects.delete.bulk_confirm"),
+                                                    turbo_submits_with: t("projects.bulk_working") })) { t("projects.delete.bulk_button") } %>
       <% end %>
     <% end %>
     <div class="generic-table--flex-container">
@@ -54,7 +58,7 @@ See COPYRIGHT and LICENSE files for more details.
             <thead class="-sticky">
               <tr>
                 <% if bulk_delete? %>
-                  <th>
+                  <th scope="col">
                     <input type="checkbox" aria-label="<%= t(:button_check_all) %>" data-action="change->checkable#toggleAll">
                   </th>
                 <% end %>

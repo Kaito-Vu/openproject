@@ -514,7 +514,7 @@ Rails.application.routes.draw do
   end
 
   resources :projects, except: %i[new create show edit update] do
-    delete :bulk_destroy, on: :collection
+    post :bulk_action, on: :collection
 
     scope module: "projects" do
       namespace "settings" do

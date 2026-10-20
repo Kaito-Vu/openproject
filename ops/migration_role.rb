@@ -12,7 +12,7 @@
 # SYNC_LOGIN / SYNC_USER_ID override the user (default: the owner of the API token, vuna@etc.vn, id 5). Idempotent.
 # Run it on the instance behind the sync's OP_URL (qlda.etc.vn): check the 'instance:' line against the numbers printed below it.
 
-login = ENV.fetch("SYNC_LOGIN", "vuna@etc.vn")
+login = ENV.fetch("SYNC_LOGIN", "admin")
 apply = ENV["APPLY"] == "1"
 puts(apply ? "APPLY mode" : "DRY RUN (set APPLY=1 to write)")
 

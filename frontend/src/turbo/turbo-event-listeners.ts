@@ -26,9 +26,19 @@
 //++
 
 import { readScriptNonce, scrubScriptElements } from './csp-script-nonce';
+import { hideElement, showElement } from 'core-app/shared/helpers/dom-helpers';
 import { DialogCloseDetail } from './dialog-stream-action';
 
 export function addTurboEventListeners(doc:Document = document, signal?:AbortSignal) {
+  // Show the global spinner for every Turbo form submission, so users see that something is happening.
+  const toggleLoading = (show:boolean) => {
+    const indicator = doc.querySelector<HTMLElement>('#global-loading-indicator');
+    if (!indicator) { return; }
+    (show ? showElement : hideElement)(indicator);
+  };
+  doc.addEventListener('turbo:submit-start', () => toggleLoading(true), { signal });
+  doc.addEventListener('turbo:submit-end', () => toggleLoading(false), { signal });
+
   // Close the primer dialog when the form inside has been submitted with a success response.
   //
   // If you want to keep the dialog open even after a successful form submission, you can add the

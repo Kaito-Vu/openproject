@@ -90,6 +90,9 @@ module Projects
       else
         ProjectMailer.delete_project_failed(model, user:).deliver_now
       end
+    rescue StandardError => e
+      # The project is already gone by now: a broken mail setup must not make the deletion look failed.
+      OpenProject.logger.warn("Could not send project deletion mail for '#{model.name}': #{e.message}")
     end
   end
 end

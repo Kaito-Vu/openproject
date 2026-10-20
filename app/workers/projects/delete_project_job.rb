@@ -31,6 +31,14 @@ module Projects
   class DeleteProjectJob < UserJob
     queue_with_priority :below_normal
     include OpenProject::LocaleHelper
+    include GoodJob::ActiveJobExtensions::Concurrency
+
+    # Every project deletion renumbers lft/rgt of the whole nested set, so parallel deletions deadlock.
+    # Excess jobs are retried by GoodJob once the running one is done.
+    good_job_control_concurrency_with(perform_limit: 1, key: -> { "projects-delete" })
+
+    # The project is already gone, e.g. deleted along with its parent by an earlier job.
+    discard_on ActiveJob::DeserializationError
 
     attr_reader :project
 
