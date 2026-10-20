@@ -22,8 +22,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+# along with this program. If not, see <https://www.gnu.org/licenses/>.
 #
 # See COPYRIGHT and LICENSE files for more details.
 #++
@@ -500,6 +499,11 @@ Rails.application.routes.draw do
         get :children
       end
     end
+    resource :whats_new, only: :show, controller: "whats_new" do
+      get :dialog
+      post :seen
+      post :read
+    end
   end
 
   %w[portfolio project program].each do |workspace_type|
@@ -697,16 +701,21 @@ Rails.application.routes.draw do
 
     resources :forums do
       resources :topics, controller: "messages", except: [:index] do
+        resource :accepted_solution, only: %i[create destroy], controller: "messages/accepted_solutions"
+
         member do
           get :quote
+          get :replies
           post :reply, as: "reply_to"
+        end
+
+        resource :work_package, only: %i[new create], controller: "messages/work_packages" do
+          post :refresh_form
         end
       end
 
       member do
-        get :confirm_destroy
-        get :move
-        post :move
+        put :move
       end
     end
 

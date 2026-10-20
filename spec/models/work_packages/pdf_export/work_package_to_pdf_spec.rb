@@ -22,8 +22,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# along with this program. If not, see <https://www.gnu.org/licenses/>.
 #
 # See COPYRIGHT and LICENSE files for more details.
 #++
@@ -318,6 +317,18 @@ RSpec.describe WorkPackage::PDFExport::WorkPackageToPdf do
         result = remove_pdf_page_footers(pdf[:strings].join(" "), 2)
 
         expect(result).to include("#{WorkPackage.human_attribute_name(:target_versions)} #{version.name}")
+      end
+    end
+
+    describe "with the work package labels feature active", with_flag: { work_package_labels: true } do
+      before do
+        create(:labeling, label: create(:label, name: "Urgent"), labelable: work_package)
+      end
+
+      it "renders the labels attribute" do
+        result = remove_pdf_page_footers(pdf[:strings].join(" "), 2)
+
+        expect(result).to include("#{WorkPackage.human_attribute_name(:labels)} Urgent")
       end
     end
 

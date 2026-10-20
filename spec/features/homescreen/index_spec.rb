@@ -22,8 +22,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# along with this program. If not, see <https://www.gnu.org/licenses/>.
 #
 # See COPYRIGHT and LICENSE files for more details.
 #++
@@ -31,7 +30,11 @@
 require "spec_helper"
 
 RSpec.describe "Homescreen", "index" do
+  let(:admin) { create(:admin) }
   let(:user) { build_stubbed(:user) }
+  let!(:project) { create(:public_project, identifier: "public-project") }
+  let(:general_settings_page) { Pages::Admin::SystemSettings::General.new }
+  let(:global_html_title) { Components::HtmlTitle.new }
 
   it "is reachable by the global menu" do
     login_as user
@@ -45,7 +48,7 @@ RSpec.describe "Homescreen", "index" do
   end
 
   describe "dashboard" do
-    let(:project) { create(:project) }
+    let!(:project) { create(:project) }
     let(:member) { create(:user, member_with_permissions: { project => %i[view_work_packages] }) }
     let!(:overdue) do
       create(:work_package, project:, assigned_to: member, due_date: Time.zone.today - 3, subject: "Late one")
@@ -61,6 +64,86 @@ RSpec.describe "Homescreen", "index" do
       expect(page).to have_test_selector("my-work-overdue", text: "Late one")
       expect(page).to have_test_selector("portfolio-health-row", text: project.name)
       expect(page).to have_test_selector("status-distribution-row")
+    end
+  end
+
+  describe "welcome text" do
+    before do
+      Setting.welcome_text = "With [a link to the public project]({{opSetting:base_url}}/projects/public-project)"
+      Setting.welcome_on_homescreen = true
+    end
+
+    it "can change the welcome text and still have a valid link", :js do
+      login_as admin
+
+      general_settings_page.visit!
+
+      welcome_text_editor = general_settings_page.welcome_text_editor
+      scroll_to_element(welcome_text_editor.container)
+      welcome_text_editor.click_and_type_slowly("Hello! ")
+
+      general_settings_page.press_save_button
+      expect_and_dismiss_flash(message: "Successful update.")
+
+      visit root_url
+      expect(page)
+        .to have_css("a[href=\"#{Rails.application.root_url}/projects/public-project\"]")
+
+      click_link "a link to the public project"
+      expect(page).to have_current_path /#{Regexp.escape(project_path(project))}\/?$/
+    end
+  end
+
+  describe "New features teaser", :js do
+    let(:release) { WhatsNew::Release.new(major: 18, minor: 0) }
+    let(:feature) do
+      WhatsNew::Release::Item.new(key: "line_0", title: "Type variants",
+                                  description: "Use with shared workflows", url: "https://example.com/type-variants")
+    end
+
+    before do
+      allow(WhatsNew::Release).to receive(:current).and_return(release)
+      allow(release).to receive(:features).and_return([feature])
+    end
+
+    it "lists the features without links" do
+      login_as user
+      visit home_path
+
+      within(".op-new-features") do
+        expect(page).to have_css("li", text: "Type variants: Use with shared workflows")
+        expect(page).to have_no_link("Type variants")
+      end
+    end
+  end
+
+  describe "Enterprise Support Link" do
+    include_context "support links"
+
+    context "on an Enterprise Edition" do
+      before do
+        allow(EnterpriseToken).to receive(:active?).and_return(true)
+      end
+
+      it "renders the correct link" do
+        login_as user
+        visit root_url
+        expect(page).to have_link(I18n.t(:label_enterprise_support),
+                                  href: support_link_as_enterprise)
+      end
+    end
+
+    context "on a Community Edition" do
+      before do
+        allow(EnterpriseToken).to receive(:active?).and_return(false)
+      end
+
+      it "renders the correct link" do
+        login_as user
+        visit root_url
+        expect(page).to have_link(I18n.t(:label_enterprise_support),
+                                  href: support_link_as_community)
+      end
     end
   end
 

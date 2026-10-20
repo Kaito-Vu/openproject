@@ -117,7 +117,8 @@ RUN --mount=type=cache,target=/root/.npm,sharing=locked \
     --mount=type=cache,target=/app/frontend/.angular/cache,sharing=locked \
   cp Gemfile.lock.bak Gemfile.lock && rm Gemfile.lock.bak && \
   bundle clean --force && \
-  ./docker/prod/setup/precompile-assets.sh
+  ./docker/prod/setup/precompile-assets.sh && \
+  ./docker/prod/setup/dump-schema.sh
 
 FROM app-build AS app-build-slim
 COPY ./docker/prod/setup/prune-slim-runtime.sh ./docker/prod/setup/prune-slim-runtime.sh
