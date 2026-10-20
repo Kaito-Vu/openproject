@@ -1,0 +1,9 @@
+{"name": "MPS", "identifier": "mps", "description": "Azure DevOps collection `MPS` (projects migrated from https://tfs.etc.vn:14443/MPS)"}
+{"name": "BAN_DU_AN", "identifier": "ban-du-an", "description": "Azure DevOps collection `BAN_DU_AN` (projects migrated from https://tfs.etc.vn:14443/BAN_DU_AN)"}
+{"name": "EPAY", "identifier": "epay", "description": "Azure DevOps collection `EPAY` (projects migrated from https://tfs.etc.vn:14443/EPAY)"}
+{"name": "Bank", "identifier": "bank", "description": "Azure DevOps collection `Bank` (projects migrated from https://tfs.etc.vn:14443/Bank)"}
+{"name": "ETC", "identifier": "etc", "description": "Azure DevOps collection `ETC` (projects migrated from https://tfs.etc.vn:14443/ETC)"}
+{"name": "MOF", "identifier": "mof", "description": "Azure DevOps collection `MOF` (projects migrated from https://tfs.etc.vn:14443/MOF)"}
+{"name": "MOT", "identifier": "mot", "description": "Azure DevOps collection `MOT` (projects migrated from https://tfs.etc.vn:14443/MOT)"}
+{"name": "RnD", "identifier": "rnd", "description": "Azure DevOps collection `RnD` (projects migrated from https://tfs.etc.vn:14443/RnD)"}
+{"name": "SC", "identifier": "sc", "description": "Azure DevOps collection `SC` (projects migrated from https://tfs.etc.vn:14443/SC)"}

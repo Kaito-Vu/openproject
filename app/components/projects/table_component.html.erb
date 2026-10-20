@@ -27,7 +27,13 @@ See COPYRIGHT and LICENSE files for more details.
 
 ++#%>
 <%= component_wrapper(tag: "turbo-frame") do %>
-  <div class="project-list-page--table" data-controller="table-action-menu">
+  <div class="project-list-page--table" data-controller="table-action-menu checkable">
+    <% if bulk_delete? %>
+      <%= form_with url: bulk_destroy_projects_path, method: :delete, id: "projects-bulk-delete-form",
+                    data: { turbo_frame: "_top", turbo_confirm: t("projects.delete.bulk_confirm") } do %>
+        <%= render(Primer::Beta::Button.new(type: :submit, scheme: :danger, size: :small, mb: 2)) { t("projects.delete.bulk_button") } %>
+      <% end %>
+    <% end %>
     <div class="generic-table--flex-container">
       <div class="<%= class_names("generic-table--container", container_class) %>">
         <div class="generic-table--results-container">
@@ -36,6 +42,7 @@ See COPYRIGHT and LICENSE files for more details.
                           class: "generic-table",
                           data: { controller: "table-highlighting" } do %>
             <colgroup>
+              <% if bulk_delete? %><col data-highlight="false"><% end %>
               <% columns.each do |column| %>
                 <% if column.attribute == :hierarchy %>
                   <col data-highlight="false">
@@ -47,6 +54,11 @@ See COPYRIGHT and LICENSE files for more details.
             </colgroup>
             <thead class="-sticky">
               <tr>
+                <% if bulk_delete? %>
+                  <th>
+                    <input type="checkbox" aria-label="<%= t(:button_check_all) %>" data-action="change->checkable#toggleAll">
+                  </th>
+                <% end %>
                 <% columns.each do |column| %>
                   <% if column.attribute == :hierarchy %>
                     <th id="project-table--hierarchy-header">
@@ -86,7 +98,7 @@ See COPYRIGHT and LICENSE files for more details.
             <tbody>
               <% if rows.empty? %>
                 <tr class="generic-table--empty-row">
-                  <td colspan="<%= columns.length + 1 %>"><%= empty_row_message %></td>
+                  <td colspan="<%= columns.length + 1 + (bulk_delete? ? 1 : 0) %>"><%= empty_row_message %></td>
                 </tr>
               <% end %>
               <%= render_collection rows %>

@@ -6126,6 +6126,10 @@ en:
       complete_wizard_link: "Complete the %{artefact_name}"
       notification_email_subject: "Your project '%{project_name}' has been created"
     delete:
+      bulk_button: "Delete selected"
+      bulk_confirm: "Permanently delete the selected projects, their sub-projects and ALL their work packages? This cannot be undone."
+      bulk_none_selected: "Select at least one project to delete."
+      bulk_scheduled: "Deletion of %{count} project(s) has been scheduled and is performed in the background."
       completed: "Deletion of project '%{name}' completed"
       completed_text: "The request to delete project '%{name}' has been completed."
       completed_text_children: "Additionally, the following subprojects have been deleted:"

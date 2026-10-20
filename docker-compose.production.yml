@@ -34,7 +34,7 @@ x-image: &image
   build:
     context: .
     dockerfile: docker/prod/Dockerfile
-    target: ${BUILD_TARGET:-production}
+    target: ${BUILD_TARGET:-slim}
     args:
       EDITION: ${OPENPROJECT_EDITION:-standard}
       VERSION: ${TAG:-production}

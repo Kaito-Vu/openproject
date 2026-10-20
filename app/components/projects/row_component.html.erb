@@ -31,6 +31,12 @@ See COPYRIGHT and LICENSE files for more details.
                 id: row_css_id,
                 class: row_css_class
                 ) do %>
+  <% if table.bulk_delete? %>
+    <td>
+      <input type="checkbox" form="projects-bulk-delete-form" name="project_ids[]" value="<%= project.id %>"
+             aria-label="<%= project.name %>" data-checkable-target="checkbox">
+    </td>
+  <% end %>
   <% columns.each do |column| %>
     <td class="<%= column_css_class(column) %>">
       <%= column_value(column) %>

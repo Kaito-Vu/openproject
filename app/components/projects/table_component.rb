@@ -45,6 +45,11 @@ module Projects
       super
     end
 
+    # Only admins may delete projects (see Projects::DeleteContract), and only from the main list, not the subclassed admin tables
+    def bulk_delete?
+      instance_of?(Projects::TableComponent) && current_user.admin?
+    end
+
     def initial_sort
       %i[lft asc]
     end

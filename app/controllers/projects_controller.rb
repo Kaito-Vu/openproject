@@ -34,13 +34,13 @@ class ProjectsController < ApplicationController
   menu_item :overview
   menu_item :roadmap, only: :roadmap
 
-  before_action :find_project, except: %i[index new create list_row_menu destroy destroy_info]
+  before_action :find_project, except: %i[index new create list_row_menu destroy destroy_info bulk_destroy]
   before_action :find_project_including_archived, only: %i[list_row_menu destroy destroy_info]
   before_action :load_query_or_deny_access, only: %i[index]
   before_action :authorize,
                 only: %i[copy_form copy deactivate_work_package_attachments export_project_initiation_pdf]
   before_action :authorize_global, only: %i[new create]
-  before_action :require_admin, only: %i[destroy destroy_info]
+  before_action :require_admin, only: %i[destroy destroy_info bulk_destroy]
   before_action :require_admin_or_active_project, only: :list_row_menu
   before_action :find_optional_parent, only: :new
   before_action :find_optional_template, only: %i[new create]
@@ -161,6 +161,23 @@ class ProjectsController < ApplicationController
       flash[:error] = I18n.t("projects.delete.schedule_failed", errors: service_call.errors.full_messages.join("\n"))
     end
 
+    redirect_to projects_path, status: :see_other
+  end
+
+  def bulk_destroy
+    ids = Array(params[:project_ids]).map(&:to_i)
+    return redirect_to(projects_path, status: :see_other, flash: { error: I18n.t("projects.delete.bulk_none_selected") }) if ids.empty?
+
+    # A selected project's sub-projects are deleted along with it, so skip those selected as well.
+    projects = Project.where(id: ids).reject { |project| project.ancestors.where(id: ids).exists? }
+    errors = projects.filter_map do |project|
+      call = ::Projects::ScheduleDeletionService.new(user: current_user, model: project).call
+      "#{project.name}: #{call.errors.full_messages.join(', ')}" if call.failure?
+    end
+
+    flash[:notice] = I18n.t("projects.delete.bulk_scheduled", count: projects.size - errors.size)
+    flash[:error] = I18n.t("projects.delete.schedule_failed", errors: errors.join("
+")) if errors.any?
     redirect_to projects_path, status: :see_other
   end
 
