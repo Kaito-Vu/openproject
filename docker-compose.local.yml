@@ -1,129 +1,192 @@
-# Full OpenProject stack for local Docker, built from this checkout (no TLS).
+# =============================================================================
+# OpenProject - LOCAL stack (standalone, built from this repository).
+# Plain HTTP on http://localhost:${HTTP_PORT}. Not hardened, do not use publicly.
 #
 #   docker compose -f docker-compose.local.yml up -d --build
-#   -> http://localhost:8080   login: admin / admin (you must change it on first login)
+#   (every setting has a default; override via a file with --env-file, e.g. .env.local)
 #
-# Components: db (PostgreSQL), cache (memcached), seeder (migrate + seed, one-shot),
-#             web (Puma), worker (GoodJob background jobs), cron (IMAP poller, off by default),
-#             hocuspocus (real-time collaborative editing).
+#   docker compose -f docker-compose.local.yml logs -f web worker
+#   docker compose -f docker-compose.local.yml down
 #
-# All settings are overridable via shell env or a file passed with `--env-file`.
-# For local use only: the defaults below are NOT secure.
+# Local integrations (Nextcloud, ...) need SSRF protection relaxed, and Entra
+# only accepts http redirect URIs for localhost:
+# http://localhost:${HTTP_PORT}/auth/entra/callback
+# =============================================================================
+
 name: openproject-local
 
-x-op-image: &image
-  # Built from this checkout (docker/prod/Dockerfile, `slim` target). First build takes a
-  # while (gems + Angular); later builds reuse the layer cache. Same tag in all services,
-  # so the cache makes the extra builds no-ops.
-  image: openproject-local:slim
-  build:
-    context: .
-    dockerfile: docker/prod/Dockerfile
-    target: slim
-  restart: unless-stopped
-  networks: [internal]
-
-x-op-env: &env
-  RAILS_ENV: production
-  SECRET_KEY_BASE: ${OP_SECRET_KEY_BASE:-local-only-0b6c1f2e9a3d4c58b7e1a9f04d2c6e83b5a7f1c9d0e2a4b6c8d1e3f5a7b9c0d2}
-  DATABASE_URL: postgres://openproject:${OP_DB_PASSWORD:-openproject}@db/openproject?pool=20&encoding=unicode&reconnect=true
-  OPENPROJECT_HTTPS: "false"
-  OPENPROJECT_HSTS: "false"
-  OPENPROJECT_HOST__NAME: ${OP_HOST:-localhost}:${OP_PORT:-8080}
-  OPENPROJECT_ADDITIONAL__HOSTS: web # lets hocuspocus call web:8080 inside the network
-  OPENPROJECT_RAILS__CACHE__STORE: memcache
-  OPENPROJECT_CACHE__MEMCACHE__SERVER: cache:11211
-  OPENPROJECT_COLLABORATIVE__EDITING__HOCUSPOCUS__URL: ws://${OP_HOST:-localhost}:${OP_HOCUSPOCUS_PORT:-1234}
-  OPENPROJECT_COLLABORATIVE__EDITING__HOCUSPOCUS__SECRET: ${OP_HOCUSPOCUS_SECRET:-secret12345}
-  OPENPROJECT_SSRF_PROTECTION_IP_ALLOWLIST: 0.0.0.0/0,::0/0 # allow local integrations (Nextcloud etc.)
-  RAILS_MIN_THREADS: 4
-  RAILS_MAX_THREADS: 16
-  IMAP_ENABLED: ${OP_IMAP_ENABLED:-false} # see docker/prod/cron for the IMAP_* options
-
-x-op-volumes: &volumes
-  - opdata:/var/openproject/assets
-
 networks:
-  internal:
+  frontend:
+  backend:
 
 volumes:
   pgdata:
   opdata:
+  caddy_data:
+  caddy_config:
+
+x-restart: &restart
+  restart: unless-stopped
+
+x-image: &image
+  image: openproject/openproject:${TAG:-local}
+  build:
+    context: .
+    dockerfile: docker/prod/Dockerfile
+    target: ${BUILD_TARGET:-slim}
+    args:
+      EDITION: ${OPENPROJECT_EDITION:-standard}
+      VERSION: ${TAG:-local}
+      REVISION: ${GIT_SHA:-unknown}
+
+x-app: &app
+  <<: [*image, *restart]
+  environment:
+    OPENPROJECT_HTTPS: "${OPENPROJECT_HTTPS:-false}"
+    OPENPROJECT_HOST__NAME: "${OPENPROJECT_HOST__NAME:-localhost:8080}"
+    OPENPROJECT_ADDITIONAL__HOST__NAMES: "${OPENPROJECT_ADDITIONAL__HOST__NAMES:-web}"
+    OPENPROJECT_HSTS: "${OPENPROJECT_HSTS:-false}"
+    OPENPROJECT_LOG__LEVEL: "${OPENPROJECT_LOG__LEVEL:-info}"
+    OPENPROJECT_SSRF_PROTECTION_IP_ALLOWLIST: "${OPENPROJECT_SSRF_PROTECTION_IP_ALLOWLIST:-0.0.0.0/0,::0/0}"
+    OPENPROJECT_RAILS__CACHE__STORE: memcache
+    OPENPROJECT_CACHE__MEMCACHE__SERVER: cache:11211
+    OPENPROJECT_RAILS__RELATIVE__URL__ROOT: "${OPENPROJECT_RAILS__RELATIVE__URL__ROOT:-}"
+    OPENPROJECT_COLLABORATIVE__EDITING__HOCUSPOCUS__URL: "${COLLABORATIVE_SERVER_URL:-ws://${OPENPROJECT_HOST__NAME:-localhost:8080}/hocuspocus}"
+    OPENPROJECT_COLLABORATIVE__EDITING__HOCUSPOCUS__SECRET: "${COLLABORATIVE_SERVER_SECRET:-local-hocuspocus-secret}"
+    DATABASE_URL: "${DATABASE_URL:-postgres://postgres:${POSTGRES_PASSWORD:-local-db-password}@db/openproject?pool=20&encoding=unicode&reconnect=true}"
+    RAILS_MIN_THREADS: "${RAILS_MIN_THREADS:-1}"
+    RAILS_MAX_THREADS: "${RAILS_MAX_THREADS:-4}"
+    IMAP_ENABLED: "${IMAP_ENABLED:-false}"
+    SECRET_KEY_BASE: "${SECRET_KEY_BASE:-local-dev-secret-key-base-not-for-production}"
+    # Microsoft Entra ID (OIDC). Redirect URI: http://<OPENPROJECT_HOST__NAME>/auth/entra/callback
+    # OPENPROJECT_OPENID__CONNECT_ENTRA_DISPLAY__NAME: "${ENTRA_DISPLAY_NAME:-Microsoft}"
+    # OPENPROJECT_OPENID__CONNECT_ENTRA_HOST: login.microsoftonline.com
+    # OPENPROJECT_OPENID__CONNECT_ENTRA_IDENTIFIER: "${ENTRA_CLIENT_ID:?set ENTRA_CLIENT_ID}"
+    # OPENPROJECT_OPENID__CONNECT_ENTRA_SECRET: "${ENTRA_CLIENT_SECRET:?set ENTRA_CLIENT_SECRET}"
+    # OPENPROJECT_OPENID__CONNECT_ENTRA_ISSUER: "https://login.microsoftonline.com/${ENTRA_TENANT_ID:?set ENTRA_TENANT_ID}/v2.0"
+    # OPENPROJECT_OPENID__CONNECT_ENTRA_SCOPE: "[openid,email,profile]"
+    # OPENPROJECT_OPENID__CONNECT_ENTRA_AUTHORIZATION__ENDPOINT: "/${ENTRA_TENANT_ID}/oauth2/v2.0/authorize"
+    # OPENPROJECT_OPENID__CONNECT_ENTRA_TOKEN__ENDPOINT: "/${ENTRA_TENANT_ID}/oauth2/v2.0/token"
+    # OPENPROJECT_OPENID__CONNECT_ENTRA_USERINFO__ENDPOINT: "https://graph.microsoft.com/oidc/userinfo"
+    # OPENPROJECT_OPENID__CONNECT_ENTRA_END__SESSION__ENDPOINT: "https://login.microsoftonline.com/${ENTRA_TENANT_ID}/oauth2/v2.0/logout"
+  volumes:
+    - "${OPDATA:-opdata}:/var/openproject/assets"
 
 services:
   db:
-    image: postgres:17
-    restart: unless-stopped
-    networks: [internal]
+    image: postgres:${POSTGRES_VERSION:-17-alpine}
+    <<: *restart
+    stop_grace_period: "3s"
     environment:
-      POSTGRES_USER: openproject
-      POSTGRES_PASSWORD: ${OP_DB_PASSWORD:-openproject}
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-local-db-password}"
       POSTGRES_DB: openproject
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - "${PGDATA:-pgdata}:/var/lib/postgresql/data"
+    ports:
+      - "127.0.0.1:5434:5432"
+    networks:
+      - backend
     healthcheck:
-      test: [CMD-SHELL, pg_isready -U openproject -d openproject]
-      interval: 5s
+      test: ["CMD-SHELL", "pg_isready -U postgres -d openproject"]
+      interval: 10s
       timeout: 5s
-      retries: 20
+      retries: 10
+      start_period: 20s
 
   cache:
     image: memcached:1.6-alpine
-    restart: unless-stopped
-    networks: [internal]
+    <<: *restart
+    networks:
+      - backend
 
-  seeder:
-    <<: *image
-    restart: "no"
-    command: ./docker/prod/seeder
-    environment: *env
-    volumes: *volumes
+  proxy:
+    image: caddy:2.11.6-alpine
+    <<: *restart
+    environment:
+      CADDY_SITE_ADDRESS: "${CADDY_SITE_ADDRESS:-:8080}"
+      ACME_CA: "${ACME_CA:-https://acme-v02.api.letsencrypt.org/directory}"
+    volumes:
+      - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    ports:
+      - "${HTTP_PORT:-8080}:8080"
     depends_on:
-      db: { condition: service_healthy }
+      web:
+        condition: service_started
+      hocuspocus:
+        condition: service_started
+    networks:
+      - frontend
 
   web:
-    <<: *image
+    <<: *app
     command: ./docker/prod/web
-    environment: *env
-    volumes: *volumes
-    ports:
-      - "${OP_PORT:-8080}:8080"
+    networks:
+      - frontend
+      - backend
     depends_on:
-      seeder: { condition: service_completed_successfully }
-      cache: { condition: service_started }
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_started
+      seeder:
+        condition: service_completed_successfully
     healthcheck:
-      test: [CMD, curl, -f, http://localhost:8080/health_checks/default]
-      interval: 15s
+      test: ["CMD", "curl", "-f", "http://localhost:8080${OPENPROJECT_RAILS__RELATIVE__URL__ROOT:-}/health_checks/default"]
+      interval: 30s
       timeout: 5s
-      retries: 10
+      retries: 5
       start_period: 60s
 
   worker:
-    <<: *image
+    <<: *app
     command: ./docker/prod/worker
-    environment: *env
-    volumes: *volumes
+    networks:
+      - backend
     depends_on:
-      seeder: { condition: service_completed_successfully }
-      cache: { condition: service_started }
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_started
+      seeder:
+        condition: service_completed_successfully
 
   cron:
-    <<: *image
+    <<: *app
     command: ./docker/prod/cron
-    environment: *env
-    volumes: *volumes
+    networks:
+      - backend
     depends_on:
-      seeder: { condition: service_completed_successfully }
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_started
+      seeder:
+        condition: service_completed_successfully
+
+  seeder:
+    <<: *app
+    command: ./docker/prod/seeder
+    restart: on-failure
+    networks:
+      - backend
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_started
 
   hocuspocus:
-    image: openproject-local-hocuspocus:latest
-    build: ./extensions/op-blocknote-hocuspocus
-    restart: unless-stopped
-    networks: [internal]
+    image: openproject/hocuspocus:${HOCUSPOCUS_TAG:-17.9.1-patched}
+    build:
+      context: ./extensions/op-blocknote-hocuspocus
+      dockerfile: Dockerfile
+    <<: *restart
     environment:
-      SECRET: ${OP_HOCUSPOCUS_SECRET:-secret12345}
-      OPENPROJECT_URL: http://web:8080
-    ports:
-      - "${OP_HOCUSPOCUS_PORT:-1234}:1234"
-    depends_on:
-      web: { condition: service_healthy }
+      SECRET: "${COLLABORATIVE_SERVER_SECRET:-local-hocuspocus-secret}"
+      OPENPROJECT_URL: "${OPENPROJECT_URL:-http://web:8080}"
+      OPENPROJECT_HTTPS: "${OPENPROJECT_HTTPS:-false}"
+    networks:
+      - backend
+      - frontend

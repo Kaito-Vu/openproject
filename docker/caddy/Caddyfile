@@ -1,0 +1,13 @@
+{
+	acme_ca {$ACME_CA}
+}
+
+# Plain HTTP on :8080 by default; set CADDY_SITE_ADDRESS to a hostname for automatic HTTPS.
+{$CADDY_SITE_ADDRESS::8080} {
+	# Collaborative editing websocket (same routing as docker/prod/proxy.conf.erb)
+	handle_path /hocuspocus* {
+		reverse_proxy hocuspocus:1234
+	}
+
+	reverse_proxy web:8080
+}

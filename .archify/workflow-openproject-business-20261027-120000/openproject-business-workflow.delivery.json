@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "d2b729ae-7d13-45a5-82a8-24803f3aab46",
+  "status": "current",
+  "command": "deliver",
+  "type": "workflow",
+  "input": "D:\\working\\02.ETC\\openproject\\.archify\\workflow-openproject-business-20261027-120000\\candidate.json",
+  "output": "D:\\working\\02.ETC\\openproject\\.archify\\workflow-openproject-business-20261027-120000\\openproject-business-workflow.html",
+  "specification": {
+    "sha256": "0db66b3bedd69773ac5dbc3eedaa4d7bbf4d822e7719ba98f378d94297e0be3e",
+    "bytes": 11192
+  },
+  "artifact": {
+    "sha256": "7f7ece750288531754a147fa1475c39c8a444580843746af8d185ca5466d8c7b",
+    "bytes": 840876
+  }
+}

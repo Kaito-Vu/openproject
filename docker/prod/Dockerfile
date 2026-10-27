@@ -75,6 +75,8 @@ FROM build-base AS app-build
 # stuff required for gems
 COPY Gemfile Gemfile.* .ruby-version ./
 COPY modules ./modules
+# Local plugin(s) referenced from Gemfile.plugins (path gems must exist at bundle-install time)
+COPY extensions/openproject-ux_enhancements ./extensions/openproject-ux_enhancements
 # Add vendor for saas-openproject plugins
 COPY vendor ./vendor
 # Add lib in case a plugin tries to load VERSION file under lib
@@ -86,6 +88,10 @@ COPY ./docker/prod/setup/bundle-install.sh ./vendor/
 RUN bash vendor/bundle-install.sh && rm vendor/bundle-install.sh
 
 COPY . .
+
+# Sources checked out on Windows (git core.autocrlf=true) arrive with CRLF line endings, which
+# breaks e.g. one-line ERB form templates at boot. No-op for LF checkouts.
+RUN grep -rlIZ -P '\r$' --exclude-dir=vendor --exclude-dir=node_modules . | xargs -0 -r sed -i 's/\r$//'
 
 # Copy lock file again as the updated version was overridden by COPY just now.
 # `COPY . .` also restores the CI vendor/bundle cache over the installed bundle, so

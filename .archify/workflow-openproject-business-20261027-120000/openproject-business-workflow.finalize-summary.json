@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "workflow",
+  "quality": "showcase",
+  "specification": {
+    "path": "D:\\working\\02.ETC\\openproject\\.archify\\workflow-openproject-business-20261027-120000\\candidate.json",
+    "sha256": "0db66b3bedd69773ac5dbc3eedaa4d7bbf4d822e7719ba98f378d94297e0be3e",
+    "bytes": 11192
+  },
+  "artifact": {
+    "path": "D:\\working\\02.ETC\\openproject\\.archify\\workflow-openproject-business-20261027-120000\\openproject-business-workflow.html",
+    "sha256": "7f7ece750288531754a147fa1475c39c8a444580843746af8d185ca5466d8c7b",
+    "bytes": 840876
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "D:\\working\\02.ETC\\openproject\\.archify\\workflow-openproject-business-20261027-120000\\openproject-business-workflow.finalize.json",
+    "summaryReceipt": "D:\\working\\02.ETC\\openproject\\.archify\\workflow-openproject-business-20261027-120000\\openproject-business-workflow.finalize-summary.json",
+    "browserCheckReceipt": "D:\\working\\02.ETC\\openproject\\.archify\\workflow-openproject-business-20261027-120000\\openproject-business-workflow.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-10-26T07:37:56.909Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 3110,
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  }
+}

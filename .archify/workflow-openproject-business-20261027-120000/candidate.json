@@ -1,0 +1,495 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "OpenProject - Workflow nghiệp vụ",
+    "quality_profile": "showcase",
+    "output": ".archify/workflow-openproject-business-20261027-120000/openproject-business-workflow.html",
+    "repository": {
+      "url": "git@github.com:Kaito-Vu/openproject.git",
+      "link_mode": "local-only",
+      "revision": "69027a9a28e165705bf1c5960578a18c0be6a634"
+    }
+  },
+  "lanes": [
+    {
+      "id": "setup",
+      "label": "Thiết lập hệ thống"
+    },
+    {
+      "id": "project",
+      "label": "Dự án & phân quyền"
+    },
+    {
+      "id": "wp",
+      "label": "Work package"
+    },
+    {
+      "id": "mods",
+      "label": "Module theo dự án"
+    },
+    {
+      "id": "notif",
+      "label": "Journal & thông báo"
+    },
+    {
+      "id": "mail",
+      "label": "Email"
+    }
+  ],
+  "mainPath": [
+    "admin",
+    "project",
+    "members",
+    "acl",
+    "wpsvc",
+    "journal",
+    "event",
+    "ncreate",
+    "job",
+    "digest"
+  ],
+  "nodes": [
+    {
+      "id": "admin",
+      "lane": "setup",
+      "col": 0,
+      "type": "external",
+      "label": "Quản trị viên",
+      "sublabel": "cấu hình & tạo dự án"
+    },
+    {
+      "id": "setup",
+      "lane": "setup",
+      "col": 1,
+      "type": "backend",
+      "label": "Type, Status, Role",
+      "sublabel": "Workflow, custom field",
+      "sources": [
+        {
+          "path": "app/contracts/work_packages/base_contract.rb",
+          "line": 164,
+          "end_line": 165,
+          "label": "status transition"
+        }
+      ]
+    },
+    {
+      "id": "project",
+      "lane": "project",
+      "col": 0,
+      "type": "backend",
+      "label": "Tạo dự án",
+      "sublabel": "chọn module, parent",
+      "sources": [
+        {
+          "path": "app/models/permitted_params.rb",
+          "line": 298,
+          "end_line": 315,
+          "label": "project params"
+        },
+        {
+          "path": "lib/open_project/access_control.rb",
+          "line": 148,
+          "end_line": 155,
+          "label": "default modules"
+        }
+      ]
+    },
+    {
+      "id": "members",
+      "lane": "project",
+      "col": 1,
+      "type": "backend",
+      "label": "Thành viên + Role",
+      "sublabel": "user/group, kế thừa",
+      "sources": [
+        {
+          "path": "app/models/permitted_params.rb",
+          "line": 432,
+          "end_line": 434,
+          "label": "membership params"
+        },
+        {
+          "path": "app/services/groups/update_service.rb",
+          "line": 53,
+          "label": "group membership sync"
+        }
+      ]
+    },
+    {
+      "id": "acl",
+      "lane": "wp",
+      "col": 1,
+      "type": "security",
+      "label": "Kiểm tra quyền",
+      "sublabel": "AccessControl",
+      "sources": [
+        {
+          "path": "lib/open_project/access_control.rb",
+          "line": 28,
+          "end_line": 62,
+          "label": "permission registry"
+        }
+      ]
+    },
+    {
+      "id": "user",
+      "lane": "wp",
+      "col": 0,
+      "type": "external",
+      "label": "Thành viên",
+      "sublabel": "tạo/sửa công việc"
+    },
+    {
+      "id": "wpsvc",
+      "lane": "wp",
+      "col": 2,
+      "type": "backend",
+      "label": "Create/Update WP",
+      "sublabel": "quyền + status hợp lệ?",
+      "sources": [
+        {
+          "path": "app/services/base_services/write.rb",
+          "line": 30,
+          "end_line": 53,
+          "label": "write service"
+        },
+        {
+          "path": "app/contracts/work_packages/base_contract.rb",
+          "line": 38,
+          "end_line": 43,
+          "label": "status permission"
+        },
+        {
+          "path": "app/contracts/work_packages/base_contract.rb",
+          "line": 164,
+          "end_line": 165,
+          "label": "validations"
+        }
+      ]
+    },
+    {
+      "id": "rejected",
+      "lane": "wp",
+      "col": 4,
+      "type": "security",
+      "label": "Từ chối",
+      "sublabel": "trả lỗi validation"
+    },
+    {
+      "id": "journal",
+      "lane": "wp",
+      "col": 3,
+      "type": "database",
+      "label": "Journal",
+      "sublabel": "lịch sử thay đổi + comment",
+      "sources": [
+        {
+          "path": "app/services/journals/update_service.rb",
+          "line": 34,
+          "end_line": 46,
+          "label": "journal event"
+        }
+      ]
+    },
+    {
+      "id": "plan",
+      "lane": "mods",
+      "col": 0,
+      "type": "frontend",
+      "label": "Lập kế hoạch",
+      "sublabel": "Gantt, Boards, Backlogs",
+      "sources": [
+        {
+          "path": "modules/gantt/lib/open_project/gantt/engine.rb",
+          "line": 42,
+          "label": "gantt module"
+        },
+        {
+          "path": "modules/boards/lib/open_project/boards/engine.rb",
+          "line": 40,
+          "label": "boards module"
+        },
+        {
+          "path": "modules/backlogs/lib/open_project/backlogs/engine.rb",
+          "line": 53,
+          "label": "backlogs module"
+        }
+      ]
+    },
+    {
+      "id": "time",
+      "lane": "mods",
+      "col": 1,
+      "type": "frontend",
+      "label": "Thời gian & chi phí",
+      "sublabel": "Costs, Budgets, Reporting",
+      "sources": [
+        {
+          "path": "modules/costs/lib/costs/engine.rb",
+          "line": 39,
+          "label": "costs module"
+        },
+        {
+          "path": "modules/budgets/lib/budgets/engine.rb",
+          "line": 37,
+          "label": "budgets module"
+        },
+        {
+          "path": "modules/reporting/lib/open_project/reporting/engine.rb",
+          "line": 43,
+          "label": "reporting module"
+        }
+      ]
+    },
+    {
+      "id": "collab",
+      "lane": "mods",
+      "col": 2,
+      "type": "frontend",
+      "label": "Cộng tác",
+      "sublabel": "Meeting, Wiki, Documents",
+      "sources": [
+        {
+          "path": "modules/meeting/lib/open_project/meeting/engine.rb",
+          "line": 42,
+          "label": "meetings module"
+        },
+        {
+          "path": "modules/wikis/lib/open_project/wikis/engine.rb",
+          "line": 118,
+          "label": "wiki module"
+        },
+        {
+          "path": "modules/documents/lib/open_project/documents/engine.rb",
+          "line": 53,
+          "label": "documents module"
+        }
+      ]
+    },
+    {
+      "id": "event",
+      "lane": "notif",
+      "col": 3,
+      "type": "messagebus",
+      "label": "Event JOURNAL_CREATED",
+      "sublabel": "OpenProject::Notifications",
+      "sources": [
+        {
+          "path": "config/initializers/subscribe_listeners.rb",
+          "line": 31,
+          "end_line": 46,
+          "label": "listener"
+        },
+        {
+          "path": "lib_static/open_project/notifications.rb",
+          "line": 47,
+          "end_line": 83,
+          "label": "event bus"
+        }
+      ]
+    },
+    {
+      "id": "ncreate",
+      "lane": "notif",
+      "col": 4,
+      "type": "backend",
+      "label": "Tạo Notification",
+      "sublabel": "mention, watcher, assignee",
+      "sources": [
+        {
+          "path": "app/services/notifications/create_from_model_service.rb",
+          "line": 60,
+          "end_line": 70,
+          "label": "create from journal"
+        }
+      ]
+    },
+    {
+      "id": "ian",
+      "lane": "notif",
+      "col": 5,
+      "type": "frontend",
+      "label": "In-app (chuông)",
+      "sublabel": "đã đọc ⇒ bỏ qua mail",
+      "sources": [
+        {
+          "path": "app/services/notifications/mail_service.rb",
+          "line": 38,
+          "end_line": 45,
+          "label": "skip if read in-app"
+        }
+      ]
+    },
+    {
+      "id": "job",
+      "lane": "mail",
+      "col": 4,
+      "type": "messagebus",
+      "label": "Reminder job",
+      "sublabel": "mỗi 15 phút theo user",
+      "sources": [
+        {
+          "path": "app/workers/notifications/schedule_reminder_mails_job.rb",
+          "line": 34,
+          "end_line": 42,
+          "label": "schedule"
+        },
+        {
+          "path": "app/workers/mails/reminder_job.rb",
+          "line": 49,
+          "end_line": 63,
+          "label": "render digest"
+        }
+      ]
+    },
+    {
+      "id": "digest",
+      "lane": "mail",
+      "col": 5,
+      "type": "cloud",
+      "label": "Digest email",
+      "sublabel": "tối đa 15 WP/mail",
+      "sources": [
+        {
+          "path": "app/mailers/digest_mailer.rb",
+          "line": 55,
+          "end_line": 79,
+          "label": "digest mail"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "admin",
+      "to": "setup",
+      "variant": "default"
+    },
+    {
+      "id": "e2",
+      "from": "admin",
+      "to": "project",
+      "label": "tạo",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e3",
+      "from": "project",
+      "to": "members",
+      "label": "mời",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e4",
+      "from": "setup",
+      "to": "members",
+      "label": "Role",
+      "variant": "dashed",
+      "role": "branch"
+    },
+    {
+      "id": "e5",
+      "from": "members",
+      "to": "acl",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e6",
+      "from": "user",
+      "to": "acl",
+      "label": "thao tác",
+      "variant": "default"
+    },
+    {
+      "id": "e7",
+      "from": "acl",
+      "to": "wpsvc",
+      "label": "có quyền",
+      "variant": "security"
+    },
+    {
+      "id": "e11",
+      "from": "project",
+      "to": "time",
+      "label": "bật module",
+      "variant": "dashed",
+      "role": "branch"
+    },
+    {
+      "id": "e12",
+      "from": "collab",
+      "to": "event",
+      "label": "journal module khác",
+      "variant": "dashed",
+      "role": "async"
+    },
+    {
+      "id": "e13",
+      "from": "journal",
+      "to": "event",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e14",
+      "from": "event",
+      "to": "ncreate",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e15",
+      "from": "ncreate",
+      "to": "ian",
+      "variant": "default"
+    },
+    {
+      "id": "e16",
+      "from": "ncreate",
+      "to": "job",
+      "label": "chưa đọc",
+      "variant": "dashed",
+      "role": "async"
+    },
+    {
+      "id": "e17",
+      "from": "job",
+      "to": "digest",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e9",
+      "from": "wpsvc",
+      "to": "journal",
+      "label": "lưu",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e10",
+      "from": "wpsvc",
+      "to": "rejected",
+      "label": "sai",
+      "variant": "security",
+      "role": "error"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Phạm vi",
+      "items": [
+        "Luồng cốt lõi: dự án → thành viên/role → work package → journal → thông báo",
+        "Module mở rộng hiển thị gọn; GitHub/GitLab/Webhooks chưa vẽ"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Cổng kiểm soát",
+      "items": [
+        "Mọi thao tác qua AccessControl theo role trong dự án",
+        "Đổi status bị chặn bởi quyền + validate transition"
+      ]
+    }
+  ]
+}

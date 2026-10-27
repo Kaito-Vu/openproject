@@ -1,0 +1,61 @@
+<script nonce="<%= content_security_policy_nonce %>">
+(function () {
+  function fix(root) {
+    root = root || document;
+    var q = function (s) { return root.querySelectorAll ? root.querySelectorAll(s) : []; };
+
+    // Selected menu entry announced to screen readers (4.1.2)
+    q('.op-submenu--item-action.selected, .op-sidebar--item-action.selected').forEach(function (e) {
+      e.setAttribute('aria-current', 'page');
+    });
+
+    // Positive tabindex breaks natural Tab order (2.4.3)
+    q('[tabindex]').forEach(function (e) {
+      if (parseInt(e.getAttribute('tabindex'), 10) > 0) e.removeAttribute('tabindex');
+    });
+
+    // Toasts: not a tab stop; only errors are assertive (4.1.3)
+    q('.op-toast').forEach(function (t) {
+      if (t.getAttribute('tabindex') === '0') t.removeAttribute('tabindex');
+      var r = t.closest('[role="alert"]') || t;
+      if (r.getAttribute('role') === 'alert' && !/error|warning/.test(t.className)) r.setAttribute('role', 'status');
+    });
+
+    // Placeholder links acting as buttons / non-links (4.1.2)
+    q('.op-toast a[href="#"]').forEach(function (a) { a.setAttribute('role', 'button'); });
+    q('.op-breadcrumbs a[href="#"], op-breadcrumbs a[href="#"]').forEach(function (a) { a.removeAttribute('href'); });
+
+    // form-level autocomplete=off blocks password managers
+    q('form[autocomplete="off"]').forEach(function (f) {
+      if (f.querySelector('[autocomplete="new-password"], [autocomplete="current-password"]')) f.removeAttribute('autocomplete');
+    });
+
+    // Scrollable table wrappers must be keyboard reachable (2.1.1)
+    q('.generic-table--results-container').forEach(function (e) {
+      if (e.scrollWidth > e.clientWidth && !e.hasAttribute('tabindex')) { e.setAttribute('tabindex', '0'); e.setAttribute('role', 'region'); if (!e.hasAttribute('aria-label')) e.setAttribute('aria-label', document.title); }
+    });
+  }
+
+  var m = document.querySelector('meta[name="viewport"]');
+  if (m && !/initial-scale/.test(m.content)) m.content += ', initial-scale=1';
+
+  // Double-submit guard (Turbo + plain forms)
+  var BUSY = 'data-ux-busy';
+  function lock(btn) { if (btn && !btn.disabled) { btn.setAttribute(BUSY, ''); btn.setAttribute('aria-disabled', 'true'); btn.disabled = true; } }
+  function unlock() { document.querySelectorAll('[' + BUSY + ']').forEach(function (b) { b.disabled = false; b.removeAttribute(BUSY); b.removeAttribute('aria-disabled'); }); }
+  document.addEventListener('submit', function (e) {
+    var btn = e.submitter;
+    setTimeout(function () { if (!e.defaultPrevented) lock(btn); }, 0);
+  }, true);
+  document.addEventListener('turbo:submit-start', function (e) { lock(e.detail && e.detail.formSubmission && e.detail.formSubmission.submitter); });
+  document.addEventListener('turbo:submit-end', unlock);
+  window.addEventListener('pageshow', unlock);
+
+  var pending = false;
+  new MutationObserver(function () {
+    if (pending) return; pending = true;
+    requestAnimationFrame(function () { pending = false; fix(); });
+  }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+  fix();
+})();
+</script>

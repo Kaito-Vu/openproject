@@ -1,0 +1,29 @@
+<style nonce="<%= content_security_policy_nonce %>">
+  /* Skip-to-content / sticky header must not hide the focused element (WCAG 2.4.11) */
+  html { scroll-padding-top: 6rem; }
+
+  /* Keyboard focus must stay visible where core removes it (WCAG 2.4.7) */
+  :focus-visible { outline: 2px solid var(--focus-outline-color, #0969da); outline-offset: 2px; }
+  html:root body .toolbar *:focus-visible:focus-visible,
+  html:root body [class*="bn-"] :focus-visible:focus-visible:focus-visible {
+    outline: 2px solid var(--focus-outline-color, #0969da) !important;
+    outline-offset: 2px !important;
+  }
+  .toolbar *:hover { outline-color: var(--borderColor-default, #8c959f); }
+
+  /* Low-contrast colours: code comments (<4.5:1) and heading anchors (<3:1) */
+  .highlight .c, .highlight .cm, .highlight .c1, .highlight .cs { color: #6a6a5e; }
+  .highlight .cp { color: #6e6e6e; }
+  .op-uc-link_permalink { color: var(--fgColor-muted, #59636e); }
+  .op-uc-link_permalink:hover { color: var(--fgColor-default, #1f2328); }
+
+  /* Respect reduced-motion (WCAG 2.3.3) */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+</style>

@@ -38,7 +38,8 @@ log/*.log
 /tmp
 frontend/.angular/cache
 frontend/node_modules
-node_modules
+frontend/src/app/features/plugins/linked
+**/node_modules
 # travis
 vendor/bundle
 # Local checkout; all-in-one copies hocuspocus from its dedicated image.
@@ -46,3 +47,4 @@ vendor/hocuspocus
 /public/assets
 /config/frontend_assets.manifest.json
 .oss-scanner
+.claude
