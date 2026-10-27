@@ -1,0 +1,129 @@
+# Full OpenProject stack for local Docker, built from this checkout (no TLS).
+#
+#   docker compose -f docker-compose.local.yml up -d --build
+#   -> http://localhost:8080   login: admin / admin (you must change it on first login)
+#
+# Components: db (PostgreSQL), cache (memcached), seeder (migrate + seed, one-shot),
+#             web (Puma), worker (GoodJob background jobs), cron (IMAP poller, off by default),
+#             hocuspocus (real-time collaborative editing).
+#
+# All settings are overridable via shell env or a file passed with `--env-file`.
+# For local use only: the defaults below are NOT secure.
+name: openproject-local
+
+x-op-image: &image
+  # Built from this checkout (docker/prod/Dockerfile, `slim` target). First build takes a
+  # while (gems + Angular); later builds reuse the layer cache. Same tag in all services,
+  # so the cache makes the extra builds no-ops.
+  image: openproject-local:slim
+  build:
+    context: .
+    dockerfile: docker/prod/Dockerfile
+    target: slim
+  restart: unless-stopped
+  networks: [internal]
+
+x-op-env: &env
+  RAILS_ENV: production
+  SECRET_KEY_BASE: ${OP_SECRET_KEY_BASE:-local-only-0b6c1f2e9a3d4c58b7e1a9f04d2c6e83b5a7f1c9d0e2a4b6c8d1e3f5a7b9c0d2}
+  DATABASE_URL: postgres://openproject:${OP_DB_PASSWORD:-openproject}@db/openproject?pool=20&encoding=unicode&reconnect=true
+  OPENPROJECT_HTTPS: "false"
+  OPENPROJECT_HSTS: "false"
+  OPENPROJECT_HOST__NAME: ${OP_HOST:-localhost}:${OP_PORT:-8080}
+  OPENPROJECT_ADDITIONAL__HOSTS: web # lets hocuspocus call web:8080 inside the network
+  OPENPROJECT_RAILS__CACHE__STORE: memcache
+  OPENPROJECT_CACHE__MEMCACHE__SERVER: cache:11211
+  OPENPROJECT_COLLABORATIVE__EDITING__HOCUSPOCUS__URL: ws://${OP_HOST:-localhost}:${OP_HOCUSPOCUS_PORT:-1234}
+  OPENPROJECT_COLLABORATIVE__EDITING__HOCUSPOCUS__SECRET: ${OP_HOCUSPOCUS_SECRET:-secret12345}
+  OPENPROJECT_SSRF_PROTECTION_IP_ALLOWLIST: 0.0.0.0/0,::0/0 # allow local integrations (Nextcloud etc.)
+  RAILS_MIN_THREADS: 4
+  RAILS_MAX_THREADS: 16
+  IMAP_ENABLED: ${OP_IMAP_ENABLED:-false} # see docker/prod/cron for the IMAP_* options
+
+x-op-volumes: &volumes
+  - opdata:/var/openproject/assets
+
+networks:
+  internal:
+
+volumes:
+  pgdata:
+  opdata:
+
+services:
+  db:
+    image: postgres:17
+    restart: unless-stopped
+    networks: [internal]
+    environment:
+      POSTGRES_USER: openproject
+      POSTGRES_PASSWORD: ${OP_DB_PASSWORD:-openproject}
+      POSTGRES_DB: openproject
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U openproject -d openproject]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  cache:
+    image: memcached:1.6-alpine
+    restart: unless-stopped
+    networks: [internal]
+
+  seeder:
+    <<: *image
+    restart: "no"
+    command: ./docker/prod/seeder
+    environment: *env
+    volumes: *volumes
+    depends_on:
+      db: { condition: service_healthy }
+
+  web:
+    <<: *image
+    command: ./docker/prod/web
+    environment: *env
+    volumes: *volumes
+    ports:
+      - "${OP_PORT:-8080}:8080"
+    depends_on:
+      seeder: { condition: service_completed_successfully }
+      cache: { condition: service_started }
+    healthcheck:
+      test: [CMD, curl, -f, http://localhost:8080/health_checks/default]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  worker:
+    <<: *image
+    command: ./docker/prod/worker
+    environment: *env
+    volumes: *volumes
+    depends_on:
+      seeder: { condition: service_completed_successfully }
+      cache: { condition: service_started }
+
+  cron:
+    <<: *image
+    command: ./docker/prod/cron
+    environment: *env
+    volumes: *volumes
+    depends_on:
+      seeder: { condition: service_completed_successfully }
+
+  hocuspocus:
+    image: openproject-local-hocuspocus:latest
+    build: ./extensions/op-blocknote-hocuspocus
+    restart: unless-stopped
+    networks: [internal]
+    environment:
+      SECRET: ${OP_HOCUSPOCUS_SECRET:-secret12345}
+      OPENPROJECT_URL: http://web:8080
+    ports:
+      - "${OP_HOCUSPOCUS_PORT:-1234}:1234"
+    depends_on:
+      web: { condition: service_healthy }
